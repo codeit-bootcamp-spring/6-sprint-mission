@@ -1,20 +1,8 @@
-package com.sprint.mission.discodeit.service;
-
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.jcf.JCFChannel;
-import com.sprint.mission.discodeit.service.jcf.JCFMessage;
-import com.sprint.mission.discodeit.service.jcf.JCFUser;
+package com.sprint.mission.discodeit;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.util.function.Predicate;
-import java.util.function.Function;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 
 public class JavaApplication {
