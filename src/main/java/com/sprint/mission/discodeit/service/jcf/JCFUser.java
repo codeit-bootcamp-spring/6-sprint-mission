@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFUser implements UserService {
@@ -12,12 +13,12 @@ public class JCFUser implements UserService {
 
 
     @Override
-    public void createUser(User user) {
-        return;
+    public User createUser(User user) {
+        return user;
     }
 
     @Override
-    public User readUser(UUID Id) {
+    public Optional<User> readUser(UUID Id) {
         return userInfo.get(userInfo.indexOf(Id));
     }
 
@@ -29,12 +30,12 @@ public class JCFUser implements UserService {
 
 
     @Override
-    public void updateUser(User user) {
+    public Optional<User> updateUser(User user) {
         return;
     }
 
     @Override
-    public void deleteUser(UUID Id) {
-        return;
+    public boolean deleteUser(UUID Id) {
+        return false;
     }
 }

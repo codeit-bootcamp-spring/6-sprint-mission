@@ -1,21 +1,39 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFManagerService;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.List;
+import java.util.Optional;
+import java.util.Scanner;
+import java.util.UUID; // User ID는 UUID를 사용
 
 
 public class JavaApplication {
-    public static void main(String[] args) {
+    private static final String FILE_NAME = "users.ser";
 
-
+        UserRepository userRepository;
+        ChannelRepository channelRepository;
+        MessageRepository messageRepository;
         //[ ] 등록
         //[ ] 조회(단건, 다건)
         //[ ] 수정
         //[ ] 수정된 데이터 조회
         //[ ] 삭제
         //[ ] 조회를 통해 삭제되었는지 확인
+        // 데이터 영속성 관리를 담당하는 객체
+        JCFManagerService persistenceManager = new JCFManagerService();
         Scanner scanner = new Scanner(System.in);
+        public static void main(String[] args) {
+            // 애플리케이션 시작 시 기존 데이터(서비스 인스턴스)를 파일에서 로드하거나 새로 생성합니다.
+            loadUserRepository();
+
+
         HashMap<String, String> userMap = new HashMap<>(); // ID와 이름 저장 HashMap
         HashMap<String, String> userMap1 = new HashMap<>(); // ID와 메세지 저장할 HashMap
         ArrayList<String> idList = new ArrayList<>(); // ID만 저장할 ArrayList
@@ -63,7 +81,7 @@ public class JavaApplication {
                         System.out.println("ID: " + searchId + ", 이름: " + searchName
                                 + ", 남긴 메세지: " + searchMessage);
                     } else {
-                        System.out.println("해당 ID의 회원이 없습니다.");
+                        System.out.println("존재하지 않는 ID 입니다 .");
                     }
                     break;
 
@@ -78,7 +96,7 @@ public class JavaApplication {
                         System.out.println("ID: " + searchId1 + ", 현재 메세지: "
                                 + searchMessage);
                     } else {
-                        System.out.println("해당 name 은 존재하지 않습니다.");
+                        System.out.println("해당 ID 는 존재하지 않습니다.");
                     }
                     System.out.print("수정할 메세지 내용을 입력하세요.: ");
                     String updateMessage = scanner.nextLine();

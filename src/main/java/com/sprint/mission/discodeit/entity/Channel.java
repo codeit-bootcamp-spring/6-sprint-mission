@@ -1,68 +1,47 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.UUID;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.io.Serializable;
+import java.time.LocalDateTime; // LocalDateTime도 직렬화 가능
+import java.util.Objects;
 
+public class Channel implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-public class Channel {
-
-    private UUID Id;
+    private Long id; // 채널 ID는 Long으로 자동 증가 관리
     private String name;
-    private String channel;
-    private long createAt;
-    private long updateAt;
+    private LocalDateTime createdAt;
 
-    public Channel(UUID Id, String name, String channel, long createAt,
-                   long updateAt ) {
-        this.Id = Id;
+    // 생성자: ID는 서비스에서 할당
+    public Channel(String name) {
         this.name = name;
-        this.channel = channel;
-        this.createAt = createAt;
-        this.updateAt = updateAt;
+        this.createdAt = LocalDateTime.now(); // 생성 시 현재 시간 자동 설정
     }
 
-    public void setId() {
-        this.Id=Id;
-    }
-    public UUID getId() {
-        return Id;
-    }
+    // --- Getters ---
+    public Long getId() { return id; }
+    public String getName() { return name; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public void setName() {
-        this.name=name;
-    }
-    public String getName() {
-        return name;
-    }
+    // --- Setters ---
+    public void setId(Long id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
 
-    public void setChannel() {
-        this.channel=channel;
-    }
-    public String getChannel() {
-        return channel;
-    }
-
-    public void setCreateAt() {
-        this.createAt=createAt;
-    }
-    public long getCreateAt() {
-        return createAt;
-    }
-    public void setUpdateAt() {
-        this.updateAt=updateAt;
-    }
-    public long getUpdateAt() {
-        return updateAt;
-    }
+    // --- Utility Methods ---
     @Override
     public String toString() {
-        return "{channel='"+ channel + "',createAt='"+ createAt +
-                "',updateAt='" + updateAt + "'}";
-
+        return "Channel{id=" + id + ", name='" + name + "', createdAt=" + createdAt + "}";
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Channel channel = (Channel) o;
+        return Objects.equals(id, channel.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

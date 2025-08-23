@@ -2,68 +2,58 @@ package com.sprint.mission.discodeit.entity;
 
 
 import java.util.UUID;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.io.Serializable;
+import java.util.Objects;
 
 
-public class Message {
+public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    private UUID Id;
-    private String name;
-    private String message;
+    private Long Id;  //long 으로 자동 증가 관리
+    private UUID senderUserId;
+    private Long channelId;
+    private String content;
     private long createAt;
     private long updateAt;
 
-    public Message(UUID Id, String name, String message, long createAt,
-                   long updateAt ) {
-        this.Id = Id;
-        this.name = name;
-        this.message = message;
+    public Message(UUID senderUserId, Long channelId, String content) {
+        this.senderUserId = senderUserId;
+        this.channelId = channelId;
+        this.content = content;
         this.createAt = createAt;
         this.updateAt = updateAt;
     }
 
-    public void setId() {
-        this.Id=Id;
-    }
-    public UUID getId() {
-        return Id;
-    }
+    // --- Getters ---
+    public Long getId() { return Id; }
+    public UUID getSenderUserId() { return senderUserId; }
+    public Long getChannelId() { return channelId; }
+    public String getContent() { return content; }
 
-    public void setName() {
-        this.name=name;
-    }
-    public String getName() {
-        return name;
-    }
 
-    public void setMessage() {
-        this.message=message;
-    }
-    public String getMessage() {
-        return message;
-    }
+    // --- Setters ---
+    public void setId(Long id) { this.Id = Id; }
+    public void setContent(String content) { this.content = content; } // 메시지 내용은 수정 가능
 
-    public void setCreateAt() {
-        this.createAt=createAt;
-    }
-    public long getCreateAt() {
-        return createAt;
-    }
-    public void setUpdateAt() {
-        this.updateAt=updateAt;
-    }
-    public long getUpdateAt() {
-        return updateAt;
-    }
+    // --- Utility Methods ---
     @Override
     public String toString() {
-        return "{message='"+ message + "',createAt='"+ createAt +
-                "',updateAt='" + updateAt + "'}";
-
+        // UUID는 너무 길어 일부만 표시, 가독성 높임
+        String senderIdShort = (senderUserId != null) ? senderUserId.toString().substring(0, 8) + "..." : "null";
+        return "Message{id=" + Id + ", senderUserId=" + senderIdShort + ", channelId=" + channelId +
+                ", content='" + content + "}";
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Message message = (Message) o;
+        return Objects.equals(Id, message.Id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Id);
+    }
 }
