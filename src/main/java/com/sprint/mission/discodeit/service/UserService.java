@@ -9,8 +9,8 @@ import java.util.Optional;
 
 public interface UserService {
     User createUser(User user);  // 생성
-    Optional<User> readUser(UUID id);     // 단건 읽기
+    void readUser(UUID id);     // 단건 읽기
     List<User>readAllUsers();   // 모두 읽기
-    Optional<User> updateUser(User user);  // 수정
-    Boolean deleteUser(UUID Id);    // 삭제
+    void updateUser(User user);  // 수정
+    void deleteUser(UUID Id);    // 삭제
 }

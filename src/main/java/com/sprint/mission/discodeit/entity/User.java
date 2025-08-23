@@ -21,6 +21,9 @@ public class User implements Serializable  {
         this.updateAt = updateAt;
     }
 
+    public User(String name, String message) {
+    }
+
     // --- Getters ---
     public UUID getId() { return Id; }
     public String getName() { return name; }

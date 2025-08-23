@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class JCFUser implements UserService {
-    List<User> userInfo = new ArrayList<>();
+    List<User> users = new ArrayList<>();
 
 
     @Override
@@ -18,8 +18,8 @@ public class JCFUser implements UserService {
     }
 
     @Override
-    public Optional<User> readUser(UUID Id) {
-        return userInfo.get(userInfo.indexOf(Id));
+    public void readUser(UUID Id) {
+        return;
     }
 
 
@@ -30,12 +30,13 @@ public class JCFUser implements UserService {
 
 
     @Override
-    public Optional<User> updateUser(User user) {
+    public void updateUser(User user) {
         return;
-    }
+        }
 
-    @Override
-    public boolean deleteUser(UUID Id) {
-        return false;
+        @Override
+        public void deleteUser(UUID Id) {
+           return;
     }
 }
+
