@@ -25,7 +25,7 @@ public class FileUserService implements UserRepository, Serializable {
         UUID newId = UUID.randomUUID(); // 고유한 UUID 생성하여 ID로 할당
         user.setId(newId);
         users.add(user);
-        System.out.println("✨ UserSvc: 새 사용자 등록 -> " + user.getName() + " (ID: " +
+        System.out.println("UserSvc: 새 사용자 등록 -> " + user.getName() + " (ID: " +
                 user.getId().toString().substring(0, 8) + "...)");
         return user; // 생성된 사용자 객체 반환
     }
