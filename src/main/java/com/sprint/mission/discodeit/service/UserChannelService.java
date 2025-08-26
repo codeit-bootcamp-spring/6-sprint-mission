@@ -66,8 +66,8 @@ public class UserChannelService {
         return data;
     }
 
-    // 유저-관계 존재 여부 확인하는 클래스 내부 private 메소드
-    private boolean isExist(UUID userId, UUID channelId){
+    // 유저-관계 존재 여부 확인
+    public boolean isExist(UUID userId, UUID channelId){
         return data.stream().anyMatch(uc ->
                 uc.getUserId().equals(userId) && uc.getChannelId().equals(channelId));
     }
