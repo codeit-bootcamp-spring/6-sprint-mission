@@ -14,14 +14,16 @@ public class User implements Serializable  {
     private long createAt;
     private long updateAt;
 
-    //Id생성자는 서비스에서 할당, 초기null 또는 자동생성
+
     public User(String name, long createAt, long updateAt ) {
         this.name = name;
         this.createAt = createAt;
         this.updateAt = updateAt;
     }
 
-    public User(String name, String message) {
+    public User(UUID Id, String name) {
+    this.Id = Id;
+    this.name = name;
     }
 
 
@@ -37,8 +39,9 @@ public class User implements Serializable  {
 
     @Override
     public String toString() {
-
-        return "User{id=" + Id + ", name='" + name + "'}";
+        // UUID는 너무 길어 일부만 표시하여 가독성 높임
+        return "User{id=" + (Id != null ? Id.toString().substring(0, 8) + "..." : "null")
+                + ", name='" + name + "'}" ;
     }
 
     // equals와 hashCode는 객체 비교, ID를 기준으로 구현

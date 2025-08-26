@@ -22,12 +22,19 @@ public class FileUserService implements UserRepository, Serializable {
 
     @Override
     public User createUser(User user) {
-        UUID newId = UUID.randomUUID(); // 고유한 UUID 생성하여 ID로 할당
-        user.setId(newId);
+        if (user.getId() == null) {
+            System.out.println("UserSvc: 사용자 ID가 없습니다. 등록 실패.");
+            return null; // ID가 없는 User는 등록하지 않음
+        }
+
+        // 중복 ID 방지 (선택 사항이지만, 수동 입력 시 필수)
+        if (readUser(user.getId()).isPresent()) {
+            System.out.println("UserSvc: ID " + user.getId().toString().substring(0, 8) + "... 는 이미 존재하는 ID입니다. 등록 실패.");
+            return null;
+        }
         users.add(user);
-        System.out.println("UserSvc: 새 사용자 등록 -> " + user.getName() + " (ID: " +
-                user.getId().toString().substring(0, 8) + "...)");
-        return user; // 생성된 사용자 객체 반환
+        System.out.println("UserSvc: 새 사용자 등록 -> " + user.getName() + " (ID: " + user.getId().toString().substring(0, 8) + "...)");
+        return user;
     }
 
    @Override

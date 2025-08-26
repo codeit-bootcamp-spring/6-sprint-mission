@@ -68,12 +68,12 @@ public class FileChannelService implements ChannelRepository, Serializable {
     }
 
     @Override
-    public boolean deleteChannel(Long id) {
-        boolean removed = channels.removeIf(ch -> ch.getId().equals(id));
+    public boolean deleteChannel(Long Id) {
+        boolean removed = channels.removeIf(ch -> ch.getId().equals(Id));
         if (removed) {
-            System.out.println("ChannelSvc: 채널 ID " + id + " 삭제 완료.");
+            System.out.println("ChannelSvc: 채널 ID " + Id + " 삭제 완료.");
         } else {
-            System.out.println("ChannelSvc: 채널 ID " + id + " 를 찾을 수 없어 삭제 실패.");
+            System.out.println("ChannelSvc: 채널 ID " + Id + " 를 찾을 수 없어 삭제 실패.");
         }
         return removed;
     }

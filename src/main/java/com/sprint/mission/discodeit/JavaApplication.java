@@ -11,12 +11,9 @@ import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Scanner;
 import java.util.List;
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.UUID; // User ID는 UUID를 사용
 
 
@@ -148,6 +145,8 @@ public class JavaApplication {
             int choice = getUserChoice();
             switch (choice) {
                 case 1: // 사용자 등록 (Create)
+                    System.out.print("사용할 사용자 ID (UUID 형식으로 입력): ");
+                    String userIdInput = sc.nextLine();
                     System.out.print("사용자 이름 입력: ");
                     String name = sc.nextLine();
                     System.out.print("메시지 입력: ");
@@ -156,7 +155,12 @@ public class JavaApplication {
                         System.out.println("이름 과 메세지가 비어있습니다. 다시 시도해주세요.");
                         break;
                     }
-                    userRepository.createUser(new User(name, message)); // ID는 서비스에서 자동 부여
+                    try {
+                        UUID newUserId = UUID.fromString(userIdInput); // 입력된 문자열을 UUID로 변환
+                        userRepository.createUser(new User(newUserId, name)); // 생성된 ID를 바로 User 객체에 전달
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("입력된 사용자 ID가 올바른 UUID 형식이 아닙니다.");
+                    }
                     break;
                 case 2: // 모든 사용자 조회 (Read All)
                     List<User> users = userRepository.readAllUsers();
@@ -174,7 +178,7 @@ public class JavaApplication {
                         UUID userId = UUID.fromString(userIdStr); // 입력 문자열을 UUID로 변환
                         Optional<User> userOpt = userRepository.readUser(userId);
                         userOpt.ifPresentOrElse( // Optional에 값이 있으면 출력, 없으면 사용자에게 알림
-                                user -> System.out.println("✅ 조회된 사용자: " + user),
+                                user -> System.out.println("조회된 사용자: " + user),
                                 () -> System.out.println("ID " + userIdStr + "의 사용자를 찾을 수 없습니다.")
                         );
                     } catch (IllegalArgumentException e) { // UUID 변환 실패 시
@@ -261,7 +265,7 @@ public class JavaApplication {
                     long channelId = getUserChoice();
                     Optional<Channel> channelOpt = channelRepository.readChannel(channelId);
                     channelOpt.ifPresentOrElse(
-                            channel -> System.out.println("✅ 조회된 채널: " + channel),
+                            channel -> System.out.println("조회된 채널: " + channel),
                             () -> System.out.println("ID " + channelId + "의 채널을 찾을 수 없습니다.")
                     );
                     break;
@@ -349,7 +353,7 @@ public class JavaApplication {
                 case 2: // 모든 메시지 조회 (Read All)
                     List<Message> messages = messageRepository.readAllMessages();
                     if (messages.isEmpty()) {
-                        System.out.println("ℹ️ 등록된 메시지가 없습니다.");
+                        System.out.println("등록된 메시지가 없습니다.");
                     } else {
                         System.out.println("\n--- 메시지 목록 ---");
                         messages.forEach(System.out::println);
@@ -360,7 +364,7 @@ public class JavaApplication {
                     long messageId = getUserChoice();
                     Optional<Message> messageOpt = messageRepository.readMessage(messageId);
                     messageOpt.ifPresentOrElse(
-                            message -> System.out.println("✅ 조회된 메시지: " + message),
+                            message -> System.out.println("조회된 메시지: " + message),
                             () -> System.out.println("ID " + messageId + "의 메시지를 찾을 수 없습니다.")
                     );
                     break;
@@ -369,7 +373,7 @@ public class JavaApplication {
                     long searchChannelId = getUserChoice();
                     List<Message> channelMessages = messageRepository.readMessagesByChannelId(searchChannelId);
                     if (channelMessages.isEmpty()) {
-                        System.out.println("ℹ️ 채널 ID " + searchChannelId + "에는 메시지가 없습니다.");
+                        System.out.println("채널 ID " + searchChannelId + "에는 메시지가 없습니다.");
                     } else {
                         System.out.println("\n--- 채널 ID " + searchChannelId + "의 메시지 목록 ---");
                         channelMessages.forEach(System.out::println);
@@ -382,7 +386,7 @@ public class JavaApplication {
                         UUID searchSenderId = UUID.fromString(searchSenderIdStr);
                         List<Message> senderMessages = messageRepository.readMessagesBySenderUserId(searchSenderId);
                         if (senderMessages.isEmpty()) {
-                            System.out.println("ℹ️ 사용자 ID " + searchSenderIdStr + "가 보낸 메시지가 없습니다.");
+                            System.out.println("사용자 ID " + searchSenderIdStr + "가 보낸 메시지가 없습니다.");
                         } else {
                             System.out.println("\n--- 사용자 ID " + searchSenderIdStr + "가 보낸 메시지 목록 ---");
                             senderMessages.forEach(System.out::println);
