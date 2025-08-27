@@ -20,11 +20,11 @@ public class FileChannelService implements ChannelRepository, Serializable {
         // 기본 생성자
     }
 
-    // 역직렬화 시 호출되는 특별한 메서드. nextId를 재조정합니다.
+    // 역직렬화 시 nextId를 재조정
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject(); // 기본 역직렬화 수행
         // 역직렬화 후 nextId를 실제 channels 리스트의 최대 ID + 1로 재조정
-        // 이렇게 해야 이전에 저장된 데이터 다음 번호부터 새로운 ID가 부여됩니다.
+        // 이렇게 해야 이전에 저장된 데이터 다음 번호부터 새로운 ID가 부여
         this.nextId = channels.stream()
                 .mapToLong(Channel::getId) // 각 Channel 객체에서 ID를 추출하여 Long 스트림 생성
                 .max()                      // ID 중 최대값 찾기

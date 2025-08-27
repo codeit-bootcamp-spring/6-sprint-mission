@@ -4,9 +4,9 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
-import com.sprint.mission.discodeit.service.file.FileChannelService; // 구현체
-import com.sprint.mission.discodeit.service.file.FileMessageService; // 구현체
-import com.sprint.mission.discodeit.service.file.FileUserService;    // 구현체
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 
 import java.io.*; // 입출력 관련 클래스들
 

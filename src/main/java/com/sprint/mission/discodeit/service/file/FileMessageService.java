@@ -22,7 +22,7 @@ public class FileMessageService implements MessageRepository, Serializable {
         // 기본 생성자
     }
 
-    // 역직렬화 시 호출되는 특별한 메서드. nextId를 재조정합니다.
+    // 역직렬화 시 nextId를 재조정합니다.
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject(); // 기본 역직렬화 수행
         this.nextId = messages.stream()

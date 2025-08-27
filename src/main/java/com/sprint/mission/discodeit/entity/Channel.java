@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
-import java.time.LocalDateTime; // LocalDateTime도 직렬화 가능
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Channel implements Serializable {

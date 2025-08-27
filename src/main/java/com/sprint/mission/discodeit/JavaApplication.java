@@ -35,7 +35,7 @@ public class JavaApplication {
 
 
     public static void main(String[] args) {
-        // 애플리케이션 시작 시 기존 데이터(서비스 인스턴스)를 파일에서 로드하거나 새로 생성합니다.
+        // 애플리케이션 시작 시 기존 데이터(서비스 인스턴스)를 파일에서 로드하거나 새로 생성
         loadServices();
 
         boolean running = true; // 애플리케이션 실행 상태를 제어하는 플래그
@@ -67,7 +67,7 @@ public class JavaApplication {
             }
             System.out.println("\n----------------------------------------\n"); // 메뉴 구분선
         }
-        sc.close(); // 프로그램 종료 시 Scanner 자원 해제
+        sc.close(); // 프로그램 종료, Scanner 자원 해제
     }
 
     // --- 서비스 인스턴스 로드 및 저장 메서드 ---
@@ -123,7 +123,7 @@ public class JavaApplication {
             System.out.print("메뉴를 다시 선택하세요: ");
         }
         int choice = sc.nextInt(); // 정수 입력 받기
-        sc.nextLine(); // nextInt() 후 버퍼에 남아있는 개행 문자(\n) 소비 (필수)
+        sc.nextLine(); // 개행 문자(\n) 소비
         return choice;
     }
 
