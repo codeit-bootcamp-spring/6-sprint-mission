@@ -3,14 +3,14 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.UserChannelService;
+import com.sprint.mission.discodeit.service.jcf.UserChannelService;
 import com.sprint.mission.discodeit.service.jcf.JFCChannelService;
 import com.sprint.mission.discodeit.service.jcf.JFCMessageService;
 import com.sprint.mission.discodeit.service.jcf.JFCUserService;
 
 import java.util.List;
 
-public class JavaApplication {
+public class JFCTest {
     private static final JFCUserService userService = JFCUserService.getInstance();
     private static final JFCMessageService messageService = JFCMessageService.getInstance();
     private static final JFCChannelService channelService = JFCChannelService.getInstance();
@@ -18,8 +18,6 @@ public class JavaApplication {
     private static final UserChannelService userChannelService = UserChannelService.getInstance();
 
     public static void main(String[] args) {
-
-        //TODO: 메인 메서드 무한 루프 구현?
 
 
         User user1 = userService.createUser("짱구", "자는 중", "aaa@gmail.com");
@@ -110,14 +108,14 @@ public class JavaApplication {
     }
     private static void printMessagesInChannel(Channel channel){
         System.out.println("-----채널 " + channel.getName() + "의 메시지 내역-----");
-        messageService.findMessagesInChannel(channel.getId()).stream()
-                .forEach(JavaApplication::printMessage);
+        messageService.findMessagesByChannelId(channel.getId()).stream()
+                .forEach(JFCTest::printMessage);
         System.out.println();
     }
     private static void printMessagesOfUser(User user){
         System.out.println("-----유저 " + user.getName() + "의 메시지 내역-----");
-        messageService.findMessagesOfUser(user.getId()).stream()
-                .forEach(JavaApplication::printMessage);
+        messageService.findMessagesByUserId(user.getId()).stream()
+                .forEach(JFCTest::printMessage);
         System.out.println();
     }
 
@@ -128,14 +126,14 @@ public class JavaApplication {
     private static void printAllUsers(){
         List<User> allUsers  = userService.findAll();
         System.out.println("----- 모든 유저 " + allUsers.size() + "명 -----");
-        allUsers.stream().forEach(JavaApplication::printUser);
+        allUsers.stream().forEach(JFCTest::printUser);
         System.out.println();
     }
     private static void printUsersInChannel(Channel channel){
         List<User> usersInChannel = userService.findAllUsersByChannelId(channel.getId());
         System.out.println("---- 채널 " + channel.getName() + "의 유저 " +
                 usersInChannel.size() + "명 ----");
-        usersInChannel.stream().forEach(JavaApplication::printUser);
+        usersInChannel.stream().forEach(JFCTest::printUser);
         System.out.println();
     }
 
@@ -146,14 +144,14 @@ public class JavaApplication {
     private static void printAllChannels(){
         List<Channel> allChannels = channelService.findAll();
         System.out.println("----- 모든 채널 " + allChannels.size() + "개 -----");
-        allChannels.stream().forEach(JavaApplication::printChannel);
+        allChannels.stream().forEach(JFCTest::printChannel);
         System.out.println();
     }
     private static void printChannelsOfUser(User user){
         List<Channel> channelsOfUser = channelService.findAllChannelsByUserId(user.getId());
         System.out.println("---- " + user.getName() + "님이 속한 채널 " +
                 channelsOfUser.size() + "개 ----");
-        channelsOfUser.stream().forEach(JavaApplication::printChannel);
+        channelsOfUser.stream().forEach(JFCTest::printChannel);
         System.out.println();
     }
 

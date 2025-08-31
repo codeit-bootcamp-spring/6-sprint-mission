@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.service.UserChannelService;
+import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class JFCChannelService {
+public class JFCChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
     private static final JFCChannelService instance = new JFCChannelService();
     private final UserChannelService userChannelService = UserChannelService.getInstance();
@@ -33,13 +33,6 @@ public class JFCChannelService {
         return newChannel;
     }
 
-    // 채널 아이디로 특정 채널 조회
-    public Channel findById(UUID channelId){
-        if(!data.containsKey(channelId)){ // 존재하지 않을 시 null 반환
-            return null;
-        }
-        return data.get(channelId); // 존재할 시 channel 객체 참조값 반환
-    }
     // 전체 채널 조회
     public List<Channel> findAll(){
         return data.values().stream().toList(); // 아무 채널도 존재하지 않을 시 빈 list 반환
@@ -47,7 +40,7 @@ public class JFCChannelService {
     // 특정 유저의 모든 채널 조회
     public List<Channel> findAllChannelsByUserId(UUID userId){
         List<UUID> channels = userChannelService.findChannelListOfUserId(userId);
-        return channels.stream().map(this::findById).collect(Collectors.toList());
+        return channels.stream().map(data::get).collect(Collectors.toList());
         // 아무 채널도 존재하지 않을 시 빈 Channel list 반환
     }
 

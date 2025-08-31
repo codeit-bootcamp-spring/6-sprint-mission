@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class JFCMessageService{
+public class JFCMessageService implements MessageService {
     private final Map<UUID, Message> data;
     private static final JFCMessageService instance = new JFCMessageService();
 
@@ -30,14 +31,14 @@ public class JFCMessageService{
     }
 
     // 특정 유저의 모든 메시지 조회
-    public List<Message> findMessagesOfUser(UUID userId){
+    public List<Message> findMessagesByUserId(UUID userId){
         return data.values().stream().filter(m -> m.getAuthorId().equals(userId))
                 .collect(Collectors.toList());
         // 아무 메시지도 존재하지 않을 시 빈 List 반환
     }
 
     // 특정 채널의 모든 메시지 조회
-    public List<Message> findMessagesInChannel(UUID channelId){
+    public List<Message> findMessagesByChannelId(UUID channelId){
         return data.values().stream().filter(m -> m.getChannelId().equals(channelId))
                 .collect(Collectors.toList());
         // 아무 메시지도 존재하지 않을 시 빈 List 반환
@@ -51,12 +52,12 @@ public class JFCMessageService{
     }
     // 유저명 변경 시 유저 메시지 작성자 이름 전부 변경
     public void modifyAuthorName(UUID authorId, String updatedAuthorName){
-        findMessagesOfUser(authorId).stream()
+        findMessagesByUserId(authorId).stream()
                 .forEach(m -> m.updateAuthorName(updatedAuthorName));
     }
     // 채널명 변경 시 채널 메시지 채널명 전부 변경
     public void modifyChannelName(UUID channelId, String updatedChannelName){
-        findMessagesInChannel(channelId).stream()
+        findMessagesByChannelId(channelId).stream()
                 .forEach(m -> m.updateChannelName(updatedChannelName));
     }
     // 유저가 삭제되면 해당 유저 메시지 작성자 이름 전부 (알 수 없음) 으로 수정
