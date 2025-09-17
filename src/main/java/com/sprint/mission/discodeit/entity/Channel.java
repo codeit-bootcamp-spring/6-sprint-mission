@@ -1,47 +1,53 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.Objects;
+import lombok.Getter;
 
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.UUID;
+
+@Getter
 public class Channel implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private Long Id; // 채널 ID는 Long으로 자동 증가 관리
+    private UUID id;
+    private Long createdAt;
+    private Long updatedAt;
+    private ChannelType type;
+    private UUID channelId;
     private String name;
-    private LocalDateTime createdAt;
+    private String description;
 
-    // 생성자: ID는 서비스에서 할당
-    public Channel(String name) {
+    public Channel(ChannelType type, String name, String description) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now().getEpochSecond();
+        this.type = type;
         this.name = name;
-        this.createdAt = LocalDateTime.now(); // 생성 시 현재 시간 자동 설정
+        this.channelId = UUID.randomUUID();
+        this.description = description;
     }
 
-    // --- Getters ---
-    public Long getId() { return Id; }
-    public String getName() { return name; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-
-    // --- Setters ---
-    public void setId(Long id) { this.Id = Id; }
-    public void setName(String name) { this.name = name; }
-
-    // --- Utility Methods ---
-    @Override
-    public String toString() {
-        return "Channel{Id=" + Id + ", name='" + name + "', createdAt=" + createdAt + "}";
+    public void setName(String newName) {
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Channel channel = (Channel) o;
-        return Objects.equals(Id, channel.Id);
+    public void setDescription(String newDescription) {
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(Id);
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
+
 }

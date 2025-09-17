@@ -1,62 +1,53 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.UUID;
 import java.io.Serializable;
-import java.util.Objects;
+import java.time.Instant;
+import java.util.UUID;
 
-
-public class User implements Serializable  {
+@Getter
+@Setter
+public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private UUID Id;
-    private String name;
-    private long createAt;
-    private long updateAt;
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private String username;
+    private String email;
+    private String password;
 
-
-    public User(String name, long createAt, long updateAt ) {
-        this.name = name;
-        this.createAt = createAt;
-        this.updateAt = updateAt;
+    public User(String username, String email, String password) {
+        this.id = UUID.randomUUID();
+        Instant now = Instant.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+        this.username = username;
+        this.email = email;
+        this.password = password;
     }
 
-    public User(UUID Id, String name) {
-    this.Id = Id;
-    this.name = name;
+    public void update(String newUsername, String newEmail, String newPassword) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
-
-    public UUID getId() { return Id; }
-    public String getName() { return name; }
-
-
-
-    public void setId(UUID Id) { this.Id = Id; }
-    public void setName(String name) { this.name = name; }
-
-
-
-    @Override
-    public String toString() {
-        // UUID는 너무 길어 일부만 표시하여 가독성 높임
-        return "User{id=" + (Id != null ? Id.toString().substring(0, 8) + "..." : "null")
-                + ", name='" + name + "'}" ;
-    }
-
-    // equals와 hashCode는 객체 비교, ID를 기준으로 구현
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(Id, user.Id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(Id);
-    }
 }
-
-

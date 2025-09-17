@@ -1,17 +1,25 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-
+@Repository
 public interface UserRepository {
-    User createUser(User user);  // 생성
-        // 단건 읽기
-    Optional<User> readUser(UUID Id);
-    List<User> readAllUsers();   // 모두 읽기
-    Optional<User> updateUser(User user);  // 수정
-    boolean deleteUser(UUID Id);  // 삭제
+    User save(User user);
+
+    Optional<User> findById(UUID id);
+
+    List<User> findAll();
+
+    Boolean existsById(UUID id);
+
+    void deleteById(UUID id);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByUsername(String username);
 }

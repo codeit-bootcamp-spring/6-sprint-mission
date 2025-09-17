@@ -1,428 +1,161 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.dto.ChannelDto.ChannelCreatePrivateDto;
+import com.sprint.mission.discodeit.dto.ChannelDto.ChannelCreatePublicDto;
+import com.sprint.mission.discodeit.dto.MessageDto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.MessageDto.CreateMessageRequest;
+import com.sprint.mission.discodeit.dto.MessageDto.ReadStatusCreateDto;
+import com.sprint.mission.discodeit.dto.UserDto.LoginDto;
+import com.sprint.mission.discodeit.dto.UserDto.UserCreateDto;
+import com.sprint.mission.discodeit.dto.UserDto.UserStatusCreateDto;
+import com.sprint.mission.discodeit.dto.UserDto.UserStatusUpdateDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFManagerService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
+import com.sprint.mission.discodeit.repository.jcf.JCFBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFReadStatusRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserStatusRepository;
+import com.sprint.mission.discodeit.service.AuthService;
+import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
+import com.sprint.mission.discodeit.service.basic.BasicAuthService;
+import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicReadStatusService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
 
-import java.util.Scanner;
+import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID; // User ID는 UUID를 사용
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
-
+import static com.sprint.mission.discodeit.entity.ChannelType.PRIVATE;
+import static com.sprint.mission.discodeit.entity.ChannelType.PUBLIC;
 
 public class JavaApplication {
-    private static UserRepository userRepository;
-    private static MessageRepository messageRepository;
-    private static ChannelRepository channelRepository;
-        //[ ] 등록
-        //[ ] 조회(단건, 다건)
-        //[ ] 수정
-        //[ ] 수정된 데이터 조회
-        //[ ] 삭제
-        //[ ] 조회를 통해 삭제되었는지 확인
-
-        // 데이터 영속성 관리를 담당하는 객체
-    private static JCFManagerService persistenceManager = new JCFManagerService();
-    private static Scanner sc = new Scanner(System.in);
-
 
     public static void main(String[] args) {
-        // 애플리케이션 시작 시 기존 데이터(서비스 인스턴스)를 파일에서 로드하거나 새로 생성
-        loadServices();
+        System.out.println("--- 테스트 시작 ---");
 
-        boolean running = true; // 애플리케이션 실행 상태를 제어하는 플래그
-        while (running) { // 프로그램이 종료될 때까지 반복
-            printMainMenu(); // 메인 메뉴 출력
-            int choice = getUserChoice(); // 사용자로부터 메뉴 선택 입력 받기
+        //리포지토리 인스턴스 생성
+        JCFUserRepository userRepository = new JCFUserRepository();
+        JCFUserStatusRepository userStatusRepository = new JCFUserStatusRepository();
+        JCFBinaryContentRepository binaryContentRepository = new JCFBinaryContentRepository();
+        JCFChannelRepository channelRepository = new JCFChannelRepository();
+        JCFReadStatusRepository readStatusRepository = new JCFReadStatusRepository();
+        JCFMessageRepository messageRepository = new JCFMessageRepository();
 
-            switch (choice) {
-                case 1: // 사용자 관리 메뉴 진입
-                    manageUsers();
-                    break;
-                case 2: // 채널 관리 메뉴 진입
-                    manageChannels();
-                    break;
-                case 3: // 메시지 관리 메뉴 진입
-                    manageMessages();
-                    break;
-                case 4: // 현재 데이터를 파일에 즉시 저장
-                    saveServices();
-                    break;
-                case 5: // 애플리케이션 종료
-                    saveServices(); // 종료 직전에 변경된 데이터 최종 저장
-                    System.out.println("프로그램을 종료합니다. 안녕히 계세요!");
-                    running = false; // 루프 종료하여 프로그램 종료
-                    break;
-                default: // 잘못된 입력 처리
-                    System.out.println("잘못된 선택입니다. 1에서 5 사이의 번호를 입력해주세요.");
-                    break;
-            }
-            System.out.println("\n----------------------------------------\n"); // 메뉴 구분선
-        }
-        sc.close(); // 프로그램 종료, Scanner 자원 해제
-    }
-
-    // --- 서비스 인스턴스 로드 및 저장 메서드 ---
+        //서비스 인스턴스 생성 및 의존성 주입
+        AuthService authService = new BasicAuthService(userRepository);
+        UserService userService = new BasicUserService(userRepository, binaryContentRepository, userStatusRepository);
+        UserStatusService userStatusService = new BasicUserStatusService(userRepository, userStatusRepository);
+        MessageService messageService = new BasicMessageService(messageRepository, channelRepository, userRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository, userRepository, readStatusRepository, messageRepository);
+        BinaryContentService binaryContentService = new BasicBinaryContentService(binaryContentRepository);
+        ReadStatusService readStatusService = new BasicReadStatusService(readStatusRepository, userRepository, channelRepository);
 
 
-    private static void loadServices() {
-        System.out.println("===== 애플리케이션 시작: 데이터 로드 =====");
-        // 각 서비스 구현체 객체를 파일에서 로드 시도. 파일이 없거나 로드 실패 시 새로운 인스턴스 생성.
-        UserRepository UserRepository = persistenceManager.loadUserRepository();
-        if (userRepository == null) {
-            userRepository = new FileUserService();
-            System.out.println("새로운 사용자 서비스 인스턴스 생성.");
+        //사용자 생성
+        UserCreateDto user1Dto = new UserCreateDto("김코딩", "user1@example.com", "1234");
+        UserCreateDto user2Dto = new UserCreateDto("이코딩", "user2@example.com", "5678");
+        User user1 = userService.create(user1Dto);
+        User user2 = userService.create(user2Dto);
+        System.out.println("사용자 생성 완료: " + user1.getUsername() + ", " + user2.getUsername());
+
+        //로그인 테스트
+        LoginDto loginDto = new LoginDto("김코딩", "1234");
+        try {
+            authService.userMatch(loginDto);
+            System.out.println("로그인 성공: " + loginDto.username());
+        } catch (IllegalArgumentException e) {
+            System.out.println("로그인 실패: " + e.getMessage());
         }
 
-        channelRepository = persistenceManager.loadChannelRepository();
-        if (channelRepository == null) {
-            channelRepository = new FileChannelService();
-            System.out.println("새로운 채널 서비스 인스턴스 생성.");
-        }
+        //유저 상태 생성
+        UserStatusCreateDto statusCreateDto = new UserStatusCreateDto(user1.getId(), true);
+        userStatusService.create(statusCreateDto);
+        System.out.println(user1.getUsername() + " 의 상태 생성 완료");
 
-        messageRepository = persistenceManager.loadMessageRepository();
-        if (messageRepository == null) {
-            messageRepository = new FileMessageService();
-            System.out.println("새로운 메시지 서비스 인스턴스 생성.");
-        }
-        System.out.println("=========================================\n");
+        //유저 상태 업데이트
+        UserStatusUpdateDto statusUpdateDto = new UserStatusUpdateDto(false);
+        userStatusService.updateByUserId(user1.getId(), statusUpdateDto);
+        System.out.println(user1.getUsername() + " 의 상태를 false로 업데이트");
+
+        //유저 온라인 상태 확인
+        boolean isOnline = userStatusService.isOnlineByUserId(user1.getId(), 5);
+        System.out.println(user1.getUsername() + " 의 온라인 상태 확인 (5분 이내 활동): " + isOnline);
+
+        //프로필 등록, 삭제
+        binaryContentService.registerProfile(user1.getId(), "profile.jpg");
+        System.out.println(user1.getUsername() + " 의 프로필 사진 업로드 완료");
+        binaryContentService.deleteProfile(user1.getId());
+        System.out.println(user1.getUsername() + " 의 프로필 사진 삭제 완료");
+
+        //공개 채널 생성
+        ChannelCreatePublicDto publicChannelDto = new ChannelCreatePublicDto(PUBLIC, "공개채널", "모두를 위한 채널");
+        Channel publicChannel = channelService.create(publicChannelDto);
+        System.out.println("공개 채널 생성 완료");
+
+        //비공개 채널 생성
+        List<UUID> participantIds = List.of(user1.getId(), user2.getId());
+        ChannelCreatePrivateDto privateChannelDto = new ChannelCreatePrivateDto(PRIVATE, "비공개채널", "비공개 입니다.", participantIds);
+        Channel privateChannel = channelService.create(privateChannelDto);
+        System.out.println("비공개 채널 생성 완료");
+
+        //메시지 생성
+        Message msg1 = messageService.create("안녕하세요", publicChannel.getId(), user1.getId());
+        Message msg2 = messageService.create("반갑습니다", privateChannel.getId(), user2.getId());
+        System.out.println("메시지 2개 생성 완료");
+
+        //첨부파일 포함 메시지(사용자가 실제파일을 업로드 했다고 가정하고 테스트할때, 여기에 첨부파일 설정 하는 방법 해결못함)
+        BinaryContentDto attachmentDto = new BinaryContentDto(user1.getId(), "attach.jpeg", "첨부파일");
+        CreateMessageRequest requestAttachment = new CreateMessageRequest(publicChannel.getId(), user1.getId(), "첨부파일 있는 메세지", List.of(attachmentDto));
+        Message attachment = messageService.create(requestAttachment);
+        System.out.println(user1.getUsername() + " 의 첨부파일이 포함된 메시지 전송 완료");
+
+        //유저1 공개 채널 입장
+        ReadStatusCreateDto user1PublicReadStatusDto = new ReadStatusCreateDto(user1.getId(), publicChannel.getId());
+        ReadStatus user1ReadStatus = readStatusService.create(user1PublicReadStatusDto);
+        System.out.println(user1.getUsername() + "이 공개채널 에 입장, 최신 메세지 읽음");
+
+        //유저1이 공개 채널에서 비공개 채널로 이동(공개채널 에서 삭제) 해서 ReadStatus 생성
+        readStatusService.delete(user1ReadStatus.getId(), user1ReadStatus.getChannelId());
+        System.out.println(user1.getUsername() + "이 공개 채널을 떠났습니다.");
+        ReadStatusCreateDto user1PrivateReadStatusDto = new ReadStatusCreateDto(user1.getId(), privateChannel.getId());
+        ReadStatus user1PrivateReadStatus = readStatusService.create(user1PrivateReadStatusDto);
+        System.out.println(user1.getUsername() + "이 비공개 채널로 이동했습니다.");
+
+        //유저2 비공개 채널 입장
+        ReadStatusCreateDto user2ReadStatusDto = new ReadStatusCreateDto(user2.getId(), privateChannel.getId());
+        ReadStatus user2ReadStatus = readStatusService.create(user2ReadStatusDto);
+        System.out.println(user2.getUsername() + "이 비공개채널 에 입장, 최신 메시지 읽음");
+
+        //유저1 메시지를 읽음 (lastReadAt 업데이트)
+        Instant readTimestamp = Instant.now();
+        userStatusService.updateByUserId(user1.getId(), new UserStatusUpdateDto(true));
+        System.out.println(user1.getUsername() + " 최신 메시지 읽음 (" + readTimestamp + ")");
+
+        //사용자 삭제
+        userService.delete(user1.getId());
+        userService.delete(user2.getId());
+        System.out.println("사용자 '" + user1.getUsername() + "' 삭제 완료");
+        System.out.println("사용자 '" + user2.getUsername() + "' 삭제 완료");
+
+        //삭제 확인
+        userService.findAll();
+
+
+        System.out.println("--- 테스트 종료 ---");
     }
 
-
-    private static void saveServices() {
-        System.out.println("===== 현재 데이터 저장 시도 중 =====");
-        persistenceManager.saveAllServices(userRepository, channelRepository, messageRepository);
-        System.out.println("===================================\n");
-    }
-
-
-
-    private static void printMainMenu() {
-        System.out.println("====== 채팅 앱 메인 메뉴 ======");
-        System.out.println("1. 사용자 (User) 관리");
-        System.out.println("2. 채널 (Channel) 관리");
-        System.out.println("3. 메시지 (Message) 관리");
-        System.out.println("4. 데이터 저장 (Save Now)"); // 현재 상태를 즉시 파일에 저장하는 메뉴
-        System.out.println("5. 종료");
-        System.out.print("메뉴를 선택하세요: ");
-    }
-
-
-    private static int getUserChoice() {
-        while (!sc.hasNextInt()) { // 정수가 입력될 때까지 반복
-            System.out.println("숫자를 입력해주세요.");
-            sc.next(); // 잘못된 입력(토큰) 소비하여 무한 루프 방지
-            System.out.print("메뉴를 다시 선택하세요: ");
-        }
-        int choice = sc.nextInt(); // 정수 입력 받기
-        sc.nextLine(); // 개행 문자(\n) 소비
-        return choice;
-    }
-
-    // --- 사용자 (User) 관리 메뉴 및 기능 ---
-
-
-    private static void manageUsers() {
-        boolean inUserMenu = true;
-        while (inUserMenu) {
-            System.out.println("\n--- 사용자 (User) 관리 ---");
-            System.out.println("1. 등록");
-            System.out.println("2. 전체 조회");
-            System.out.println("3. 단건 조회 (ID로)");
-            System.out.println("4. 수정");
-            System.out.println("5. 삭제");
-            System.out.println("6. 메인 메뉴로 돌아가기");
-            System.out.print("작업을 선택하세요: ");
-
-            int choice = getUserChoice();
-            switch (choice) {
-                case 1: // 사용자 등록 (Create)
-                    System.out.print("사용할 사용자 ID (UUID 형식으로 입력): ");
-                    String userIdInput = sc.nextLine();
-                    System.out.print("사용자 이름 입력: ");
-                    String name = sc.nextLine();
-                    System.out.print("메시지 입력: ");
-                    String message = sc.nextLine();
-                    if (name.isEmpty() || message.isEmpty()) { // 필수 정보 누락 시 경고
-                        System.out.println("이름 과 메세지가 비어있습니다. 다시 시도해주세요.");
-                        break;
-                    }
-                    try {
-                        UUID newUserId = UUID.fromString(userIdInput); // 입력된 문자열을 UUID로 변환
-                        userRepository.createUser(new User(newUserId, name)); // 생성된 ID를 바로 User 객체에 전달
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("입력된 사용자 ID가 올바른 UUID 형식이 아닙니다.");
-                    }
-                    break;
-                case 2: // 모든 사용자 조회 (Read All)
-                    List<User> users = userRepository.readAllUsers();
-                    if (users.isEmpty()) {
-                        System.out.println("등록된 사용자가 없습니다.");
-                    } else {
-                        System.out.println("\n--- 사용자 목록 ---");
-                        users.forEach(System.out::println);
-                    }
-                    break;
-                case 3: // ID로 사용자 단건 조회 (Read One by ID)
-                    System.out.print("조회할 사용자 ID 입력 (UUID 전체 입력): ");
-                    String userIdStr = sc.nextLine();
-                    try {
-                        UUID userId = UUID.fromString(userIdStr); // 입력 문자열을 UUID로 변환
-                        Optional<User> userOpt = userRepository.readUser(userId);
-                        userOpt.ifPresentOrElse( // Optional에 값이 있으면 출력, 없으면 사용자에게 알림
-                                user -> System.out.println("조회된 사용자: " + user),
-                                () -> System.out.println("ID " + userIdStr + "의 사용자를 찾을 수 없습니다.")
-                        );
-                    } catch (IllegalArgumentException e) { // UUID 변환 실패 시
-                        System.out.println("유효하지 않은 UUID 형식입니다.");
-                    }
-                    break;
-                case 4: // 사용자 정보 수정 (Update)
-                    System.out.print("수정할 사용자 ID 입력 (UUID 전체 입력): ");
-                    String updateUserIdStr = sc.nextLine();
-                    try {
-                        UUID updateUserId = UUID.fromString(updateUserIdStr);
-                        Optional<User> userToUpdateOpt = userRepository.readUser(updateUserId);
-                        userToUpdateOpt.ifPresentOrElse(user -> { // 해당 사용자가 존재할 경우 수정 진행
-                            System.out.print("새 이름 입력 (현재: " + user.getName() + ", 변경 없으면 Enter): ");
-                            String newName = sc.nextLine();
-
-                            if (!newName.isEmpty()) user.setName(newName); // 입력이 있을 경우에만 변경
-                            userRepository.updateUser(user); // 서비스 계층에서 업데이트 로직 수행
-                        }, () -> System.out.println("ID " + updateUserIdStr + "의 사용자를 찾을 수 없습니다."));
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("유효하지 않은 UUID 형식입니다.");
-                    }
-                    break;
-                case 5: // 사용자 삭제 (Delete)
-                    System.out.print("삭제할 사용자 ID 입력 (UUID 전체 입력): ");
-                    String deleteUserIdStr = sc.nextLine();
-                    try {
-                        UUID deleteUserId = UUID.fromString(deleteUserIdStr);
-                        userRepository.deleteUser(deleteUserId);
-                        System.out.println("\n--- 삭제 후 사용자 목록 확인 ---");
-                        userRepository.readAllUsers().forEach(System.out::println); // 삭제 후 변경된 목록 확인
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("유효하지 않은 UUID 형식입니다.");
-                    }
-                    break;
-                case 6: // 메인 메뉴로 돌아가기
-                    inUserMenu = false;
-                    System.out.println("메인 메뉴로 돌아갑니다.");
-                    break;
-                default:
-                    System.out.println("잘못된 선택입니다.");
-                    break;
-            }
-        }
-    }
-
-    // --- 채널 (Channel) 관리 메뉴 및 기능 ---
-
-
-    private static void manageChannels() {
-        boolean inChannelMenu = true;
-        while (inChannelMenu) {
-            System.out.println("\n--- 채널 (Channel) 관리 ---");
-            System.out.println("1. 등록");
-            System.out.println("2. 전체 조회");
-            System.out.println("3. 단건 조회 (ID로)");
-            System.out.println("4. 수정");
-            System.out.println("5. 삭제");
-            System.out.println("6. 메인 메뉴로 돌아가기");
-            System.out.print("➡작업을 선택하세요: ");
-
-            int choice = getUserChoice();
-            switch (choice) {
-                case 1: // 채널 등록 (Create)
-                    System.out.print("채널 이름 입력: ");
-                    String channelName = sc.nextLine();
-                    if (channelName.isEmpty()) {
-                        System.out.println("⚠채널 이름이 비어있습니다. 다시 시도해주세요.");
-                        break;
-                    }
-                    channelRepository.createChannel(new Channel(channelName)); // ID는 서비스에서 자동 부여
-                    break;
-                case 2: // 모든 채널 조회 (Read All)
-                    List<Channel> channels = channelRepository.readAllChannels();
-                    if (channels.isEmpty()) {
-                        System.out.println("ℹ등록된 채널이 없습니다.");
-                    } else {
-                        System.out.println("\n--- 채널 목록 ---");
-                        channels.forEach(System.out::println);
-                    }
-                    break;
-                case 3: // ID로 채널 단건 조회 (Read One by ID)
-                    System.out.print("조회할 채널 ID 입력: ");
-                    long channelId = getUserChoice();
-                    Optional<Channel> channelOpt = channelRepository.readChannel(channelId);
-                    channelOpt.ifPresentOrElse(
-                            channel -> System.out.println("조회된 채널: " + channel),
-                            () -> System.out.println("ID " + channelId + "의 채널을 찾을 수 없습니다.")
-                    );
-                    break;
-                case 4: // 채널 정보 수정 (Update)
-                    System.out.print("수정할 채널 ID 입력: ");
-                    long updateChannelId = getUserChoice();
-                    Optional<Channel> channelToUpdateOpt = channelRepository.readChannel(updateChannelId);
-                    channelToUpdateOpt.ifPresentOrElse(channel -> {
-                        System.out.print("새 채널 이름 입력 (현재: " + channel.getName() + ", 변경 없으면 Enter): ");
-                        String newChannelName = sc.nextLine();
-                        if (!newChannelName.isEmpty()) channel.setName(newChannelName);
-                        channelRepository.updateChannel(channel);
-                    }, () -> System.out.println("ID " + updateChannelId + "의 채널을 찾을 수 없습니다."));
-                    break;
-                case 5: // 채널 삭제 (Delete)
-                    System.out.print("삭제할 채널 ID 입력: ");
-                    long deleteChannelId = getUserChoice();
-                    channelRepository.deleteChannel(deleteChannelId);
-                    System.out.println("\n--- 삭제 후 채널 목록 확인 ---");
-                    channelRepository.readAllChannels().forEach(System.out::println);
-                    break;
-                case 6: // 메인 메뉴로 돌아가기
-                    inChannelMenu = false;
-                    System.out.println("메인 메뉴로 돌아갑니다.");
-                    break;
-                default:
-                    System.out.println("잘못된 선택입니다.");
-                    break;
-            }
-        }
-    }
-
-    // --- 메시지 (Message) 관리 메뉴 및 기능 ---
-
-
-    private static void manageMessages() {
-        boolean inMessageMenu = true;
-        while (inMessageMenu) {
-            System.out.println("\n--- 메시지 (Message) 관리 ---");
-            System.out.println("1. 등록");
-            System.out.println("2. 전체 조회");
-            System.out.println("3. 단건 조회 (ID로)");
-            System.out.println("4. 채널별 메시지 조회");
-            System.out.println("5. 사용자별 메시지 조회");
-            System.out.println("6. 수정");
-            System.out.println("7. 삭제");
-            System.out.println("8. 메인 메뉴로 돌아가기");
-            System.out.print("작업을 선택하세요: ");
-
-            int choice = getUserChoice();
-            switch (choice) {
-                case 1: // 메시지 등록 (Create)
-                    System.out.print("메시지를 보낼 사용자(User) ID 입력 (UUID 전체 입력): ");
-                    String senderIdStr = sc.nextLine();
-                    System.out.print("메시지를 보낼 채널(Channel) ID 입력: ");
-                    long targetChannelId = getUserChoice();
-                    System.out.print("메시지 내용 입력: ");
-                    String content = sc.nextLine();
-
-                    try {
-                        UUID senderId = UUID.fromString(senderIdStr); // UUID 문자열을 UUID 객체로 변환
-
-                        // 메시지 생성을 위한 사용자 및 채널 유효성 검사 (실제로 존재하는지 확인)
-                        Optional<User> senderOpt = userRepository.readUser(senderId);
-                        Optional<Channel> channelOpt = channelRepository.readChannel(targetChannelId);
-
-                        if (senderOpt.isEmpty()) {
-                            System.out.println("보낸 사용자 ID " + senderIdStr + "를 찾을 수 없습니다. 메시지를 등록할 수 없습니다.");
-                            break;
-                        }
-                        if (channelOpt.isEmpty()) {
-                            System.out.println("채널 ID " + targetChannelId + "를 찾을 수 없습니다. 메시지를 등록할 수 없습니다.");
-                            break;
-                        }
-                        if (content.isEmpty()) {
-                            System.out.println("메시지 내용이 비어있습니다. 다시 시도해주세요.");
-                            break;
-                        }
-                        // 모든 조건 충족 시 메시지 등록
-                        messageRepository.createMessage(new Message(senderId, targetChannelId, content)); // ID는 서비스에서 자동 부여
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("유효하지 않은 사용자 ID (UUID) 형식입니다.");
-                    }
-                    break;
-                case 2: // 모든 메시지 조회 (Read All)
-                    List<Message> messages = messageRepository.readAllMessages();
-                    if (messages.isEmpty()) {
-                        System.out.println("등록된 메시지가 없습니다.");
-                    } else {
-                        System.out.println("\n--- 메시지 목록 ---");
-                        messages.forEach(System.out::println);
-                    }
-                    break;
-                case 3: // ID로 메시지 단건 조회 (Read One by ID)
-                    System.out.print("조회할 메시지 ID 입력: ");
-                    long messageId = getUserChoice();
-                    Optional<Message> messageOpt = messageRepository.readMessage(messageId);
-                    messageOpt.ifPresentOrElse(
-                            message -> System.out.println("조회된 메시지: " + message),
-                            () -> System.out.println("ID " + messageId + "의 메시지를 찾을 수 없습니다.")
-                    );
-                    break;
-                case 4: // 채널 ID로 메시지 조회
-                    System.out.print("메시지를 조회할 채널 ID 입력: ");
-                    long searchChannelId = getUserChoice();
-                    List<Message> channelMessages = messageRepository.readMessagesByChannelId(searchChannelId);
-                    if (channelMessages.isEmpty()) {
-                        System.out.println("채널 ID " + searchChannelId + "에는 메시지가 없습니다.");
-                    } else {
-                        System.out.println("\n--- 채널 ID " + searchChannelId + "의 메시지 목록 ---");
-                        channelMessages.forEach(System.out::println);
-                    }
-                    break;
-                case 5: // 사용자 ID로 메시지 조회
-                    System.out.print("메시지를 조회할 사용자 ID 입력 (UUID 전체 입력): ");
-                    String searchSenderIdStr = sc.nextLine();
-                    try {
-                        UUID searchSenderId = UUID.fromString(searchSenderIdStr);
-                        List<Message> senderMessages = messageRepository.readMessagesBySenderUserId(searchSenderId);
-                        if (senderMessages.isEmpty()) {
-                            System.out.println("사용자 ID " + searchSenderIdStr + "가 보낸 메시지가 없습니다.");
-                        } else {
-                            System.out.println("\n--- 사용자 ID " + searchSenderIdStr + "가 보낸 메시지 목록 ---");
-                            senderMessages.forEach(System.out::println);
-                        }
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("유효하지 않은 사용자 ID (UUID) 형식입니다.");
-                    }
-                    break;
-                case 6: // 메시지 내용 수정 (Update)
-                    System.out.print("수정할 메시지 ID 입력: ");
-                    long updateMessageId = getUserChoice();
-                    Optional<Message> messageToUpdateOpt = messageRepository.readMessage(updateMessageId);
-                    messageToUpdateOpt.ifPresentOrElse(message -> {
-                        System.out.print("새 메시지 내용 입력 (현재: '" + message.getContent() + "', 변경 없으면 Enter): ");
-                        String newContent = sc.nextLine();
-                        if (!newContent.isEmpty()) {
-                            message.setContent(newContent);
-                        }
-                        messageRepository.updateMessage(message);
-                    }, () -> System.out.println("ID " + updateMessageId + "의 메시지를 찾을 수 없습니다."));
-                    break;
-                case 7: // 메시지 삭제 (Delete)
-                    System.out.print("삭제할 메시지 ID 입력: ");
-                    long deleteMessageId = getUserChoice();
-                    messageRepository.deleteMessage(deleteMessageId);
-                    System.out.println("\n--- 삭제 후 메시지 목록 확인 ---");
-                    messageRepository.readAllMessages().forEach(System.out::println);
-                    break;
-                case 8: // 메인 메뉴로 돌아가기
-                    inMessageMenu = false;
-                    System.out.println("메인 메뉴로 돌아갑니다.");
-                    break;
-                default:
-                    System.out.println("잘못된 선택입니다.");
-                    break;
-            }
-        }
-    }
 }
