@@ -1,6 +1,72 @@
 package com.sprint.mission.discodeit.entity;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+import com.sprint.mission.discodeit.DTO.User.CreateUserDTO;
+import com.sprint.mission.discodeit.DTO.User.UpdateUserDTO;
+import lombok.Getter;
+
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.UUID;
+
+@Getter
+public class User extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final UUID id;
+    private final Instant created;
+    private final int age;
+
+    private UUID profileId;
+    private Instant updated;
+    private String password;
+    private String username;
+    private String email;
+
+    public User(CreateUserDTO createUserDTO) {
+        this.id = UUID.randomUUID();
+        this.profileId = createUserDTO.profileId() == null ? UUID.randomUUID() : profileId;
+        this.created = setTime();
+        this.username = createUserDTO.userName();
+        this.age = createUserDTO.age();
+        this.email = createUserDTO.email();
+        this.password = createUserDTO.password();
+    }
+
+
+    public void update(UpdateUserDTO updateUserDTO) {
+        boolean anyValueUpdated = false;
+        if (updateUserDTO.userName() != null && !updateUserDTO.userName().equals(this.username)) {
+            this.username = updateUserDTO.userName();
+            anyValueUpdated = true;
+        }
+
+        if (updateUserDTO.email() != null && !updateUserDTO.email().equals(this.email)) {
+            this.email = updateUserDTO.email();
+            anyValueUpdated = true;
+        }
+
+        if (updateUserDTO.password() != null && !updateUserDTO.password().equals(this.password)) {
+            this.password = updateUserDTO.password();
+            anyValueUpdated = true;
+        }
+
+        if (updateUserDTO.profileId()!= null && !updateUserDTO.profileId().equals(this.profileId)) {
+            this.profileId = updateUserDTO.profileId();
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updated = setTime();
+        }
+    }
+
+
+    //유져 본연에 속성이 변경 시에만 업데이트 갱신
+    @Override
+=======
+=======
+>>>>>>> 박지훈
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +123,9 @@ public class User extends BaseEntity implements Serializable {
         this.channels.add(channel);
     }
 
+<<<<<<< HEAD
+>>>>>>> 박지훈
+=======
 =======
 import com.sprint.mission.discodeit.DTO.User.CreateUserDTO;
 import com.sprint.mission.discodeit.DTO.User.UpdateUserDTO;
@@ -121,6 +190,7 @@ public class User extends BaseEntity implements Serializable {
     //유져 본연에 속성이 변경 시에만 업데이트 갱신
     @Override
 >>>>>>> ff6aee37135da2c11de96095adcd9502ced596ab
+>>>>>>> 박지훈
     public String toString(){
         return "유저 정보: "+ "\n" +
                 "ID: " + this.id + "\n" +
@@ -129,10 +199,17 @@ public class User extends BaseEntity implements Serializable {
                 "이메일: " + this.email + "\n" +
                 "계정 생성일자: " + this.created + "\n" +
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+                "친구: " + this.friends + "\n" +
+                "입장 채널: " + this.channels + "\n" +
+>>>>>>> 박지훈
+=======
                 "친구: " + this.friends + "\n" +
                 "입장 채널: " + this.channels + "\n" +
 =======
 >>>>>>> ff6aee37135da2c11de96095adcd9502ced596ab
+>>>>>>> 박지훈
                 "계정 생성일자: " + this.updated + "\n";
     }
 }
