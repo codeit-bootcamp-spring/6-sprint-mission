@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -22,11 +23,13 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
-public class BasicUserService implements UserService, BinaryContentService {
+public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
-    private BinaryContentDto binaryContentDto;
+
+    @Autowired
+    private BinaryContentService binaryContentService;
 
     @Override
     public User create(UserCreateDto userCreateDto) {
@@ -35,30 +38,15 @@ public class BasicUserService implements UserService, BinaryContentService {
         String password = userCreateDto.password();
 
         if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("User with email " + username + " already exists");
+            throw new IllegalArgumentException("User with username " + username + " already exists");
         }
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("User with username " + password + " already exists");
+            throw new IllegalArgumentException("User with username " + email+ " already exists");
         }
         User user = new User(username, email, password);
         return userRepository.save(user);
     }
 
-    @Override
-    public void registerProfile(UUID userId, String filename) {
-        binaryContentRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException(userId + " not found"));
-
-        Optional<BinaryContent> existingContent = binaryContentRepository.findByUserId(userId);
-        if (existingContent.isPresent()) {
-            BinaryContent binaryContent = existingContent.get();
-            binaryContent.setFilename(filename);
-            binaryContentRepository.save(binaryContent);
-        } else {
-            BinaryContent newContent = new BinaryContent(userId, "image/jpeg", filename);
-            binaryContentRepository.save(newContent);
-        }
-    }
 
     @Override
     public User find(UUID userId, UserStatusDto userStatusDto) {
@@ -103,9 +91,5 @@ public class BasicUserService implements UserService, BinaryContentService {
         userStatusRepository.deleteByUserId(userId);
     }
 
-    @Override
-    public void deleteProfile(UUID userId) {
-        binaryContentRepository.deleteById(userId);
-    }
 
 }

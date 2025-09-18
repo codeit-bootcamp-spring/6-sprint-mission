@@ -64,8 +64,14 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public void deleteById(UUID id) {
-        storage.remove(id);
+    public void deleteByUserId(UUID userId) {
+        List<UUID> idsToDelete = new ArrayList<>();
+        for (ReadStatus rs : storage.values()) {
+            if (rs.getUserId().equals(userId)) {
+                idsToDelete.add(rs.getId());
+            }
+        }
+        idsToDelete.forEach(storage::remove);
     }
 
     @Override

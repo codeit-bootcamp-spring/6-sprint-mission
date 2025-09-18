@@ -35,11 +35,7 @@ public class BasicReadStatusService implements ReadStatusService {
         channelRepository.findById(dto.channelId())
                 .orElseThrow(() -> new NoSuchElementException(dto.channelId() + " not found."));
 
-        Optional<ReadStatus> existingStatus = readStatusRepository.findByUserIdAndChannelId(dto.userId(), dto.channelId());
-        if (existingStatus.isPresent()) {
-            System.out.println(dto.userId() + " and " + dto.channelId() + " already exists.");
-            return existingStatus.get();
-        }
+        readStatusRepository.deleteByUserId(dto.userId());  //채널이동시 기존상태 삭제
 
         ReadStatus readStatus = new ReadStatus(dto.userId(), dto.channelId());
         return readStatusRepository.save(readStatus);
@@ -72,7 +68,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public void delete(UUID userId, UUID channelId) {
-        readStatusRepository.deleteById(userId);
-        readStatusRepository.deleteAllByChannelId(channelId);
+        Optional<ReadStatus> readStatusOptional = readStatusRepository.findByUserIdAndChannelId(userId, channelId);
+        readStatusOptional.ifPresent(readStatus -> readStatusRepository.deleteByUserId(readStatus.getUserId()));
     }
 }

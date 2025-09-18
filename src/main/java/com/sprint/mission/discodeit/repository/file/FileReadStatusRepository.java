@@ -62,8 +62,17 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public void deleteById(UUID userId) {
-        storage.remove(userId);
+    public void deleteByUserId(UUID userId) {
+        List<UUID> idsToDelete = new ArrayList<>();
+        for (ReadStatus readStatus : storage.values()) {
+            if (readStatus.getUserId().equals(userId)) {
+                idsToDelete.add(readStatus.getId());
+            }
+        }
+
+        for (UUID id : idsToDelete) {
+            storage.remove(id);
+        }
     }
 
     @Override

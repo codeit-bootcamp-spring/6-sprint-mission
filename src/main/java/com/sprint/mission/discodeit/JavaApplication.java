@@ -13,6 +13,12 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
@@ -36,7 +42,6 @@ import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import static com.sprint.mission.discodeit.entity.ChannelType.PRIVATE;
@@ -48,12 +53,12 @@ public class JavaApplication {
         System.out.println("--- 테스트 시작 ---");
 
         //리포지토리 인스턴스 생성
-        JCFUserRepository userRepository = new JCFUserRepository();
-        JCFUserStatusRepository userStatusRepository = new JCFUserStatusRepository();
-        JCFBinaryContentRepository binaryContentRepository = new JCFBinaryContentRepository();
-        JCFChannelRepository channelRepository = new JCFChannelRepository();
-        JCFReadStatusRepository readStatusRepository = new JCFReadStatusRepository();
-        JCFMessageRepository messageRepository = new JCFMessageRepository();
+        UserRepository userRepository = new JCFUserRepository();
+        UserStatusRepository userStatusRepository = new JCFUserStatusRepository();
+        BinaryContentRepository binaryContentRepository = new JCFBinaryContentRepository();
+        ChannelRepository channelRepository = new JCFChannelRepository();
+        ReadStatusRepository readStatusRepository = new JCFReadStatusRepository();
+        MessageRepository messageRepository = new JCFMessageRepository();
 
         //서비스 인스턴스 생성 및 의존성 주입
         AuthService authService = new BasicAuthService(userRepository);
@@ -118,7 +123,7 @@ public class JavaApplication {
         System.out.println("메시지 2개 생성 완료");
 
         //첨부파일 포함 메시지(사용자가 실제파일을 업로드 했다고 가정하고 테스트할때, 여기에 첨부파일 설정 하는 방법 해결못함)
-        BinaryContentDto attachmentDto = new BinaryContentDto(user1.getId(), "attach.jpeg", "첨부파일");
+        BinaryContentDto attachmentDto = new BinaryContentDto(user1.getId(), "attach.jpeg", "첨부파일",new byte[200000]);
         CreateMessageRequest requestAttachment = new CreateMessageRequest(publicChannel.getId(), user1.getId(), "첨부파일 있는 메세지", List.of(attachmentDto));
         Message attachment = messageService.create(requestAttachment);
         System.out.println(user1.getUsername() + " 의 첨부파일이 포함된 메시지 전송 완료");
