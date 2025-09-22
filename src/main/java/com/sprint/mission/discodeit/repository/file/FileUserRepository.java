@@ -119,5 +119,4 @@ public class FileUserRepository implements UserRepository {
         return allUsers.stream()  //모든사용자 스트림변환
                 .anyMatch(user -> username.equals(user.getUsername())); // 입력된 이름과 같은 사용자가 있는지 확인
     }
-
 }

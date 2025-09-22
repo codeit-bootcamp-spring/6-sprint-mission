@@ -28,4 +28,5 @@ public class ReadStatus {
     public void lastReadTime() {
         this.lastReadAt = Instant.now();
     }
+
 }

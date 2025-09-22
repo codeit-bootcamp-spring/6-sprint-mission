@@ -49,5 +49,4 @@ public class Channel implements Serializable {
             this.updatedAt = Instant.now().getEpochSecond();
         }
     }
-
 }

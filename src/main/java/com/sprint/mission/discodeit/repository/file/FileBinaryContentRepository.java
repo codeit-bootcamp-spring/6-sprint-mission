@@ -135,4 +135,5 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     public void deleteByMessageId(UUID messageId) {
         findByMessageId(messageId).ifPresent(content -> deleteById(content.getId()));
     }
+
 }

@@ -147,4 +147,5 @@ public class FileUserStatusRepository implements UserStatusRepository {
             deleteById(optionalUserStatus.get().getId());
         }
     }
+
 }

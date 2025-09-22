@@ -82,4 +82,5 @@ public class JCFUserStatusRepository implements UserStatusRepository {
             storage.remove(optionalUserStatus.get().getId());
         }
     }
+
 }

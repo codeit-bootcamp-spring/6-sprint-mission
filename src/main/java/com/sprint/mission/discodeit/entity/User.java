@@ -49,5 +49,4 @@ public class User implements Serializable {
             this.updatedAt = Instant.now();
         }
     }
-
 }

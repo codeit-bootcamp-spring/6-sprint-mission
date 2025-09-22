@@ -45,5 +45,4 @@ public class UserStatus {
         Instant threshold = Instant.now().minusSeconds(minutesToConsiderOnline * 60);
         return this.updatedAt.isAfter(threshold);  // 사용자 5분 이내면 online,아니면 offline
     }
-
 }

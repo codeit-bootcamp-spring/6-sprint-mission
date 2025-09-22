@@ -88,4 +88,5 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
             storage.remove(id);
         }
     }
+
 }

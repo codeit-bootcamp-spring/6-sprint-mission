@@ -38,5 +38,4 @@ public class Message implements Serializable {
             this.updatedAt = Instant.now().getEpochSecond();
         }
     }
-
 }

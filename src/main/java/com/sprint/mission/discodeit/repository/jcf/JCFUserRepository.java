@@ -58,4 +58,5 @@ public class JCFUserRepository implements UserRepository {
         return this.data.values().stream()
                 .anyMatch(user -> username.equals(user.getUsername()));
     }
+
 }
