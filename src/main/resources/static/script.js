@@ -1,8 +1,8 @@
 // API endpoints
 const API_BASE_URL = '/api';
 const ENDPOINTS = {
-    USERS: `${API_BASE_URL}/users`,
-    BINARY_CONTENT: `${API_BASE_URL}/binary-contents`
+    USERS: `${API_BASE_URL}/user/findAll`,
+    BINARY_CONTENT: `${API_BASE_URL}/binaryContent/find`
 };
 
 // Initialize the application
@@ -23,14 +23,14 @@ async function fetchAndRenderUsers() {
 }
 
 // Fetch user profile image
-async function fetchUserProfile(userProfileId) {
+async function fetchUserProfile(profileId) {
     try {
-        const response = await fetch(`${ENDPOINTS.BINARY_CONTENT}/${userProfileId}`);
+        const response = await fetch(`${ENDPOINTS.BINARY_CONTENT}?binaryContentId=${profileId}`);
         if (!response.ok) throw new Error('Failed to fetch profile');
         const profile = await response.json();
 
         // Convert base64 encoded bytes to data URL
-        return `data:${profile.contentType};base64,${profile.bytesBase64}`;
+        return `data:${profile.contentType};base64,${profile.bytes}`;
     } catch (error) {
         console.error('Error fetching profile:', error);
         return '/default-avatar.png'; // Fallback to default avatar
@@ -47,15 +47,15 @@ async function renderUserList(users) {
         userElement.className = 'user-item';
 
         // Get profile image URL
-        const profileUrl = user.userProfileId ?
-            await fetchUserProfile(user.userProfileId) :
+        const profileUrl = user.profileId ?
+            await fetchUserProfile(user.profileId) :
             '/default-avatar.png';
 
         userElement.innerHTML = `
-            <img src="${profileUrl}" alt="${user.name}" class="user-avatar">
+            <img src="${profileUrl}" alt="${user.username}" class="user-avatar">
             <div class="user-info">
-                <div class="user-name">${user.name}</div>
-                <div class="user-email">${user.mail}</div>
+                <div class="user-name">${user.username}</div>
+                <div class="user-email">${user.email}</div>
             </div>
             <div class="status-badge ${user.online ? 'online' : 'offline'}">
                 ${user.online ? '온라인' : '오프라인'}
