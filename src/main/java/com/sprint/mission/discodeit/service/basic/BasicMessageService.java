@@ -12,22 +12,18 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -76,7 +72,14 @@ public class BasicMessageService implements MessageService {
     ).toList();
 
     Message message = new Message(createMessageRequest.content(), channel, author, binaryContents);
-    return messageRepository.save(message);
+    Message saved = messageRepository.save(message);
+
+    log.info("메시지 생성: {}", message.getId());
+    if (!binaryContents.isEmpty()) {
+      log.info("첨부파일 업로드: {}", binaryContents.stream().map(BaseEntity::getId).toList());
+    }
+    log.debug("작성자: {}, 내용: {}", author.getUsername(), message.getContent());
+    return saved;
   }
 
   @Override
@@ -103,7 +106,11 @@ public class BasicMessageService implements MessageService {
         .orElseThrow(
             () -> new NotFoundException("Message with id " + messageId + " not found"));
     message.update(updateMessageRequest.newContent());
-    return messageRepository.save(message);
+    Message updated = messageRepository.save(message);
+
+    log.info("메시지 업데이트: {}", updated.getId());
+    log.debug("내용: {}", updated.getContent());
+    return updated;
   }
 
   @Override
@@ -120,5 +127,7 @@ public class BasicMessageService implements MessageService {
     binaryContentRepository.deleteAllById(binaryContentIds);
     // 메시지 id로 삭제
     messageRepository.deleteById(messageId);
+
+    log.info("메시지 삭제: {}", messageId);
   }
 }

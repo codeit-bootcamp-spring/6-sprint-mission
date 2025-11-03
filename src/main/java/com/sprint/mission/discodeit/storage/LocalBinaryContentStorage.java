@@ -9,12 +9,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(
     prefix = "discodeit.storage",
@@ -60,7 +62,6 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   @Override
   public InputStream get(UUID binaryContentId) throws IOException {
     Path filePath = resolvePath(binaryContentId);
-    // 여긴 문제가 아님
     return Files.newInputStream(filePath);
   }
 
@@ -68,6 +69,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   public ResponseEntity<?> download(BinaryContentDto binaryContentDto) {
     try {
       byte[] bytes = get(binaryContentDto.id()).readAllBytes();
+
+      log.info("파일 다운로드: {}, 이름: {}", binaryContentDto.id(), binaryContentDto.fileName());
       return ResponseEntity.ok(bytes);
     } catch (IOException e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("파일 다운로드 실패");

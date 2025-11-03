@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.user.UpdateUserRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.exception.NotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -71,7 +72,14 @@ public class BasicUserService implements UserService {
     user.setUserStatus(userStatus);
     user.setProfile(binaryContentOptional.orElse(null));
 
-    return userRepository.save(user);
+    User saved = userRepository.save(user);
+
+    log.info("유저 생성: id={}", saved.getId());
+    if (saved.getProfile() != null) {
+      log.info("프로필 사진 업로드: {}", saved.getProfile().getId());
+    }
+    log.debug("이름: {}, 이메일: {}", saved.getUsername(), saved.getEmail());
+    return saved;
   }
 
   @Override
@@ -134,10 +142,14 @@ public class BasicUserService implements UserService {
     userStatus.update(Instant.now());
     userStatusRepository.save(userStatus);
 
-    userRepository.findByUsername(user.getUsername())
-        .ifPresent(u -> user.update(userStatus.isOnline()));
+    User updated = userRepository.save(user);
 
-    return userRepository.save(user);
+    log.info("유저 정보 업데이트: id={}", updated.getId());
+    if (updated.getProfile() != null) {
+      log.info("프로필 사진 업로드: {}", updated.getProfile().getId());
+    }
+    log.debug("이름: {}, 이메일: {}", updated.getUsername(), updated.getEmail());
+    return updated;
   }
 
   @Override
@@ -154,5 +166,7 @@ public class BasicUserService implements UserService {
     userStatusRepository.deleteById(userStatus.getId());
     // 유저 id로 삭제
     userRepository.deleteById(userId);
+
+    log.info("유저 삭제: id={}", userId);
   }
 }
