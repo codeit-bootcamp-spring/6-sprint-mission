@@ -43,7 +43,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   }
 
   private Path resolvePath(UUID id) {
-    return this.root.resolve(id + "");
+    return this.root.resolve(id.toString());
   }
 
   @Override

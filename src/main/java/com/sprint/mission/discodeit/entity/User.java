@@ -27,6 +27,8 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(optional = true, orphanRemoval = true)
   @JoinColumn(name = "profile_id")
   private BinaryContent profile;
+  // 양방향 관계는 순환참조 문제 발생 가능성 있음
+  // dto 변환 시 한쪽은 상대 엔티티 제외
   @OneToOne(mappedBy = "user", optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
   private UserStatus userStatus;
   //

@@ -8,6 +8,7 @@ file-data
 SwaggerTest
 .env
 binary-data
+docs
 
 ### STS ###
 .apt_generated

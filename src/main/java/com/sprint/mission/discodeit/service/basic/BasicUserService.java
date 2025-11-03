@@ -113,8 +113,9 @@ public class BasicUserService implements UserService {
               BinaryContent bc = new BinaryContent(file.getOriginalFilename(), file.getSize(),
                   file.getContentType()
               );
-              storage.put(bc.getId(), file.getBytes());
-              return binaryContentRepository.save(bc);
+              BinaryContent updated = binaryContentRepository.save(bc);
+              storage.put(updated.getId(), file.getBytes());
+              return updated;
             } else {
               user.getProfile()
                   .update(file.getOriginalFilename(), file.getSize(), file.getContentType());

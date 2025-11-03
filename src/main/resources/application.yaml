@@ -4,33 +4,30 @@ spring:
   messages:
     basename: messages
     encoding: UTF-8
-  sql:
-    init:
-      mode: never        # 첫 실행시에만 always로 설정, 이후에는 never로 변경
-      platform: postgres
-  datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
-    driver-class-name: org.postgresql.Driver
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
   jpa:
-    show-sql: true
     hibernate:
       ddl-auto: none
-    properties:
-      hibernate:
-        format_sql: true
-    open-in-view: false
+
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    java-version: 17
+    spring-boot-version: 3.5.5
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,loggers,info,metrics
+  info:
+    env:
+      enabled: true
 
 logging:
   level:
-    org:
-      hibernate:
-        sql: DEBUG
-        type:
-          descriptor:
-            sql:
-              BasicBinder: TRACE
+    root: INFO
+    com.example: DEBUG
 
 discodeit:
   storage:
