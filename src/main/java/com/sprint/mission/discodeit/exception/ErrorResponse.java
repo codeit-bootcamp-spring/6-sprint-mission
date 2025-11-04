@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.dto.response.FieldErrorResponse;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+@Slf4j
 public record ErrorResponse(
     Instant timestamp,
     String code,
@@ -60,10 +61,16 @@ public record ErrorResponse(
     List<String> fieldErrors = ex.getBindingResult()
         .getFieldErrors()
         .stream()
-        .map(fieldError ->
-            "[필드: " + fieldError.getField() +
-                ", 입력값: " + fieldError.getRejectedValue() +
-                ", 메시지: " + fieldError.getDefaultMessage() + "]"
+        .map(fieldError -> {
+              String toLog = "[필드: " + fieldError.getField() +
+                  ", 입력값: " + fieldError.getRejectedValue() +
+                  ", 메시지: " + fieldError.getDefaultMessage() + "]";
+              log.info("검증 에러 발생: {}", toLog);
+
+              // 유저에게는 메시지만 전달
+              String toUser = fieldError.getDefaultMessage();
+              return toUser;
+            }
         ).toList();
 
     return new ErrorResponse(
