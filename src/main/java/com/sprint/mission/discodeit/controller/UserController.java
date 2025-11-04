@@ -62,7 +62,7 @@ public class UserController {
       MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<UserDto> updateUser(
       @PathVariable UUID userId,
-      @RequestPart("userUpdateRequest") UpdateUserRequest request,
+      @Valid @RequestPart("userUpdateRequest") UpdateUserRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
     User user = userService.update(userId, request,
@@ -81,7 +81,7 @@ public class UserController {
   @PatchMapping(value = "/{userId}/userStatus", consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<UserStatusDto> stateUser(
       @PathVariable UUID userId,
-      @RequestBody UpdateUserStatusRequest request
+      @Valid @RequestBody UpdateUserStatusRequest request
   ) {
     UserStatus updated = userStatusService.update(userId, request);
     return ResponseEntity.ok(userStatusMapper.toDto(updated));

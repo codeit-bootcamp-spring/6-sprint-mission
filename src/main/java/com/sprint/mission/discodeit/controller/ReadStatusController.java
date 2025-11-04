@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.readstatus.UpdateReadStatusRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class ReadStatusController {
 
   @PostMapping
   public ResponseEntity<ReadStatusDto> createReadStatus(
-      @RequestBody CreateReadStatusRequest request
+      @Valid @RequestBody CreateReadStatusRequest request
   ) {
     ReadStatus readStatus = readStatusService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(readStatusMapper.toDto(readStatus));
@@ -49,7 +50,7 @@ public class ReadStatusController {
   @PatchMapping("/{readStatusId}")
   public ResponseEntity<ReadStatusDto> updateReadStatus(
       @PathVariable UUID readStatusId,
-      @RequestBody UpdateReadStatusRequest request
+      @Valid @RequestBody UpdateReadStatusRequest request
   ) {
     ReadStatus updated = readStatusService.update(readStatusId, request);
     return ResponseEntity.ok(readStatusMapper.toDto(updated));

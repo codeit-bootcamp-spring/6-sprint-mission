@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.exception;
 
+import com.sprint.mission.discodeit.dto.response.FieldErrorResponse;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
-import lombok.Builder;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 public record ErrorResponse(
     Instant timestamp,
@@ -30,6 +32,45 @@ public record ErrorResponse(
         errorCode.getCode(),
         errorCode.getMessage(),
         null,
+        ex.getClass().getSimpleName(),
+        errorCode.getStatus()
+    );
+  }
+
+  /*
+  1. 요구사항 ->
+  유효성 검증 실패 시 상세한 오류 메시지를 포함한 응답을 반환하세요.
+  2. 프론트엔드 에러 표시 코드 ->
+  {children:[h.jsx(xo,{children:"상세 정보:"}),h.jsx(So,{children:Object.entries(S).map(([R,C])=>h.jsxs("div",{children:[R,": ",String(C)]},R))}
+   */
+  public static ErrorResponse validError(MethodArgumentNotValidException ex, ErrorCode errorCode) {
+
+    /*
+    List<FieldErrorResponse> fieldErrors = ex.getBindingResult()
+        .getFieldErrors()
+        .stream()
+        .map(fieldError -> new FieldErrorResponse(
+            fieldError.getField(),
+            fieldError.getRejectedValue(),
+            fieldError.getDefaultMessage()
+        ))
+        .toList();
+     */
+
+    List<String> fieldErrors = ex.getBindingResult()
+        .getFieldErrors()
+        .stream()
+        .map(fieldError ->
+            "[필드: " + fieldError.getField() +
+                ", 입력값: " + fieldError.getRejectedValue() +
+                ", 메시지: " + fieldError.getDefaultMessage() + "]"
+        ).toList();
+
+    return new ErrorResponse(
+        Instant.now(),
+        errorCode.getCode(),
+        errorCode.getMessage(),
+        Map.of("검증 에러", fieldErrors),
         ex.getClass().getSimpleName(),
         errorCode.getStatus()
     );

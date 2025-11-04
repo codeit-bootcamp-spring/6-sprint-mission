@@ -48,7 +48,7 @@ public class ChannelController {
 
   @PostMapping("/private")
   public ResponseEntity<ChannelDto> createPrivateChannel(
-      @RequestBody CreatePrivateChannelRequest request
+      @Valid @RequestBody CreatePrivateChannelRequest request
   ) {
     Channel channel = channelService.createPrivate(request);
 
@@ -58,7 +58,7 @@ public class ChannelController {
   @PatchMapping("/{channelId}")
   public ResponseEntity<ChannelDto> updatePublicChannel(
       @PathVariable UUID channelId,
-      @RequestBody UpdateChannelRequest request
+      @Valid @RequestBody UpdateChannelRequest request
   ) {
     Channel channel = channelService.update(channelId, request);
     return ResponseEntity.ok(channelMapper.toDto(channel));

@@ -56,7 +56,7 @@ public class MessageController {
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,
       MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<MessageDto> createMessage(
-      @RequestPart("messageCreateRequest") @Valid CreateMessageRequest request,
+      @Valid @RequestPart("messageCreateRequest") CreateMessageRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
     Message message = messageService.create(request, attachments);
@@ -66,7 +66,7 @@ public class MessageController {
   @PatchMapping("/{messageId}")
   public ResponseEntity<MessageDto> updateMessage(
       @PathVariable UUID messageId,
-      @RequestBody UpdateMessageRequest request
+      @Valid @RequestBody UpdateMessageRequest request
   ) {
     Message message = messageService.update(messageId, request);
     return ResponseEntity.ok(messageMapper.toDto(message));

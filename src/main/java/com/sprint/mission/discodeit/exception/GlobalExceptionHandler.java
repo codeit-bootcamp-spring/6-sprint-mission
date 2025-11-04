@@ -1,11 +1,10 @@
 package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.exception.user.UserException;
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,6 +21,16 @@ public class GlobalExceptionHandler {
         .status(errorcode.getStatus())
         .body(ErrorResponse.of(ex, errorcode));
   }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorResponse> handelValidationException(MethodArgumentNotValidException ex) {
+    ErrorCode errorcode = ErrorCode.INVALID_REQUEST;
+    log.info("사용자의 잘못된 요청으로 인한 검증 실패", ex);     // 자세한 스택트레이스는 debug로 처리
+    return ResponseEntity
+        .status(errorcode.getStatus())
+        .body(ErrorResponse.validError(ex, errorcode));
+  }
+
 
   // 이외 예외 처리
   @ExceptionHandler(Exception.class)
