@@ -1,16 +1,17 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.exception.NotFoundException;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -22,8 +23,10 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Transactional(readOnly = true)
   public BinaryContent find(UUID binaryContentId) {
     return binaryContentRepository.findById(binaryContentId)
-        .orElseThrow(
-            () -> new NotFoundException("BinaryContent with id " + binaryContentId + " not found"));
+        .orElseThrow(() -> {
+          log.warn("BinaryContent Not Found. binaryContentId: {}", binaryContentId);
+          return new BinaryContentNotFoundException();
+        });
   }
 
   @Override
@@ -35,7 +38,8 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Override
   public void delete(UUID binaryContentId) {
     if (!binaryContentRepository.existsById(binaryContentId)) {
-      throw new NotFoundException("BinaryContent with id " + binaryContentId + " not found");
+      log.warn("BinaryContent Not Found. binaryContentId: {}", binaryContentId);
+      throw new BinaryContentNotFoundException();
     }
     binaryContentRepository.deleteById(binaryContentId);
   }

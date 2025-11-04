@@ -1,14 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDto;
-import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.user.CreateUserRequest;
 import com.sprint.mission.discodeit.dto.user.UpdateUserRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
-import com.sprint.mission.discodeit.exception.NotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -17,6 +14,7 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -86,7 +84,10 @@ public class BasicUserService implements UserService {
   @Transactional(readOnly = true)
   public User find(UUID userId) {
     return userRepository.findById(userId)
-        .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
+        .orElseThrow(() -> {
+          log.warn("User not found. userId: {}", userId);
+          return new UserNotFoundException(Map.of("유저 고유 아이디", userId));
+        });
   }
 
   // 유저 목록 새로고침할때마다 상태 업데이트
@@ -110,7 +111,10 @@ public class BasicUserService implements UserService {
   public User update(UUID userId, UpdateUserRequest updateUserRequest,
       Optional<MultipartFile> profile) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
+        .orElseThrow(() -> {
+          log.warn("User not found. userId: {}", userId);
+          return new UserNotFoundException(Map.of("유저 고유 아이디", userId));
+        });
     user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(),
         updateUserRequest.newPassword());
 
@@ -138,7 +142,10 @@ public class BasicUserService implements UserService {
     user.update(binaryContent.orElse(null));
 
     UserStatus userStatus = userStatusRepository.findByUser_Id(userId)
-        .orElseThrow(() -> new NotFoundException("유저 상태 업데이트 도중에 유저 아이디를 찾지 못했습니다"));
+        .orElseThrow(() -> {
+          log.warn("UserStatus not found. userId: {}", userId);
+          return new UserNotFoundException(Map.of("유저 고유 아이디", userId));
+        });
     userStatus.update(Instant.now());
     userStatusRepository.save(userStatus);
 
@@ -155,11 +162,15 @@ public class BasicUserService implements UserService {
   @Override
   public void delete(UUID userId) {
     if (!userRepository.existsById(userId)) {
-      throw new NotFoundException("User with id " + userId + " not found");
+      log.warn("User not found. userId: {}", userId);
+      throw new UserNotFoundException(Map.of("유저 고유 아이디", userId));
     }
     // 유저의 프로필 사진 객체 삭제
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NotFoundException("UserService delete: userId 없음"));
+        .orElseThrow(() -> {
+          log.warn("User not found. userId: {}", userId);
+          return new UserNotFoundException(Map.of("유저 고유 아이디", userId));
+        });
     binaryContentRepository.deleteById(user.getProfile().getId());
     // 유저 상태들 삭제
     UserStatus userStatus = user.getUserStatus();

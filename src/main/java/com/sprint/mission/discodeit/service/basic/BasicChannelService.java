@@ -8,7 +8,8 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
-import com.sprint.mission.discodeit.exception.NotFoundException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -49,7 +50,10 @@ public class BasicChannelService implements ChannelService {
     Channel saved = channelRepository.save(channel);
     for (UUID userId : createPrivateChannelRequest.participantIds()) {
       User user = userRepository.findById(userId)
-          .orElseThrow(() -> new NotFoundException("유저가 없습니다: " + userId));
+          .orElseThrow(() -> {
+            log.warn("User Not Found. userId: {}", userId);
+            return new UserNotFoundException();
+          });
       readStatusRepository.save(
           new ReadStatus(user, saved, channel.getCreatedAt()));
     }
@@ -63,8 +67,10 @@ public class BasicChannelService implements ChannelService {
   @Transactional(readOnly = true)
   public Channel find(UUID channelId) {
     return channelRepository.findById(channelId)
-        .orElseThrow(
-            () -> new NotFoundException("Channel with id " + channelId + " not found"));
+        .orElseThrow(() -> {
+          log.warn("Channel Not Found. channelId: {}", channelId);
+          return new ChannelNotFoundException();
+        });
   }
 
   @Override
@@ -86,8 +92,10 @@ public class BasicChannelService implements ChannelService {
   @Override
   public Channel update(UUID channelId, UpdateChannelRequest updateChannelRequest) {
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(
-            () -> new NotFoundException("Channel with id " + channelId + " not found"));
+        .orElseThrow(() -> {
+          log.warn("Channel Not Found. channelId: {}", channelId);
+          return new ChannelNotFoundException();
+        });
 
     channel.update(updateChannelRequest.newName(), updateChannelRequest.newDescription());
 
@@ -101,7 +109,8 @@ public class BasicChannelService implements ChannelService {
   @Override
   public void delete(UUID channelId) {
     if (!channelRepository.existsById(channelId)) {
-      throw new NotFoundException("Channel with id " + channelId + " not found");
+      log.warn("Channel Not Found. channelId: {}", channelId);
+      throw new ChannelNotFoundException();
     }
     // 같은 채널에서 나온 읽기상태들 삭제
     List<UUID> readStatusIds = readStatusRepository.findAllByChannel_Id(channelId)
