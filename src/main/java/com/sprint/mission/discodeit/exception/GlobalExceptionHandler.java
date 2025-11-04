@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handelValidationException(MethodArgumentNotValidException ex) {
     ErrorCode errorcode = ErrorCode.INVALID_REQUEST;
-    log.info("사용자의 잘못된 요청으로 인한 검증 실패", ex);     // 자세한 스택트레이스는 debug로 처리
+    log.info("사용자의 잘못된 요청으로 인한 검증 실패", ex);
     return ResponseEntity
         .status(errorcode.getStatus())
         .body(ErrorResponse.validError(ex, errorcode));
