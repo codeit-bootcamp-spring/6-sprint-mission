@@ -1,4 +1,8 @@
 spring:
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
   sql:
     init:
       mode: never        # 첫 실행시에만 always로 설정, 이후에는 never로 변경
