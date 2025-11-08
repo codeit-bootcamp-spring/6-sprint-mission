@@ -3,10 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyByte;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -15,13 +13,11 @@ import com.sprint.mission.discodeit.dto.user.UpdateUserRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -31,11 +27,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
-@Transactional
 class UserServiceTest {
 
   @Mock
@@ -55,7 +51,7 @@ class UserServiceTest {
 
   @Test
   @DisplayName("프로필 없는 사용자 생성 테스트")
-  void createUser_with_noProfileImage() {
+  void createUser_noProfileImage() {
     // given
     CreateUserRequest request = CreateUserRequest.builder()
         .username("user")
@@ -78,7 +74,7 @@ class UserServiceTest {
 
   @Test
   @DisplayName("프로필 있는 사용자 생성 테스트")
-  void createUser_with_profileImage() {
+  void createUser_withProfileImage() {
     // given
     CreateUserRequest request = CreateUserRequest.builder()
         .username("user")
@@ -117,11 +113,12 @@ class UserServiceTest {
     assertThat(createdProfile.getContentType()).isEqualTo("image/png");
     assertThat(createdProfile.getSize()).isEqualTo(new byte[]{1, 2, 3, 4}.length);
     verify(binaryContentRepository).save(any(BinaryContent.class));
+    verify(storage).put(nullable(UUID.class), any(byte[].class));
   }
 
   @Test
   @DisplayName("중복된 사용자 이름으로 인한 사용자 생성 실패 테스트")
-  void createUser_with_duplicateUsername() {
+  void createUser_duplicateUsername_throwsException() {
     // given
     CreateUserRequest request = CreateUserRequest.builder()
         .username("user")
@@ -149,14 +146,20 @@ class UserServiceTest {
         .build();
 
     User user = new User("user", "user@gmail.com", "password");
+
+    /*
+    // 스프링 프레임워크가 제공하는 라이브러리와 같음 - ReflectionTestUtils
     try {
-      // reflection으로 private id 필드 세팅
       Field idField = BaseEntity.class.getDeclaredField("id");
       idField.setAccessible(true);
       idField.set(user, UUID.randomUUID());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+    */
+
+    // reflection을 통해 private id 필드 세팅
+    ReflectionTestUtils.setField(user, "id", UUID.randomUUID());
 
     given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
     given(userStatusRepository.findByUser_Id(any(UUID.class)))
@@ -176,7 +179,7 @@ class UserServiceTest {
 
   @Test
   @DisplayName("존재하지 않는 사용자 업데이트 테스트")
-  void updateUser_nonExistentUser() {
+  void updateUser_nonExistentUser_throwsException() {
     // given
     UpdateUserRequest request = UpdateUserRequest.builder()
         .newUsername("newUser")

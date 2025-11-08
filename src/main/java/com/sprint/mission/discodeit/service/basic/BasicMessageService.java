@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -94,7 +95,7 @@ public class BasicMessageService implements MessageService {
     return messageRepository.findById(messageId)
         .orElseThrow(() -> {
           log.warn("Message not found. messageId: {}", messageId);
-          return new UserNotFoundException();
+          return new MessageNotFoundException();
         });
   }
 
@@ -113,7 +114,7 @@ public class BasicMessageService implements MessageService {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> {
           log.warn("Message not found. messageId: {}", messageId);
-          return new UserNotFoundException();
+          return new MessageNotFoundException();
         });
     message.update(updateMessageRequest.newContent());
     Message updated = messageRepository.save(message);
@@ -127,7 +128,7 @@ public class BasicMessageService implements MessageService {
   public void delete(UUID messageId) {
     if (!messageRepository.existsById(messageId)) {
       log.warn("Message not found. messageId: {}", messageId);
-      throw new UserNotFoundException();
+      throw new MessageNotFoundException();
     }
     // 메시지의 첨부파일들 객체 삭제
     Message message = messageRepository.findById(messageId).orElse(null);
