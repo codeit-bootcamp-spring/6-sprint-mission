@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.Channel.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,14 +24,14 @@ public class ChannelController implements ChannelApi {
 
     @PostMapping("/public")
     public ResponseEntity<ChannelDto> create(
-            @RequestBody PublicChannelCreateRequest request) {
+            @Valid @RequestBody PublicChannelCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(channelService.createPublic(request));
     }
 
 
     @PostMapping("/private")
     public ResponseEntity<ChannelDto> create(
-            @RequestBody PrivateChannelCreateRequest request) {
+            @Valid @RequestBody PrivateChannelCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(channelService.createPrivate(request));
     }
 

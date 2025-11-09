@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import com.sprint.mission.discodeit.enumtype.ChannelType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,12 +24,14 @@ public class Channel extends BaseUpdatableEntity {
     @Column(length = 500)
     private String description;
 
+    @Builder
     public Channel(String channelName, String description) {
         this.name = channelName;
         this.type = ChannelType.PUBLIC;
         this.description = description;
     }
 
+    @Builder
     public Channel() {
         this.type = ChannelType.PRIVATE;
         this.name = "";

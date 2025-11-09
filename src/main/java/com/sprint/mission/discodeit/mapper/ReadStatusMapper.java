@@ -11,8 +11,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ReadStatusMapper {
 
-    ReadStatusMapper INSTANCE = Mappers.getMapper(ReadStatusMapper.class);
-
     ReadStatusDto toDto(ReadStatus readStatus);
 
     List<ReadStatusDto> toDtoList(List<ReadStatus> readStatuses);

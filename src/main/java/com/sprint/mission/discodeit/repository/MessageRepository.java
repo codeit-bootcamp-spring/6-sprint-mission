@@ -27,7 +27,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     @Query("SELECT DISTINCT m FROM Message " +
             "m LEFT JOIN FETCH m.author " +
             "LEFT JOIN FETCH m.attachments " +
-            "WHERE m.channel.id = :courseId AND m.createdAt < :lastCommentTime")
+            "WHERE m.channel.id = :courseId AND m.createdAt > :lastCommentTime")
     Slice<Message> findByCourseIdAndIdLessThanOrderByIdDesc(
             @Param("courseId") UUID courseId,
             @Param("lastCommentTime") Instant lastCommentTime,

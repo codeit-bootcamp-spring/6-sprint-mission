@@ -1,6 +1,10 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentDto;
+import com.sprint.mission.discodeit.exception.file.FileDownloadException;
+import com.sprint.mission.discodeit.exception.file.FileInPutException;
+import com.sprint.mission.discodeit.exception.file.FileOutPutException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +21,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @ConditionalOnExpression("'${discodeit.repository.type}'=='local'")
 public class LocalBinaryContentStorage implements BinaryContentStorage {
@@ -49,7 +54,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         try (FileOutputStream fos = new FileOutputStream(path.toFile());) {
             fos.write(data);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("파일 저장 오류 발생: 파일Id={}",id);
+            throw new FileOutPutException();
         }
         return id;
     }
@@ -62,7 +68,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             try {
                 stream = new FileInputStream(path.toFile());
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                log.error("파일 읽어오기 오류 발생: 파일Id={}",id);
+                throw new FileInPutException();
             }
         }
         return stream;
@@ -84,8 +91,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFileName + "\"")
                     .body(bytes);
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("파일 다운로드 오류 발생: 파일 이름={}",binaryContentDto.fileName());
+            throw new FileDownloadException();
         }
     }
 }

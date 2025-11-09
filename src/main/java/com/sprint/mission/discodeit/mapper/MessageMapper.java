@@ -10,9 +10,6 @@ import org.mapstruct.factory.Mappers;
         uses = {BinaryContentMapper.class, UserMapper.class}
 )
 public interface MessageMapper {
-
-    MessageMapper INSTANCE = Mappers.getMapper(MessageMapper.class);
-
     @Mapping(target = "channelId", expression = "java(message.getChannel().getId())")
     MessageDto toDto(Message message);
 }

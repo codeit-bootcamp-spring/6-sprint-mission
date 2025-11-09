@@ -15,8 +15,6 @@ import java.util.List;
 )
 public interface UserMapper {
 
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
-
     @Mapping(target = "online", expression = "java(user.getStatus().isConnecting(Instant.now()))")
     UserDto toDto(User user);
 

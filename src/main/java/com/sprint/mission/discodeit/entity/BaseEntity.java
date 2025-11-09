@@ -14,13 +14,11 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate
     private Instant createdAt;
 
-    BaseEntity() {
-        id = UUID.randomUUID();
-    }
 }

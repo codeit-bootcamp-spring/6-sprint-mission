@@ -1,10 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -23,12 +20,12 @@ import java.time.Instant;
 @NoArgsConstructor
 public class ReadStatus extends BaseUpdatableEntity {
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "channel_id")
     private Channel channel;
@@ -36,6 +33,7 @@ public class ReadStatus extends BaseUpdatableEntity {
     @Column(nullable = false)
     private Instant lastReadAt;
 
+    @Builder
     public ReadStatus(Channel channel, User user) {
         this.user = user;
         this.channel = channel;

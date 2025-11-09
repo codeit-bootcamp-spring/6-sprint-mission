@@ -1,45 +1,19 @@
 package com.sprint.mission.discodeit.config;
 
-import jakarta.servlet.http.HttpServletRequest;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
-
-
-@ControllerAdvice
+@Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-
-    @ExceptionHandler(NullPointerException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<String> handleNullPointerException(
-            NullPointerException ex,
-            Model model) {
-            model.addAttribute("errormessage","서버스 처리중 오류가 발생 했습니다.");
-            model.addAttribute("errorCode", "ERR-400-NPE");
-            model.addAttribute("timestamp", LocalDateTime.now());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    @ExceptionHandler(DiscodeitException.class)
+    public ResponseEntity<ErrorResponse> handleNullPointerException(DiscodeitException ex){
+        ErrorResponse errorResponse = ErrorResponse.of(ex.getTimestamp(),ex.getErrorCode(),ex.getDetails());
+        return ResponseEntity.status(ex.getErrorCode().getStatus()).body(errorResponse);
     }
-    @ExceptionHandler(NoSuchElementException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<String> handleException(
-            NoSuchElementException ex,
-            Model model,
-            HttpServletRequest request
-    ){
-        model.addAttribute("errormessage","대이터 찾는 중에 오류가 발생했습니다.");
-        model.addAttribute("errorCode", "ERR-404-NPE");
-        model.addAttribute("timestamp", LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-
-
 }
