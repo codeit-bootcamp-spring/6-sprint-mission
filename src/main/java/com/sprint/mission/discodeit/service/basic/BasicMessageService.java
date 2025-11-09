@@ -102,7 +102,7 @@ public class BasicMessageService implements MessageService {
   @Override
   @Transactional(readOnly = true)
   public Slice<Message> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
-    return messageRepository.findAllByChannel_IdAndCreatedAtBefore(
+    return messageRepository.findAllByChannel_IdAndCreatedAtLessThanEqual(
         channelId,
         cursor != null ? cursor : Instant.now(),
         pageable

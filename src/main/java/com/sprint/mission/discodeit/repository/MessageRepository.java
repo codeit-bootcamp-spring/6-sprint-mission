@@ -14,7 +14,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
   Page<Message> findAllByChannel_Id(UUID channelId, Pageable pageable);
 
   // 특정 채널의 메시지들을 cursor를 받아 시간 기준으로 이전 메시지들을 페이징 처리하여 조회
-  Slice<Message> findAllByChannel_IdAndCreatedAtBefore(
+  Slice<Message> findAllByChannel_IdAndCreatedAtLessThanEqual(
       UUID channelId,
       Instant cursor, Pageable pageable);
 

@@ -12,5 +12,3 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: ${DB_USER}
     password: ${DB_PASSWORD}
-  jpa:
-    show-sql: false

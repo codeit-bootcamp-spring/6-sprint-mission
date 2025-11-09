@@ -25,11 +25,18 @@
     </encoder>
   </appender>
 
-  <springProfile name="dev">
+  <springProfile name="test">
     <logger name="com.sprint.mission.discodeit" level="DEBUG"/>
     <!--    <logger name="org.hibernate.SQL" level="DEBUG"/>-->
-    <!--    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>-->
+    <!--    <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>-->
+    <root level="INFO">
+      <appender-ref ref="FILE"/>
+      <appender-ref ref="CONSOLE"/>
+    </root>
+  </springProfile>
 
+  <springProfile name="dev">
+    <logger name="com.sprint.mission.discodeit" level="DEBUG"/>
     <root level="INFO">
       <appender-ref ref="FILE"/>
       <appender-ref ref="CONSOLE"/>

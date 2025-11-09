@@ -158,7 +158,8 @@ class MessageServiceTest {
     List<Message> messageList = List.of(message);
     Slice<Message> sliceImpl = new SliceImpl<>(messageList, pageable, false);
 
-    given(messageRepository.findAllByChannel_IdAndCreatedAtBefore(channelId, cursor, pageable)).willReturn(sliceImpl);
+    given(messageRepository.findAllByChannel_IdAndCreatedAtLessThanEqual(channelId, cursor, pageable)).willReturn(
+        sliceImpl);
 
     // when
     Slice<Message> foundMessage = messageService.findAllByChannelId(channelId, cursor, pageable);
@@ -167,6 +168,6 @@ class MessageServiceTest {
     assertThat(foundMessage.getContent()).hasSize(1);
     assertThat(foundMessage.getContent().get(0)).isEqualTo(message);
     assertThat(foundMessage.hasNext()).isFalse();
-    verify(messageRepository).findAllByChannel_IdAndCreatedAtBefore(channelId, cursor, pageable);
+    verify(messageRepository).findAllByChannel_IdAndCreatedAtLessThanEqual(channelId, cursor, pageable);
   }
 }
