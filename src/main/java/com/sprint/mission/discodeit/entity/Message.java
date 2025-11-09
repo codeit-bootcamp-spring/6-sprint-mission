@@ -34,6 +34,7 @@ public class Message extends BaseUpdatableEntity {
   @ManyToOne
   @JoinColumn(name = "author_id")
   private User author;
+  // todo Lazy로 변경 고려
   @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinTable(
       name = "message_attachments",
