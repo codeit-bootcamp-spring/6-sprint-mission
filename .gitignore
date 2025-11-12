@@ -7,7 +7,6 @@ build/
 !**/src/test/**/generated/
 !**/src/main/resources/data/**
 src/main/generated/**
-src/main/resources
 logs/
 
 ### IntelliJ IDEA ###
