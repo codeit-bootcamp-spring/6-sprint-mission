@@ -1,8 +1,10 @@
 discodeit:
   storage:
-    type: local
+    type: ${STORAGE_TYPE:local}
     local:
       root-path: C:\\spring\\codeit-bootcamp-spring\\6-sprint-mission\\src\\main\\resources\\data\\files\\
+    s3:
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
 spring:
   application:
     name: discodeit

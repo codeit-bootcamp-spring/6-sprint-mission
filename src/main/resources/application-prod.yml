@@ -1,8 +1,10 @@
 discodeit:
   storage:
-    type: local
+    type: ${STORAGE_TYPE:local}
     local:
       root-path: ${FILE_UPLOAD_DIR:./uploads/}
+    s3:
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
 spring:
   application:
     name: discodeit

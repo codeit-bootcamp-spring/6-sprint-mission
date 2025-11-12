@@ -7,8 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -19,6 +17,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,14 +28,16 @@ public class S3BinaryContentStorage implements BinaryContentStorage{
   private final S3Client s3Client;
   private final S3Presigner s3Presigner;
 
-  @Value("${cloud.aws.credentials.access-key}")
+  /*@Value("${cloud.aws.credentials.access-key}")
   private String accessKey;
   @Value("${cloud.aws.credentials.secret-key}")
   private String secretKey;
   @Value("${cloud.aws.region.static}")
-  private String region;
+  private String region;*/
   @Value("${cloud.aws.s3.bucket}")
   private String bucket;
+  @Value("${discodeit.storage.s3.presigned-url-expiration}")
+  private String presignedUrlExpiration;
 
   @Override
   public UUID put(UUID id, byte[] bytes) {
@@ -122,9 +123,16 @@ public class S3BinaryContentStorage implements BinaryContentStorage{
           .responseContentType(contentType)
           .build();
 
-      return s3Presigner.presignGetObject(
-          builder -> builder.getObjectRequest(getObjectRequest).build()
-      ).url().toString();
+      GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
+          .signatureDuration(java.time.Duration.parse(presignedUrlExpiration))
+          .getObjectRequest(getObjectRequest)
+          .build();
+
+      String presignedUrl = s3Presigner.presignGetObject(getObjectPresignRequest)
+          .url().toString();
+
+      log.info("Success to get object from S3 with id: {}", key);
+      return presignedUrl;
 
     } catch (Exception e) {
 
