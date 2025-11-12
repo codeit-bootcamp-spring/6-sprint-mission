@@ -1,15 +1,17 @@
 # build stage
-FROM amazoncorretto:17 AS build
+FROM gradle:8.14.3-jdk17 AS build
 
 WORKDIR /app
 
-COPY build.gradle settings.gradle gradlew ./
+COPY build.gradle settings.gradle ./
+COPY gradlew ./
 COPY gradle ./gradle
-RUN ./gradlew dependencies --no-daemon
+RUN chmod +x gradlew
+RUN ./gradlew dependencies
 
 COPY src ./src
 
-RUN ./gradlew clean build -x test --no-daemon
+RUN ./gradlew clean build -x test
 
 # final stage
 FROM amazoncorretto:17
