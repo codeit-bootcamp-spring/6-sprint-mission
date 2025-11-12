@@ -1,0 +1,41 @@
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: ${FILE_UPLOAD_DIR:./uploads/}
+spring:
+  application:
+    name: discodeit
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/discodeit}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
+code:
+  repository:
+    type: file
+
+logging:
+    level:
+        root: INFO
+
+server:
+  port: 80
+
+
+
+
+

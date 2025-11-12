@@ -1,0 +1,70 @@
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: C:\\spring\\codeit-bootcamp-spring\\6-sprint-mission\\src\\main\\resources\\data\\files\\
+spring:
+  application:
+    name: discodeit
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+code:
+  repository:
+    type: file
+logging:
+    level:
+        root: DEBUG
+server:
+  port: 8081
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: info,health,metrics,loggers
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    java:
+      version: 17
+    spring:
+      boot:
+        version: 3.4.0
+    config:
+      datasource:
+        url: ${spring.datasource.url}
+        driver-class-name: ${spring.datasource.driver-class-name}
+      jpa:
+        hibernate:
+          ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+      storage:
+        type: ${discodeit.storage.type}
+        path: ${discodeit.storage.local.root-path}
+      multipart:
+        max-file-size: 10MB
+        max-request-size: 10MB
+
+
+
