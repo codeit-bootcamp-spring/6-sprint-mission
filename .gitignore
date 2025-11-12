@@ -6,7 +6,7 @@ build/
 !**/src/main/**/generated/
 !**/src/test/**/generated/
 !**/src/main/resources/data/
-!**/src/main/generated/
+src/main/generated/
 logs/
 gradlew
 
