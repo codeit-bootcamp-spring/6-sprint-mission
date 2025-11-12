@@ -22,7 +22,7 @@ ENV PROJECT_NAME=discodeit \
 
 WORKDIR /app
 
-COPY --from=build /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.jar
+COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 80
 
