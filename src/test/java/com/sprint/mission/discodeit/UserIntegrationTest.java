@@ -27,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 //  -> 테스트 불가능
 //  아직 해결 못 한 상태.
 
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EntityScan(basePackages = "com.sprint.mission.discodeit.entity")
 @ActiveProfiles("test")

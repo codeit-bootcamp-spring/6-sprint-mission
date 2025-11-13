@@ -65,3 +65,7 @@ CREATE TABLE binary_contents (
     CONSTRAINT fk_binary_message FOREIGN KEY (message_id) REFERENCES messages(id),
     CONSTRAINT fk_binary_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE UNIQUE INDEX idx_users_username ON users(username);
+CREATE UNIQUE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_messages_created_at ON messages(created_at);

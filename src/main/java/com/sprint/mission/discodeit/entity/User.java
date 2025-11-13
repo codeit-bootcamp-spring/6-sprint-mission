@@ -48,11 +48,12 @@ public class User extends BaseUpdatableEntity {
 
     @NotBlank
     @Column(nullable = false)
-    private transient String password;
+    private String password;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+    @Builder.Default
+    private Instant createdAt = Instant.now();
 
     @LastModifiedDate
     private Instant updatedAt;

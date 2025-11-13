@@ -16,6 +16,7 @@ import java.util.UUID;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "id", callSuper = false)
 @Builder
 @Table(name = "channels")
 public class Channel extends BaseUpdatableEntity {
