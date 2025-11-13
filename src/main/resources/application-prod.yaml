@@ -14,7 +14,8 @@ spring:
 logging:
   level:
     com.sprint.mission.discodeit: info
-    org.hibernate.SQL: info
+    org.hibernate.SQL: warn
+    org.hibernate.orm.jdbc.bind: warn
 
 management:
   endpoint:
