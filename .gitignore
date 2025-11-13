@@ -45,3 +45,5 @@ bin/
 .*
 !.gitignore
 !.dockerignore
+.env
+!.env.template
