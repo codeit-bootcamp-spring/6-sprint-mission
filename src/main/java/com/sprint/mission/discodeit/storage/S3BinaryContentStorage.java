@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -34,10 +35,10 @@ public class S3BinaryContentStorage implements BinaryContentStorage{
   private String secretKey;
   @Value("${cloud.aws.region.static}")
   private String region;*/
-  @Value("${cloud.aws.s3.bucket}")
-  private String bucket;
   @Value("${discodeit.storage.s3.presigned-url-expiration}")
   private String presignedUrlExpiration;
+  @Value("${spring.cloud.aws.s3.bucket}")
+  private String bucket;
 
   @Override
   public UUID put(UUID id, byte[] bytes) {

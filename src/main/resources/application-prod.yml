@@ -1,6 +1,6 @@
 discodeit:
   storage:
-    type: ${STORAGE_TYPE:local}
+    type: ${STORAGE_TYPE}
     local:
       root-path: ${FILE_UPLOAD_DIR:./uploads/}
     s3:
@@ -8,6 +8,8 @@ discodeit:
 spring:
   application:
     name: discodeit
+  config:
+    import: optional:file:.env
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/discodeit}
@@ -20,6 +22,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
     open-in-view: false
   boot:
     admin:
