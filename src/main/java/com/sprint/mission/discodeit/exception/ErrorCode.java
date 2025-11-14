@@ -7,6 +7,7 @@ public enum ErrorCode {
 
   USER_NOT_FOUND(404, "US001", "유저를 찾을 수 없습니다"),
   DUPLICATE_USER(409, "US002", "이미 존재하는 유저입니다."),
+  INVALID_CREDENTIALS(401, "US003", "잘못된 인증 정보입니다."),
 
   CHANNEL_NOT_FOUND(404, "CH001", "채널을 찾을 수 없습니다."),
   DUPLICATE_CHANNEL(409, "CH002", "이미 존재하는 채널입니다."),

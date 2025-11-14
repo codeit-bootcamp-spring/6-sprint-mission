@@ -1,17 +1,12 @@
 spring:
   application:
     name: discodeit
-  boot:
-    admin:
-      client:
-        instance:
-          name: discodeit
   messages:
     basename: messages
     encoding: UTF-8
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
@@ -21,6 +16,11 @@ spring:
     multipart:
       maxFileSize: 10MB
       maxRequestSize: 50MB
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  profiles:
+    active:
+      - dev
 
 info:
   app:
@@ -51,4 +51,5 @@ management:
 discodeit:
   storage:
     type: local
-    root-path: /binary-data
+    local:
+      root-path: .discodeit/storage

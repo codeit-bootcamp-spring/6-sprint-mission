@@ -48,7 +48,7 @@ class MessageRepositoryTest {
   }
 
   @Test
-  @DisplayName("채널 id로 메시지 조회 테스트")
+  @DisplayName("채널 id로 메시지 조회하면 유저를 반환하는지 테스트")
   void findAllByChannel_Id() {
     // given
     UUID channelId = channelRepository.findAll().get(0).getId();

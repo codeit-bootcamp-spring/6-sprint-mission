@@ -136,8 +136,8 @@ class UserServiceTest {
   }
 
   @Test
-  @DisplayName("사용자 정보 업데이트 테스트")
-  void updateUserTest() {
+  @DisplayName("사용자 정보 업데이트 테스트 성공")
+  void updateUserTest_Success() {
     // given
     UpdateUserRequest request = UpdateUserRequest.builder()
         .newUsername("newUser")
