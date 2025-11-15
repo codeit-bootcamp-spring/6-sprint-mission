@@ -65,7 +65,7 @@ class UserServiceTest {
     @Test
     void 사용자_생성_성공() {
 
-        // given - BeforeEach
+        // given
         UserCreateRequestDto request = new UserCreateRequestDto(
                 "ex@ex.com",
                 "test",
@@ -110,9 +110,9 @@ class UserServiceTest {
                 "newName",
                 "newPassword"
         );
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         // when
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         userService.update(userId, request, null);
 
         // then
@@ -131,7 +131,6 @@ class UserServiceTest {
                 null,
                 null
         );
-        // when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         // when
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -145,30 +144,30 @@ class UserServiceTest {
 
     @Test
     void 사용자_삭제_성공() {
-        // given - BeforeEach에서 처리
+
+        // given
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         // when
         userService.delete(userId);
 
-        //then
+        // then
         assertThat(userRepository.findById(userId)).isPresent();
     }
 
     @Test
     void 사용자_삭제_실패() {
-        // given
+        // given - 잘못된 userId 사용
         UUID invalidId = UUID.randomUUID();
         when(userRepository.findById(invalidId)).thenReturn(Optional.empty());
 
-        // when - 잘못된 userId 전달
+        // when
         assertThatThrownBy(() -> userService.delete(invalidId))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("사용자를 찾을 수 없습니다");
 
-        // then
+        // then - 호출되지 않았음을 검증
         verify(userRepository, never()).delete(any());
-
     }
 
 }

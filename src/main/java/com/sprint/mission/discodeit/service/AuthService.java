@@ -51,6 +51,6 @@ public class AuthService {
 
         log.info("로그인 되었습니다: " +  user.getId());
         BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
-        return userMapper.toDto(user, user.getUserStatus(), profileImage);
+        return userMapper.toDto(user);
     }
 }

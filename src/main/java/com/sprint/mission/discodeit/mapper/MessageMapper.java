@@ -13,8 +13,8 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {UserMapper.class, BinaryContentMapper.class})
 public interface MessageMapper {
 
-    @Mapping(target = "author", ignore = true) // 서비스단에서 결정
-    @Mapping(target = "attachments", ignore = true) // 서비스단에서 결정
+    // @Mapping(target = "author", ignore = true) // 서비스단에서 결정
+    // @Mapping(target = "attachments", ignore = true) // 서비스단에서 결정
     @Mapping(target = "channelId", source = "channel.id")
     MessageResponseDto toDto(Message message);
 

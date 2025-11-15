@@ -21,8 +21,8 @@ import java.util.UUID;
 public class ReadStatus extends BaseUpdatableEntity {
 
     @Id
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

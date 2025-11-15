@@ -20,9 +20,8 @@ import java.util.UUID;
 public class UserStatus extends BaseUpdatableEntity {
 
     @Id
-    @GeneratedValue
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @OneToOne
     @JoinColumn(name = "user_id")

@@ -10,12 +10,11 @@ import java.util.UUID;
 public record MessageCreateRequestDto(
 
         @NotNull(message = "사용자 ID는 필수 입력값입니다.")
-        UUID userId,
+        UUID authorId,
 
         @NotNull(message = "채널 ID는 필수 입력값입니다.")
         UUID channelId,
 
         @NotBlank(message = "메시지 내용을 입력해 주세요.")
         String content
-        // List<BinaryContent> binaryContents // null 허용
 ) {}

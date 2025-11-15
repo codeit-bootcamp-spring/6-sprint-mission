@@ -6,18 +6,17 @@ import com.sprint.mission.discodeit.dto.message.MessageCreateRequestDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.enums.BinaryContentType;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.message.MessageListNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,113 +32,87 @@ public class MessageService {
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentStorage binaryContentStorage;
     private final MessageMapper messageMapper; // 유저 온라인 여부 확인시 리포지토리 필요, 스태틱으로 사용 불가해 별도로 선언.
 
     // 메시지 생성
     @Transactional
-    public MessageResponseDto create(/* UUID userId,*/
-                                     MessageCreateRequestDto dto,
-                                     List<BinaryContentCreateRequestDto> binaryContentCreateRequests) {
+    public MessageResponseDto create(
+            MessageCreateRequestDto request,
+            List<BinaryContentCreateRequestDto> attachmentRequests
+    ) {
+        UUID userId = request.authorId();
+        UUID channelId = request.channelId();
 
-        User user = userRepository.findById(dto.userId())
-                .orElseThrow(() -> new UserNotFoundException(dto.userId()));
-        Channel channel = channelRepository.findById(dto.channelId())
-                .orElseThrow(() -> new ChannelNotFoundException(dto.channelId()));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
         Message message = Message.builder()
                 .author(user)
                 .channel(channel)
-                .content(dto.content())
-                // .attachments(dto.binaryContents())
+                .content(request.content())
+                // attachments(new ArrayList<>(attachments.keySet()))
                 .build();
-
-        binaryContentCreateRequests
-                .forEach(request -> {
-                    byte[] bytes = request.bytes();
-                    BinaryContent binaryContent = BinaryContent.builder()
-                                    .user(user)
-                                    .message(message)
-                                    .fileName(request.fileName())
-                                    .extension(request.extension())
-                                    .type(BinaryContentType.ATTACH_IMAGE)
-                                    // .data(bytes)
-                                    .size((long) bytes.length)
-                                    .build();
-                    binaryContentRepository.save(binaryContent);
-                });
-
-        user.getMessages().add(message);
-        channel.getMessages().add(message);
         messageRepository.save(message);
+
+        Map<BinaryContent, byte[]> attachments = new HashMap<>(attachmentRequests.size());
+        for (BinaryContentCreateRequestDto attachmentRequest : attachmentRequests) {
+            String fileName = attachmentRequest.fileName();
+            String contentType = attachmentRequest.contentType();
+            byte[] bytes = attachmentRequest.bytes();
+
+            BinaryContent binaryContent = BinaryContent.builder()
+                    .fileName(fileName)
+                    .size((long) bytes.length)
+                    .contentType(contentType)
+                    // .user(user)
+                    .message(message)
+                    .build();
+            binaryContentRepository.save(binaryContent);
+
+            attachments.put(binaryContent, bytes);
+        }
+
+
+        for (Map.Entry<BinaryContent, byte[]> entry : attachments.entrySet()) {
+            BinaryContent binaryContent = entry.getKey();
+
+            binaryContentStorage.put(binaryContent.getId(), entry.getValue());
+            // binaryContent.setMessage(message);
+        }
 
         log.info("메시지 생성이 완료되었습니다. id=" + message.getId());
         return messageMapper.toDto(message);
     }
 
     @Transactional(readOnly = true)
-    public MessageResponseDto findById(UUID id) {
-        Message message = messageRepository.findById(id)
-                .orElseThrow(() -> new MessageNotFoundException(id));
-
-        return messageMapper.toDto(message);
+    public MessageResponseDto findById(UUID messageId) {
+        return messageRepository.findById(messageId)
+                .map(messageMapper::toDto)
+                .orElseThrow(() -> new MessageNotFoundException(messageId));
     }
 
     @Transactional(readOnly = true)
-    public List<MessageResponseDto> findByChannelId(UUID channelId) {
-
-        Channel channel = channelRepository.findById(channelId)
+    public PageResponse<MessageResponseDto> findAllByChannelId(
+            UUID channelId, Instant cursor, Pageable pageable
+    ) {
+        channelRepository.findById(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
-        List<Message> messages = messageRepository.findByChannelId(channelId);
+        Slice<MessageResponseDto> slice = messageRepository.findAllByChannelIdWithAuthor(channelId,
+                        Optional.ofNullable(cursor).orElse(Instant.now()),
+                        pageable)
+                .map(messageMapper::toDto);
 
-        if (messages.isEmpty()) {
-            throw new MessageListNotFoundException(channelId);
+        Instant nextCursor = null;
+        if (!slice.getContent().isEmpty()) {
+            nextCursor = slice.getContent().get(slice.getContent().size() - 1)
+                    .createdAt();
         }
 
-//        // 해당채널에 메시지 남긴 모든 유저ID 조회
-//        Set<UUID> userIds = messages.stream()
-//                .map(message -> message.getUser().getId())
-//                .collect(Collectors.toSet());
-//
-//        // UserStatus 조회
-//        List<UserStatus> userStatuses = userStatusRepository.findAllById(userIds);
-//
-//        // Map으로 UserStatus 빠른 조회
-//        Map<UUID, UserStatus> statusMap = userStatuses.stream()
-//                .collect(Collectors.toMap(status -> status.getUser().getId(), status -> status));
-
-        return messages.stream()
-                .map(messageMapper::toDto)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public PageResponse<MessageResponseDto> findByChannelId(UUID channelId, Instant cursor, int size) {
-
-        Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new ChannelNotFoundException(channelId));
-
-        Pageable pageable = PageRequest.of(
-                0, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        List<Message> messages = messageRepository.findByChannelIdAndCursor(channelId, cursor, pageable);
-
-
-        if (messages.isEmpty()) {
-            throw new MessageListNotFoundException(channelId);
-        }
-
-        Instant nextCursor = messages.size() < size ? null : messages.get(messages.size() - 1).getCreatedAt();
-        List<MessageResponseDto> dtoList = messages.stream()
-                .map(messageMapper::toDto)
-                .toList();
-        return new PageResponse<>(
-                dtoList,
-                nextCursor,
-                size,
-                nextCursor != null, // hasNext 여부
-                null
-        ); // totalElements는 커서 방식에서는 비효율적이라 보통 null 처리;
+        return PageResponseMapper.fromSlice(slice, nextCursor);
     }
 
     // 내용 수정

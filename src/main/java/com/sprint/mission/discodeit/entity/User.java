@@ -23,8 +23,8 @@ import java.util.*;
 public class User extends BaseUpdatableEntity {
 
     @Id
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @OneToMany(mappedBy = "author")
     private List<Message> messages;

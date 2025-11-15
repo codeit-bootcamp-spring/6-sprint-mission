@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponseDto;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequestDto;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequestDto;
@@ -10,7 +9,6 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.enums.ChannelType;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
@@ -32,61 +30,39 @@ public class ChannelService {
     private final MessageRepository messageRepository;
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
-    private final BinaryContentMapper binaryContentMapper;
 
     // 채널 생성 및 저장
     @Transactional
-    public ChannelResponseDto createPrivateChannel(PrivateChannelCreateRequestDto dto) {
+    public ChannelResponseDto create(PrivateChannelCreateRequestDto request) {
 
         Channel channel = Channel.builder()
                 .type(ChannelType.PRIVATE)
                 .build();
         channelRepository.save(channel);
 
-        List<User> users = userRepository.findAllById(dto.participantIds());
-        List<UserStatus> userStatuses = userStatusRepository.findAllById(dto.participantIds());
-        Map<UUID, UserStatus> statusMap = userStatuses.stream()
-                .collect(Collectors.toMap(userStatus -> userStatus.getUser().getId(), userStatus -> userStatus));
-
-        List<UserResponseDto> userResponseDtos = users.stream()
-                .map(user -> {
-                    BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
-                    return userMapper.toDto(user, statusMap.get(user.getId()), profileImage);
-                })
-                .toList();
-        List<ReadStatus> readStatuses = users.stream()
+        List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
                 .map(user -> ReadStatus.builder()
                         .user(user)
                         .channel(channel)
-                        .lastReadAt(Instant.now())
-                        .build())
+                        .createdAt(channel.getCreatedAt())
+                        .build()
+                )
                 .toList();
         readStatusRepository.saveAll(readStatuses);
 
         log.info("비공개 채널 생성이 완료되었습니다. id=" + channel.getId());
-        return ChannelResponseDto.privateChannel( // private 채널은 name, description이 없음.
-                channel.getId(),
-                userResponseDtos,
-                null
-        );
+        return channelMapper.toDto(channel);
     }
 
     @Transactional
-    public ChannelResponseDto createPublicChannel(PublicChannelCreateRequestDto dto) {
+    public ChannelResponseDto create(PublicChannelCreateRequestDto request) {
         Channel channel = Channel.builder()
                 .type(ChannelType.PUBLIC)
-                .name(dto.name())
-                .description(dto.description())
+                .name(request.name())
+                .description(request.description())
                 .build();
-
-        channel.setName(dto.name());
-
-        if (dto.description() != null) {
-            channel.setDescription(dto.description());
-        }
 
         channelRepository.save(channel);
         log.info("공개 채널 생성이 완료되었습니다. id=" + channel.getId());
@@ -241,11 +217,7 @@ public class ChannelService {
             return readStatuses.stream()
                     .map(ReadStatus::getUser)
                     .distinct()
-                    .map(user -> {
-                        UserStatus userStatus = user.getUserStatus();
-                        BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
-                        return userMapper.toDto(user, userStatus, profileImage);
-                    })
+                    .map(userMapper::toDto)
                     .toList();
 
         }
@@ -284,11 +256,7 @@ public class ChannelService {
         return channel.getReadStatuses().stream()
                 .map(ReadStatus::getUser)
                 .distinct()
-                .map(user -> userMapper.toDto(
-                        user,
-                        user.getUserStatus(),
-                        binaryContentMapper.toDto(user.getProfileImage())
-                ))
+                .map(userMapper::toDto)
                 .toList();
     }
 }

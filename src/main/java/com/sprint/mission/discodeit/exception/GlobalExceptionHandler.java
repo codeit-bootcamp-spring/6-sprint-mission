@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.exception;
 
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentListNotFoundException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -7,12 +8,10 @@ import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateExcept
 import com.sprint.mission.discodeit.exception.message.MessageListNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
-import com.sprint.mission.discodeit.exception.readstatus.ReadStatusListNotFoundException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.exception.userstatus.UserStatusAlreadyExistsException;
-import com.sprint.mission.discodeit.exception.userstatus.UserStatusException;
 import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -38,7 +37,6 @@ public class GlobalExceptionHandler {
             MessageListNotFoundException.class,
             UserStatusNotFoundException.class,
             ReadStatusNotFoundException.class,
-            ReadStatusListNotFoundException.class,
             BinaryContentNotFoundException.class,
             BinaryContentListNotFoundException.class
     })
@@ -71,10 +69,9 @@ public class GlobalExceptionHandler {
     // 중복
     @ExceptionHandler({
             UserAlreadyExistsException.class,
-            // TODO 채널은 중복예외 필요없을지?
+            BinaryContentAlreadyExistsException.class,
             UserStatusAlreadyExistsException.class,
             ReadStatusAlreadyExistsException.class,
-
     })
     public ResponseEntity<ErrorResponse> handleAlreadyExists(DiscodeitException e) {
         log.error(e.getMessage());

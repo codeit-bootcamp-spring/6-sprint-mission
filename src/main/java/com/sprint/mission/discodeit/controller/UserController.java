@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequestDto;
-import com.sprint.mission.discodeit.enums.BinaryContentType;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
@@ -14,13 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -34,7 +31,7 @@ public class UserController {
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<UserResponseDto> register(
             @Valid @RequestPart("userCreateRequest") UserCreateRequestDto request,
-            @RequestPart(value = "profile_image", required = false) MultipartFile image
+            @RequestPart(value = "profile", required = false) MultipartFile image
     ) {
         BinaryContentCreateRequestDto profileRequest = null;
         if (image != null && !image.isEmpty()) {
@@ -56,7 +53,7 @@ public class UserController {
     public ResponseEntity<UserResponseDto> update(
             @PathVariable UUID id,
             @Valid @RequestPart("userUpdateRequest") UserUpdateRequestDto request,
-            @RequestPart(value = "profile_image", required = false) MultipartFile image
+            @RequestPart(value = "profile", required = false) MultipartFile image
     ) {
         BinaryContentCreateRequestDto profileRequest = null;
         if (image != null && !image.isEmpty()) {
@@ -89,7 +86,6 @@ public class UserController {
             return new BinaryContentCreateRequestDto(
                         profileFile.getOriginalFilename(),
                         profileFile.getContentType(),
-                        BinaryContentType.PROFILE_IMAGE,
                         profileFile.getBytes()
                 );
         } catch (IOException e) {

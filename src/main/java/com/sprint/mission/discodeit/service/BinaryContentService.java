@@ -27,16 +27,15 @@ public class BinaryContentService {
 
 
     @Transactional
-    public BinaryContentResponseDto create(BinaryContentCreateRequestDto dto){
-        byte[] bytes = dto.bytes();
+    public BinaryContentResponseDto create(BinaryContentCreateRequestDto request) {
+        byte[] bytes = request.bytes();
         BinaryContent binaryContent = BinaryContent.builder()
-                .fileName(dto.fileName())
-                .extension(dto.extension())
-                .type(dto.type())
+                .fileName(request.fileName())
+                .contentType(request.contentType())
                 .size((long) bytes.length)
                 .build();
-        binaryContentRepository.save(binaryContent);
-        binaryContentStorage.put(binaryContent.getId(), bytes);
+        binaryContentRepository.save(binaryContent); // 메타데이터 DB에 저장
+        binaryContentStorage.put(binaryContent.getId(), bytes); // 이미지 바이트 로컬에 저장
         log.info("파일이 업로드되었습니다. id=" + binaryContent.getId());
         return binaryContentMapper.toDto(binaryContent);
     }
@@ -51,11 +50,8 @@ public class BinaryContentService {
 
     @Transactional(readOnly = true)
     public List<BinaryContentResponseDto> findAllByIdIn(List<UUID> ids){
-        List<BinaryContent> contents = binaryContentRepository.findAllByIdIn(ids);
-        if (contents.isEmpty()) {
-            throw new BinaryContentListNotFoundException(ids);
-        }
-        return contents.stream()
+        return binaryContentRepository.findAllByIdIn(ids)
+                .stream()
                 .map(binaryContentMapper::toDto)
                 .toList();
     }

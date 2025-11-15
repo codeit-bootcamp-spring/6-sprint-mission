@@ -3,9 +3,7 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.enums.BinaryContentType;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -13,8 +11,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import java.time.Instant;
 import java.util.List;
@@ -41,8 +37,7 @@ class UserRepositoryTest {
 
         BinaryContent profileImage1 = BinaryContent.builder()
                 .fileName("profile1.png")
-                .extension("image/png")
-                .type(BinaryContentType.PROFILE_IMAGE)
+                .contentType("image/png")
                 .size(5L)
                 .build();
 
@@ -102,7 +97,13 @@ class UserRepositoryTest {
     @Test
     @DisplayName("findByUsernameWithStatusAndProfile() 실패 - 존재하지 않는 username")
     void testFindByUsernameWithStatusAndProfile_실패() {
+
+        // given - setUp()
+
+        // when
         Optional<User> found = userRepository.findByUsernameWithStatusAndProfile("charlie");
+
+        // then
         assertThat(found).isEmpty();
     }
 

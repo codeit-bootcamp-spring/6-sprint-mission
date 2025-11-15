@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.controller.UserController;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDto;
@@ -21,13 +20,12 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 
 @WebMvcTest(UserController.class)
@@ -71,8 +69,8 @@ class UserControllerTest {
                 true
         );
 
-        given(userService.create(any(UserCreateRequestDto.class), any()))
-                .willReturn(responseDto);
+        when(userService.create(any(UserCreateRequestDto.class), any()))
+                .thenReturn(responseDto);
 
         // when & then
         mockMvc.perform(multipart("/api/users")
@@ -88,7 +86,8 @@ class UserControllerTest {
     @Test
     @DisplayName("POST /api/users - 회원 등록 실패 (필수값 누락)")
     void 사용자_생성_실패() throws Exception {
-        // given: username 없음
+
+        // given - username 없음
         UserCreateRequestDto invalidRequest = new UserCreateRequestDto("alice@example.com", null, "password123");
         MockMultipartFile requestPart = new MockMultipartFile(
                 "userCreateRequest", "", "application/json",
@@ -105,13 +104,17 @@ class UserControllerTest {
     @Test
     @DisplayName("PATCH /api/users/{userId}/userStatus - 유저 상태 업데이트 성공")
     void 사용자_상태_수정_성공() throws Exception {
+
+        // given
         UUID userId = UUID.randomUUID();
         UserStatusUpdateRequestDto updateDto = new UserStatusUpdateRequestDto(Instant.now());
         UserStatusResponseDto responseDto = new UserStatusResponseDto(userId, Instant.now());
 
-        given(userStatusService.updateByUserId(eq(userId), any(UserStatusUpdateRequestDto.class)))
-                .willReturn(responseDto);
+        // when
+        when(userStatusService.updateByUserId(eq(userId), any(UserStatusUpdateRequestDto.class)))
+                .thenReturn(responseDto);
 
+        // then
         mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
@@ -121,10 +124,13 @@ class UserControllerTest {
     @Test
     @DisplayName("DELETE /api/users/{id} - 사용자 삭제 성공")
     void 사용자_삭제_성공() throws Exception {
-        UUID id = UUID.randomUUID();
-        doNothing().when(userService).delete(id);
 
-        mockMvc.perform(delete("/api/users/{id}", id))
+        // given
+        UUID userId = UUID.randomUUID();
+        doNothing().when(userService).delete(userId);
+
+        // when & then
+        mockMvc.perform(delete("/api/users/{id}", userId))
                 .andExpect(status().isNoContent());
     }
 }

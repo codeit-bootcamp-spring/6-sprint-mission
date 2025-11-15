@@ -49,11 +49,11 @@ class UserIntegrationTest {
     void setUp() {
         userRepository.deleteAll();
         user = User.builder()
+                .id(userId)
                 .username("test")
                 .email("ex@ex.com")
                 .password("1234")
                 .build();
-//        ReflectionTestUtils.setField(user, "id", userId);
         System.out.println("BeforeEach: User 객체 생성됨");
     }
 

@@ -11,8 +11,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # (create, create-drop, update, validate 등 사용 가능)
-    show-sql: true
+      ddl-auto: none # (create, create-drop, update, validate 등 사용 가능)
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -27,15 +27,15 @@ spring:
 logging:
   level:
     root: info
-    # JDBC 관련 로그를 DEBUG 레벨로 출력
-    org.hibernate.SQL: debug
+    org.hibernate.SQL: debug # JDBC 관련 로그를 DEBUG 레벨로 출력
     # SQL 파라미터를 출력
     org.hibernate.orm.jdbc.bind: trace
 
 discodeit:
   storage:
     type: local
-    path: ./uploads
+    local:
+      root-path: /Users/dhk/codeit/6-sprint-mission/src/main/java/com/sprint/mission/discodeit/storage/local
 
 
 management:
