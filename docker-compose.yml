@@ -12,7 +12,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
   app:
-    image: discodeit:local
+    image: discodeit:latest
     container_name: discodeit-app
     ports:
       - "8081:80"

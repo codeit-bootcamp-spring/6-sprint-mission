@@ -24,7 +24,6 @@ WORKDIR /app
 
 COPY --from=build /app/build/libs/*.jar app.jar
 
-
 EXPOSE 80
 
 ENTRYPOINT ["sh", "-c", "java $JVM_OPTS -jar app.jar"]
