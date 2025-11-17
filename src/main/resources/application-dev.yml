@@ -25,9 +25,9 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
     open-in-view: false
   boot:
-    admin:
-      client:
-        url: http://localhost:9090
+    #admin:
+      #client:
+        #url: http://localhost:9090
   cloud:
     aws:
       credentials:

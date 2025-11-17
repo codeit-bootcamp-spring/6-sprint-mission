@@ -25,9 +25,9 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
     open-in-view: false
   boot:
-    admin:
-      client:
-        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+    #admin:
+      #client:
+        #url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
   cloud:
     aws:
       credentials:
