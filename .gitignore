@@ -9,7 +9,8 @@ SwaggerTest
 .env
 binary-data
 docs
-logs
+/.logs/
+/.discodeit/
 
 ### STS ###
 .apt_generated

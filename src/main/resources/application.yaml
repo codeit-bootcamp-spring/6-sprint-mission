@@ -1,9 +1,22 @@
 spring:
+  profiles:
+    active:
+      - dev
   application:
     name: discodeit
   messages:
     basename: messages
     encoding: UTF-8
+  servlet:
+    multipart:
+      maxFileSize: 10MB
+      maxRequestSize: 50MB
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    # env 환경변수값이 자동 매핑
+    # SPRING_DATASOURCE_URL
+    # SPRING_DATASOURCE_USERNAME
+    # SPRING_DATASOURCE_PASSWORD
   jpa:
     hibernate:
       ddl-auto: validate
@@ -12,15 +25,7 @@ spring:
         format_sql: true
     show-sql: false
     open-in-view: false
-  servlet:
-    multipart:
-      maxFileSize: 10MB
-      maxRequestSize: 50MB
-  datasource:
-    driver-class-name: org.postgresql.Driver
-  profiles:
-    active:
-      - dev
+
 
 info:
   app:
@@ -28,10 +33,10 @@ info:
     version: 1.7.0
     java-version: 17
     spring-boot-version: 3.5.5
-    ddl-auto: none
+    ddl-auto: validate
     storage:
       type: local
-      root-path: /binary-data
+      root-path: .discodeit/storage
     multipart:
       max-file-size: 10MB
       max-request-size: 50MB
@@ -51,5 +56,4 @@ management:
 discodeit:
   storage:
     type: local
-    local:
-      root-path: .discodeit/storage
+    root-path: .discodeit/storage

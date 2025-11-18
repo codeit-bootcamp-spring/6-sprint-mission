@@ -1,12 +1,7 @@
 spring:
   sql:
     init:
-      mode: never        # 첫 실행시에만 always로 설정, 이후에는 never로 변경
+      mode: always
       platform: postgres
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-
 server:
   port: 80

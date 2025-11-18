@@ -1,12 +1,8 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
-    username: discodeit_user
-    password: discodeit1234
-  jpa:
-    properties:
-      hibernate:
-        format_sql: true
+  sql:
+    init:
+      mode: always
+      platform: postgres
 
 server:
   port: 8080
