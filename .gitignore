@@ -47,4 +47,4 @@ bin/
 !.dockerignore
 .env
 !.env.template
-!.discodeit.env
+discodeit.env
