@@ -1,8 +1,12 @@
+# dev 프로파일은 .env 환경변수로 설정된 Postgres DB를 사용
 spring:
   sql:
     init:
       mode: always
       platform: postgres
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    # 명시안해도 환경변수 경로를 통해 자동 주입됨
 
 server:
   port: 8080

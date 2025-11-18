@@ -25,17 +25,7 @@
     </encoder>
   </appender>
 
-  <springProfile name="test">
-    <logger name="com.sprint.mission.discodeit" level="DEBUG"/>
-    <logger name="org.hibernate.SQL" level="DEBUG"/>
-    <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>
-    <root level="INFO">
-      <appender-ref ref="FILE"/>
-      <appender-ref ref="CONSOLE"/>
-    </root>
-  </springProfile>
-
-  <springProfile name="dev">
+  <springProfile name="dev | local">
     <logger name="com.sprint.mission.discodeit" level="DEBUG"/>
     <logger name="org.hibernate.SQL" level="DEBUG"/>
     <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>

@@ -1,4 +1,4 @@
-# test profile 쓸 때는 env 설정 빼기
+# 로컬에서는 env 파일 설정하지 않고 H2 데이터베이스를 사용
 spring:
   datasource:
     driver-class-name: org.h2.Driver

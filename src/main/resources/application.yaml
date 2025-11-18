@@ -1,7 +1,11 @@
+# - build는 앱을 패키징하는 작업이므로 환경변수가 없어도 문제 없음.
+# - run은 실제로 앱을 실행하는 작업이므로 환경변수가 반드시 필요
+# 내부 환경변수 주입 -> ide
+# 외부 환경변수 주입 -> 터미널, 배포서버
+
 spring:
   profiles:
-    active:
-      - dev
+    active: ${SPRING_PROFILES_ACTIVE:local}
   application:
     name: discodeit
   messages:
@@ -11,12 +15,6 @@ spring:
     multipart:
       maxFileSize: 10MB
       maxRequestSize: 50MB
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    # env 환경변수값이 자동 매핑
-    # SPRING_DATASOURCE_URL
-    # SPRING_DATASOURCE_USERNAME
-    # SPRING_DATASOURCE_PASSWORD
   jpa:
     hibernate:
       ddl-auto: validate
@@ -25,7 +23,6 @@ spring:
         format_sql: true
     show-sql: false
     open-in-view: false
-
 
 info:
   app:

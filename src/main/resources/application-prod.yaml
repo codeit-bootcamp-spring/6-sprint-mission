@@ -1,7 +1,13 @@
+# prod 프로파일 환경변수는 외부에서 주입
 spring:
   sql:
     init:
       mode: always
       platform: postgres
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 server:
   port: 80
