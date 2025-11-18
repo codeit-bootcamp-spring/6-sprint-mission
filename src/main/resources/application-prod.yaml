@@ -1,13 +1,13 @@
 # prod 프로파일 환경변수는 외부에서 주입
 spring:
-  sql:
-    init:
-      mode: always
-      platform: postgres
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+
+# schema init은 도커 이미지 빌드 시점에 수행하므로 여기서는 설정하지 않음
+
+# 컨테이너 포트 80번 사용
 server:
   port: 80

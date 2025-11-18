@@ -9,8 +9,8 @@ ext {
 }
 
 group = 'com.sprint.mission'
-version = '1.2-M8'
-description = '6sprint3'
+version = System.getenv("PROJECT_VERSION") ?: "1.2-M8"
+description = '6sprint8'
 
 java {
     toolchain {

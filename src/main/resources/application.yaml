@@ -26,8 +26,8 @@ spring:
 
 info:
   app:
-    name: Discodeit
-    version: 1.7.0
+    name: ${PROJECT_NAME:Discodeit}
+    version: ${PROJECT_VERSION:1.2-M8}
     java-version: 17
     spring-boot-version: 3.5.5
     ddl-auto: validate
