@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 )
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
-  @Value("${discodeit.storage.root-path}")
+  @Value("${discodeit.storage.local.root-path}")
   private String fileDirectory;
 
   private Path root;
