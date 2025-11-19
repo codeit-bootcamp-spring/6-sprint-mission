@@ -28,3 +28,4 @@ COPY --from=build /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.jar
 EXPOSE 80
 
 ENTRYPOINT java $JVM_OPTS -jar /app.jar
+
