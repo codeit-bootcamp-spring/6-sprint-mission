@@ -8,64 +8,64 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      build_and_push:
-        - name: Checkout code
-          uses: actions/checkout@v5
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-        - name: Set up Java
-          uses: actions/setup-java@v3
-          with:
-            distribution: 'corretto'
-            java-version: '17'
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '17'
 
-        - name: Grant permissions for Gradle wrapper
-          run: chmod +x ./gradlew
+      - name: Grant permissions for Gradle wrapper
+        run: chmod +x ./gradlew
 
-        - name: Build with Gradle
-          run: ./gradlew build
+      - name: Build with Gradle
+        run: ./gradlew build
 
-        - name: Build Docker image
-          run: docker build -t discodeit:latest .
+      - name: Build Docker image
+        run: docker build -t discodeit:latest .
 
-        - name: Configure AWS credentials
-          uses: aws-actions/configure-aws-credentials@v1
-          with:
-            aws-access-key-id: ${{ secrets.AWS_DEPLOY_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_DEPLOY_SECRET_ACCESS_KEY }}
-            aws-region: ${{ secrets.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_DEPLOY_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_DEPLOY_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-        - name: Login to Amazon ECR
-          id: login-ecr
-          uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-        - name: Tag and Push Docker image to ECR
-          run: |
-            IMAGE_URI=${{ secrets.ECR_REPOSITORY_URI }}:latest
-            docker tag discodeit:latest $IMAGE_URI
-            docker push $IMAGE_URI
-            aws ecr describe-images --repository-name discodeit --image-ids imageTag=latest
+      - name: Tag and Push Docker image to ECR
+        run: |
+          IMAGE_URI=${{ secrets.ECR_REPOSITORY_URI }}:latest
+          docker tag discodeit:latest $IMAGE_URI
+          docker push $IMAGE_URI
+          aws ecr describe-images --repository-name discodeit --image-ids imageTag=latest
 
-        - name: Download existing ECS task definition
-          run: |
-            aws ecs describe-task-definition --task-definition ${{secrets.AWS_TASK_DEFINITION }} --query taskDefinition > task-definition.json
+      - name: Download existing ECS task definition
+        run: |
+          aws ecs describe-task-definition --task-definition ${{secrets.AWS_TASK_DEFINITION }} --query taskDefinition > task-definition.json
 
-        - name: Change image in task definition
-          uses: aws-actions/amazon-ecs-render-task-definition@v1
-          with:
-            task-definition: task-definition.json
-            container-name: ${{secrets.AWS_CONTAINER_NAME}}
-            image: ${{ secrets.ECR_REPOSITORY_URI }}:latest
+      - name: Change image in task definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{secrets.AWS_CONTAINER_NAME}}
+          image: ${{ secrets.ECR_REPOSITORY_URI }}:latest
 
-        - name: Deploy to ECS service
-          uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-          with:
-            task-definition: rendered-task-definition.json
-            service: ${{secrets.AWS_ECS_SERVICE }}
-            cluster: ${{secrets.AWS_ECS_CLUSTER }}
-            wait-for-service-stability: true
+      - name: Deploy to ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: rendered-task-definition.json
+          service: ${{secrets.AWS_ECS_SERVICE }}
+          cluster: ${{secrets.AWS_ECS_CLUSTER }}
+          wait-for-service-stability: true
 
-        - name: Deployment complete
-          run: echo "Deployment to ECS completed successfully!"
+      - name: Deployment complete
+        run: echo "Deployment to ECS completed successfully!"
+
 
 
 
