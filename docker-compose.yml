@@ -17,8 +17,10 @@ services:
     env_file:
       - .env
   app:
-    # 미리 이미지 빌드 필요: docker build -t discodeit:local .
-    image: discodeit:local
+    # 미리 이미지 빌드 필요:
+    # 1. docker build -t discodeit:local .
+    # 2. docker build -t discodeit:s3 .
+    image: discodeit:s3
     container_name: discodeit
     ports:
       - "8081:80"

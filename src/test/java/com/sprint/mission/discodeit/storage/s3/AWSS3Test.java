@@ -21,8 +21,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /*
-테스트 환경에서는 env 주입이 안되기에 직접 프로퍼티로 설정
-프로퍼티를 직접 넣지않는다면 오류나고 과금때문에 분리된 테스트 프로파일 사용
+테스트 환경에서는 yaml에 .env 주입이 안되기에 직접 프로퍼티로 설정
+프로퍼티를 직접 넣지않는다면 yaml에서 가져올수 없어 오류나고 과금때문에 분리된 테스트 프로파일 사용
+키를 일일히 입력해야하고 테스트를 하려면 S3Test 프로파일로 설정해야하는 단점이 있음
+./gradlew test -Dspring.profiles.active=S3Test
  */
 @SpringBootTest
 @ActiveProfiles("S3Test")
@@ -71,15 +73,17 @@ class AWSS3Test {
   @DisplayName("AWS S3 업로드 테스트")
   void awsS3UploadTest() throws IOException {
     S3Resource s3Resource = s3Template.upload(bucket, "hello.txt", Files.newInputStream(Path.of("./hello.txt")));
-    assertThat(s3Resource).isNotNull();
+    byte[] data = s3Resource.getInputStream().readAllBytes();
+    String content = new String(data);
+
+    assertThat(content.trim()).isEqualTo("Hello, AWS S3!");
   }
 
   @Test
   @DisplayName("AWS S3 다운로드 테스트")
   void awsS3DownloadTest() throws IOException {
     S3Resource s3Resource = s3Template.download(bucket, "hello.txt");
-    InputStream inputStream = s3Resource.getInputStream();
-    byte[] data = inputStream.readAllBytes();
+    byte[] data = s3Resource.getInputStream().readAllBytes();
     String content = new String(data);
 
     assertThat(content.trim()).isEqualTo("Hello, AWS S3!");
