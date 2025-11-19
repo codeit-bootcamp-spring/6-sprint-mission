@@ -9,7 +9,7 @@ ext {
 }
 
 group = 'com.sprint.mission'
-version = System.getenv("PROJECT_VERSION") ?: "1.2-M8"
+version = '1.2-M8'
 description = '6sprint8'
 
 java {
@@ -49,6 +49,9 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // AWS S3
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.1'
 
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'

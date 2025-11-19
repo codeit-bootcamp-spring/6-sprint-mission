@@ -6,7 +6,7 @@ build/
 !**/src/test/**/build/
 SwaggerTest
 .env
-/.logs/
+.logs/
 /.discodeit/
 
 ### STS ###
@@ -39,4 +39,3 @@ out/
 
 ### VS Code ###
 .vscode/
-/.env

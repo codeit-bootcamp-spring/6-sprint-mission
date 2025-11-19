@@ -24,6 +24,15 @@ spring:
     show-sql: false
     open-in-view: false
 
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      region:
+        static: ${AWS_S3_REGION:ap-northeast-2}
+
+
 info:
   app:
     name: ${PROJECT_NAME:Discodeit}
