@@ -37,4 +37,5 @@ COPY --from=builder /app/build/libs/${PROJECT_NAME}-*.jar /app.jar
 EXPOSE 80
 
 # 컨테이너 시작 시 실행될 명령어
-ENTRYPOINT ["sh", "-c", "java $JVM_OPTS -jar /app.jar"]
+ENTRYPOINT ["java"]
+CMD ["-Xmx384m", "-jar", "/app.jar"]
