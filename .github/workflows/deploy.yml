@@ -39,8 +39,9 @@ jobs:
 
       - name: Tag and Push Docker image to ECR
         run: |
-          IMAGE_URI=${{ secrets.ECR_REPOSITORY_URI }}:latest
-          docker tag discodeit:latest $IMAGE_URI
+          IMAGE_URI=${{ secrets.ECR_REPOSITORY_URI }}
+          docker tag discodeit:latest $IMAGE_URI:latest
+          docker tag discodeit:latest $IMAGE_URI:${{ github.sha }}
           docker push $IMAGE_URI
           aws ecr describe-images --repository-name discodeit --image-ids imageTag=latest
 
