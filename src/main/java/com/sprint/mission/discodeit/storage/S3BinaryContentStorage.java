@@ -29,12 +29,6 @@ public class S3BinaryContentStorage implements BinaryContentStorage{
   private final S3Client s3Client;
   private final S3Presigner s3Presigner;
 
-  /*@Value("${cloud.aws.credentials.access-key}")
-  private String accessKey;
-  @Value("${cloud.aws.credentials.secret-key}")
-  private String secretKey;
-  @Value("${cloud.aws.region.static}")
-  private String region;*/
   @Value("${discodeit.storage.s3.presigned-url-expiration}")
   private String presignedUrlExpiration;
   @Value("${spring.cloud.aws.s3.bucket}")

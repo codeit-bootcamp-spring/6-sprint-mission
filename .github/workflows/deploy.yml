@@ -56,6 +56,14 @@ jobs:
           container-name: ${{secrets.AWS_CONTAINER_NAME}}
           image: ${{ secrets.ECR_REPOSITORY_URI }}:latest
 
+      - name: Stop existing ECS service
+          run: |
+            aws ecs update-service \
+              --cluster ${{secrets.AWS_ECS_CLUSTER}} \
+              --service ${{secrets.AWS_ECS_SERVICE}} \
+              --desired-count 0 \
+              --force-new-deployment
+
       - name: Deploy to ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
