@@ -66,6 +66,7 @@ class UserControllerTest {
                 UUID.randomUUID(),
                 "alice@example.com",
                 "alice",
+                null,
                 true
         );
 

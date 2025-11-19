@@ -3,7 +3,7 @@ spring:
     name: discodeit
 
   profiles:
-    active: dev
+    active: prod
 
   datasource:
     url: jdbc:postgresql://localhost:5432/discodeit
@@ -33,10 +33,15 @@ logging:
 
 discodeit:
   storage:
-    type: local
+    type: ${STORAGE_TYPE:local} # local | s3 (기본값: local)
     local:
-      root-path: /Users/dhk/codeit/6-sprint-mission/src/main/java/com/sprint/mission/discodeit/storage/local
-
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+    s3:
+      access-key: ${AWS_CREDENTIALS_ACCESS_KEY}
+      secret-key: ${AWS_CREDENTIALS_SECRET_KEY}
+      region: ${AWS_REGION_STATIC}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
 
 management:
   endpoints:

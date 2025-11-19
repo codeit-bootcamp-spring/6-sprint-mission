@@ -1,8 +1,9 @@
-package com.sprint.mission.discodeit.storage;
+package com.sprint.mission.discodeit.storage.local;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,9 +23,9 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 @Slf4j
-@ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
 @Component
-public class LocalBinaryContentStorage implements BinaryContentStorage{
+@ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
+public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     private final Path root;
 
@@ -78,17 +79,17 @@ public class LocalBinaryContentStorage implements BinaryContentStorage{
     // 파일 다운로드
     @Override
     public ResponseEntity<Resource> download(BinaryContentResponseDto metadata) {
-            log.debug("다운로드를 시작합니다.");
-            InputStream inputStream = get(metadata.id()); // InputStream: 바이트 데이터를 읽기 위한 표준 통로
-            Resource resource = new InputStreamResource(inputStream); // Resource: 추상화된 '자원'. 파일, URL 등..
+        log.debug("다운로드를 시작합니다.");
+        InputStream inputStream = get(metadata.id()); // InputStream: 바이트 데이터를 읽기 위한 표준 통로
+        Resource resource = new InputStreamResource(inputStream); // Resource: 추상화된 '자원'. 파일, URL 등..
 
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + metadata.fileName() + "\"")
-                    .header(HttpHeaders.CONTENT_TYPE, metadata.contentType())
-                    .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(metadata.size()))
-                    .body(resource);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + metadata.fileName() + "\"")
+                .header(HttpHeaders.CONTENT_TYPE, metadata.contentType())
+                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(metadata.size()))
+                .body(resource);
 
     }
 

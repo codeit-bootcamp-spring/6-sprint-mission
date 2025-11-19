@@ -25,7 +25,10 @@ public class BinaryContentService {
     private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentMapper binaryContentMapper;
 
-
+    /**
+     * @deprecated 이 메서드는 요구사항에 따라 만들어졌으나 아무 곳에서도 사용되지 않습니다.
+     */
+    @Deprecated(forRemoval = true)
     @Transactional
     public BinaryContentResponseDto create(BinaryContentCreateRequestDto request) {
         byte[] bytes = request.bytes();

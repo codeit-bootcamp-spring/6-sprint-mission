@@ -4,15 +4,20 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-LOG_PATH_IS_UNDEFINED/
 .gradle/
 data/
-uploads/
 gradle/
 gradlew
 gradlew.bat
 HELP.md
 settings.gradle
+.env
+
+# 로그 저장 폴더
+.logs/
+
+# 로컬 업로드 폴더
+uploads/
 
 ### IntelliJ IDEA ###
 .idea/

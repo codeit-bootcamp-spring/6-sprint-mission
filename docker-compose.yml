@@ -1,0 +1,42 @@
+version: '3.8' # Docker Compose File Format의 버전
+services:
+  postgres-db:
+    image: postgres:17-alpine
+    container_name: discodeit-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: discodeit_user
+      POSTGRES_PASSWORD: discodeit1234
+      POSTGRES_DB: discodeit
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # 데이터를 영구적으로 저장
+      - ./initdb/schema.sql:/docker-entrypoint-initdb.d/schema.sql  # schema.sql 자동실행
+
+  app:
+    image: discodeit:local
+    container_name: discodeit
+    ports:
+      - "8081:8080" # 호스트 8081 -> 컨테이너 8080
+    build:
+      context: . # 애플리케이션 서비스를 로컬 Dockerfile에서 빌드
+      dockerfile: Dockerfile # (선택값)
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      POSTGRES_USER: discodeit_user
+      POSTGRES_PASSWORD: discodeit1234
+      POSTGRES_DB: discodeit
+
+    env_file:
+      - .env
+    depends_on:
+      - postgres-db
+    working_dir: /app
+    volumes:
+      - app_uploads_data:/app/uploads
+
+# Docker Compose가 관리할 볼륨 정의
+volumes:
+  postgres_data:
+  app_uploads_data:
