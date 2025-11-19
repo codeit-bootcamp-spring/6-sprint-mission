@@ -55,14 +55,10 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
   @Override
   public ResponseEntity<?> download(BinaryContentDto binaryContentDto) {
-    try {
-      byte[] bytes = get(binaryContentDto.id()).readAllBytes();
-
-      log.info("파일 다운로드: {}, 이름: {}", binaryContentDto.id(), binaryContentDto.fileName());
-      return ResponseEntity.ok(bytes);
-    } catch (IOException e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("파일 다운로드 실패");
-    }
+    return ResponseEntity
+        .status(HttpStatus.FOUND) // 302
+        .header("Location", generatePresignedUrl(binaryContentDto.id().toString(), null))
+        .build();
   }
 
   private S3Client getS3Client() {
