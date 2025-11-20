@@ -3,9 +3,9 @@ name: Deploy Spring Boot App
 on:
   workflow_dispatch:
   # 자동 실행 설정
-  push:
-    branches:
-      - 이호건-sprint8
+#  pull_request:
+#    branches:
+#      - 이호건
 
 jobs:
   deploy:
