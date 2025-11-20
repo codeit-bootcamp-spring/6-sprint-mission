@@ -1,0 +1,12 @@
+name: Test discodeit
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # steps:
+
+      # 추가 단계들...

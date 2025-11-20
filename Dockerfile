@@ -32,6 +32,7 @@ ENV PROJECT_VERSION=${PROJECT_VERSION}
 # 빌드 환경에서 생성된 JAR 파일 이름을 환경 변수를 사용하여 추론하고 복사
 ARG JAR_FILE=build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar
 COPY --from=builder /app/build/libs/${PROJECT_NAME}-*.jar /app.jar
+COPY --from=builder /app/build/libs/discodeit-*.jar /app.jar
 
 # 애플리케이션 실행 포트
 EXPOSE 80
