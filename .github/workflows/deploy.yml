@@ -5,7 +5,7 @@ on:
   # 자동 실행 설정
   push:
     branches:
-      - main
+      - 이호건-sprint8
 
 jobs:
   deploy:

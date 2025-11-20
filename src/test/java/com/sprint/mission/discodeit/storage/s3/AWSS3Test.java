@@ -14,6 +14,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Properties;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,12 +23,11 @@ import org.springframework.test.context.TestPropertySource;
 
 /*
 테스트 환경에서는 yaml에 .env 주입이 안되기에 직접 프로퍼티로 설정
-프로퍼티를 직접 넣지않는다면 yaml에서 가져올수 없어 오류나고 과금때문에 분리된 테스트 프로파일 사용
-키를 일일히 입력해야하고 테스트를 하려면 S3Test 프로파일로 설정해야하는 단점이 있음
-./gradlew test -Dspring.profiles.active=S3Test
+프로퍼티를 직접 넣지않는다면 yaml에서 가져올수 없어 오류나고 과금때문에 태그로 분리
+./gradlew test --include-tag S3Test
  */
 @SpringBootTest
-@ActiveProfiles("S3Test")
+@Tag("S3Test")
 @TestPropertySource(properties = {
     "spring.cloud.aws.credentials.access-key=inputYourAccessKey",
     "spring.cloud.aws.credentials.secret-key=inputYourSecretKey",
