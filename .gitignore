@@ -4,21 +4,18 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-.discodeit/
 .gradle/
-data/
 gradle/
 gradlew
 gradlew.bat
 HELP.md
 settings.gradle
-.env
-discodeit.env
 
-# 로그 저장 폴더
+
 .logs/
-
-# 로컬 업로드 폴더
+.env
+data/
+discodeit.env
 uploads/
 
 ### IntelliJ IDEA ###
