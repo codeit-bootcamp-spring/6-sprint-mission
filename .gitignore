@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 SwaggerTest
 .env
+/discodeit.env
 .logs/
 /.discodeit/
 
