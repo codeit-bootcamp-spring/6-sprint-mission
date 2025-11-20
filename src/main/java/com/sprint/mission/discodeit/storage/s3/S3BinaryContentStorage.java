@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -32,21 +33,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3BinaryContentStorage implements BinaryContentStorage {
 
-    @Value("${discodeit.s3.access-key}")
-    private String accessKey;
-
-    @Value("${discodeit.s3.secret-key}")
-    private String secretKey;
-
-    @Value("${discodeit.s3.region}")
-    private String region;
+    private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
     @Value("${discodeit.s3.bucket}")
     private String bucketName;
-
-    private S3Client s3Client;
-    private S3Presigner s3Presigner;
-
 
     // S3에 저장
     @Override
@@ -92,7 +83,6 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         }
     }
 
-    // S3에 저장된 파일 다운로드
     @Override
     public ResponseEntity<Void> download(BinaryContentResponseDto dto) {
         String key = dto.id().toString();
@@ -100,15 +90,17 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         String contentType = dto.contentType();
 
         try {
+            // 1. Presigned URL 생성 메서드 호출
             String presignedUrl = generatePresignedUrl(key, contentType, fileName);
 
-            return ResponseEntity.status(HttpStatus.FOUND)
+            // 2. HTTP 302 Found 상태와 Location 헤더를 사용하여 리다이렉트
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Found 또는 303 See Other
                     .header(HttpHeaders.LOCATION, presignedUrl)
                     .build();
 
         } catch (S3Exception e) {
-            System.err.println("Error downloading S3 object: " + e.getMessage());
-            // 404 Not Found 또는 403 Forbidden 등으로 응답
+            log.error("S3 파일 다운로드 실패. " + e.getMessage());
+            // S3 예외 처리
             if (e.statusCode() == 404) {
                 return ResponseEntity.notFound().build();
             }
@@ -116,25 +108,6 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         }
     }
 
-    @Bean
-    public S3Client getS3Client() {
-
-        // AWS 자격 증명 설정
-        AwsBasicCredentials credentials = AwsBasicCredentials.create(
-                accessKey,
-                secretKey
-        );
-
-        // 클라이언트 생성
-        s3Client = S3Client.builder()
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .build();
-        return s3Client;
-    }
-
-
-    // Presigned URL: 특정 S3 객체에 임시적으로 접근 권한을 부여하는 URL
     public String generatePresignedUrl(String key, String contentType, String fileName) {
 
         // 1. GET 요청 객체 생성: 버킷 이름, 키, Content-Disposition 지정
