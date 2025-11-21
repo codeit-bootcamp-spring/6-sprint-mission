@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,15 +14,16 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
  * S3 클라이언트 생성과 관련된 설정
  */
 @Configuration
+@ConfigurationProperties(prefix = "discodeit.storage.s3")
 public class S3Config {
 
-    @Value("${discodeit.s3.access-key}")
+    @Value("${AWS_ACCESS_KEY}")
     private String accessKey;
 
-    @Value("${discodeit.s3.secret-key}")
+    @Value("${AWS_SECRET_KEY}")
     private String secretKey;
 
-    @Value("${discodeit.s3.region}")
+    @Value("${AWS_REGION}")
     private String region;
 
     @Bean

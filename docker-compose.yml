@@ -1,4 +1,4 @@
-version: '3.8' # Docker Compose File Format의 버전
+# version: '3.8' # Docker Compose File Format의 버전 : obsolete!!! 무시됨.
 services:
   postgres-db:
     image: postgres:17-alpine
@@ -6,9 +6,12 @@ services:
     ports:
       - "5432:5432"
     environment:
+#      SPRING_PROFILES_ACTIVE: prod
       POSTGRES_USER: discodeit_user
       POSTGRES_PASSWORD: discodeit1234
       POSTGRES_DB: discodeit
+#      SPRING_DATASOURCE_USERNAME: discodeit_user # 이미 위에 있지만 Spring Boot 표준 변수명으로 다시 명시
+#      SPRING_DATASOURCE_PASSWORD: discodeit1234 # 이미 위에 있지만 Spring Boot 표준 변수명으로 다시 명시
 
     volumes:
       - postgres_data:/var/lib/postgresql/data  # 데이터를 영구적으로 저장
@@ -24,9 +27,10 @@ services:
       dockerfile: Dockerfile # (선택값)
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/discodeit
       POSTGRES_USER: discodeit_user
       POSTGRES_PASSWORD: discodeit1234
-      POSTGRES_DB: discodeit
+#      POSTGRES_DB: discodeit
 
     env_file:
       - .env

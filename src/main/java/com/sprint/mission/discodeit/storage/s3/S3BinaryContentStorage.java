@@ -36,8 +36,11 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
 
-    @Value("${discodeit.s3.bucket}")
+    @Value("${AWS_S3_BUCKET}")
     private String bucketName;
+
+    @Value("${AWS_S3_PRESIGNED_URL_EXPIRATION:600}")
+    private long presignedUrlExpirationSeconds;
 
     // S3에 저장
     @Override
@@ -121,7 +124,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
         // 2. Presign 요청 객체 생성: GET 요청과 유효 기간(Duration) 설정
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(5)) // 5분 동안 유효한 URL 설정
+                .signatureDuration(Duration.ofSeconds(presignedUrlExpirationSeconds)) // 5분 동안 유효한 URL 설정
                 .getObjectRequest(getObjectRequest)
                 .build();
 
