@@ -3,12 +3,13 @@ server:
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
+    url: jdbc:postgresql://${RDS_ENDPOINT}/discodeit
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     properties:
       hibernate:
+        ddl-auto: update
         format_sql: false
 
 logging:
