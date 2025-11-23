@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +37,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Value("${AWS_S3_BUCKET}")
     private String bucketName;
@@ -46,24 +49,25 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     @Override
     public UUID put(UUID binaryContentId, byte[] bytes) {
 
-        if (bytes.length == 0) throw new BinaryContentNotFoundException(binaryContentId);
+        binaryContentRepository.findById(binaryContentId)
+                .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId));
+
+        if (bytes.length == 0) throw new IllegalArgumentException("바이트 데이터가 없습니다.");
 
         String key = binaryContentId.toString(); // UUID를 S3 Key로 사용.
 
         PutObjectRequest putRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
-                .contentType("application/octet-stream") // 바이너리 데이터. 없어도 AWS가 유추하긴 함.
-                .contentLength((long) bytes.length) // 파일 크기를 명시
+                .contentType("application/octet-stream") // 바이너리 스트림 형태임을 명시. 없어도 AWS가 유추하긴 함.
+                .contentLength((long) bytes.length)
                 .build();
 
         try {
             s3Client.putObject(putRequest, RequestBody.fromBytes(bytes));
-
             return binaryContentId;
 
         } catch (S3Exception e) {
-            log.error("S3 파일 업로드 실패. key=" + key, e);
             throw new RuntimeException("S3 파일 업로드 실패. key=" + key, e);
         }
     }
@@ -89,8 +93,8 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     @Override
     public ResponseEntity<Void> download(BinaryContentResponseDto dto) {
         String key = dto.id().toString();
-        String fileName = dto.fileName();
         String contentType = dto.contentType();
+        String fileName = dto.fileName();
 
         try {
             // 1. Presigned URL 생성 메서드 호출

@@ -17,7 +17,7 @@ COPY . .
 
 # Gradle Wrapper를 실행 가능하게 하고, bootJar 태스크로 빌드 수행
 RUN chmod +x ./gradlew
-RUN ./gradlew bootJar
+RUN ./gradlew bootJar -x test
 
 # ----- 2. Run Stage -----
 FROM amazoncorretto:17

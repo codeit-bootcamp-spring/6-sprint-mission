@@ -14,12 +14,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
-import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -46,60 +44,53 @@ class S3BinaryContentStorageTest {
     @Mock
     private S3Presigner s3Presigner;
 
-    // 테스트에 필요한 @Value 필드 수동 설정
     private final String TEST_BUCKET = "test-bucket";
     private final String TEST_REGION = "ap-northeast-2";
     private final String TEST_ACCESS_KEY = "access";
     private final String TEST_SECRET_KEY = "secret";
 
-
     @BeforeEach
     void setUp() throws Exception {
-        // @Value 필드에 Reflection을 사용하지 않고, 테스트 전에 직접 설정 (또는 Setter 사용)
-        // 실제 코드에서는 @Value가 주입되지만, 단위 테스트에서는 수동 설정이 필요합니다.
         // 현재 S3BinaryContentStorage에 Setter가 없으므로 Reflection을 사용하거나,
         // 테스트만을 위한 생성자를 추가해야 합니다.
         // 여기서는 간단하게 Reflection을 통해 private 필드를 설정합니다.
         java.lang.reflect.Field bucketField = S3BinaryContentStorage.class.getDeclaredField("bucketName");
         bucketField.setAccessible(true);
         bucketField.set(s3Storage, TEST_BUCKET);
-
-        // s3Client와 s3Presigner는 @Mock으로 주입되었습니다.
     }
 
     @Test
     @DisplayName("S3 PUT 성공: putObject가 호출되고 UUID가 반환되어야 함")
     void put_success() {
         // Given
-        UUID fileId = UUID.randomUUID();
+        UUID binaryContentId = UUID.randomUUID();
         byte[] data = "test data".getBytes();
 
-        // Mock: s3Client.putObject는 예외 없이 성공적으로 반환한다고 가정
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
                 .thenReturn(PutObjectResponse.builder().build());
 
         // When
-        UUID resultId = s3Storage.put(fileId, data);
+        UUID resultId = s3Storage.put(binaryContentId, data);
 
         // Then
-        assertEquals(fileId, resultId);
-        // PutObjectRequest가 올바른 key와 bucket으로 호출되었는지 확인
+        assertEquals(binaryContentId, resultId);
         verify(s3Client, times(1)).putObject(any(PutObjectRequest.class), any(RequestBody.class));
     }
-
-    // --- GET (파일 읽기) 테스트 ---
 
     @Test
     @DisplayName("S3 GET 성공: s3Client.getObject가 호출되고 InputStream이 반환되어야 함")
     void get_success() {
         // Given
         UUID fileId = UUID.randomUUID();
-        InputStream mockInputStream = new ByteArrayInputStream("stream data".getBytes());
+        byte[] streamData = "stream data".getBytes();
+        InputStream mockInputStream = new ByteArrayInputStream(streamData);
 
-        // Mock: s3Client.getObject가 InputStream을 반환하도록 설정
-        // Mock: s3Client.putObject는 예외 없이 성공적으로 반환한다고 가정
-        when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-                .thenReturn(PutObjectResponse.builder().build());
+        @SuppressWarnings("unchecked")
+        ResponseInputStream<GetObjectResponse> mockResponseInputStream =
+                (ResponseInputStream<GetObjectResponse>) mock(ResponseInputStream.class);
+
+        when(s3Client.getObject(any(GetObjectRequest.class)))
+                .thenReturn(mockResponseInputStream); // Mock ResponseInputStream 반환
 
         // When
         InputStream resultStream = s3Storage.get(fileId);
@@ -109,7 +100,6 @@ class S3BinaryContentStorageTest {
         verify(s3Client, times(1)).getObject(any(GetObjectRequest.class));
     }
 
-    // --- generatePresignedUrl (다운로드 URL 생성) 테스트 ---
 
     @Test
     @DisplayName("Presigned URL 생성 성공: GetObjectPresignRequest에 Content-Disposition이 포함되어야 함")
@@ -149,7 +139,6 @@ class S3BinaryContentStorageTest {
         assertEquals(contentType, capturedGetObjectRequest.responseContentType());
     }
 
-    // --- DOWNLOAD (리다이렉션) 테스트 ---
 
     @Test
     @DisplayName("DOWNLOAD 성공: Presigned URL로 HTTP 302 리다이렉션 응답 반환")

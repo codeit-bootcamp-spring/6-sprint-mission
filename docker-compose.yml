@@ -1,4 +1,3 @@
-# version: '3.8' # Docker Compose File Format의 버전 : obsolete!!! 무시됨.
 services:
   postgres-db:
     image: postgres:17-alpine
@@ -6,31 +5,27 @@ services:
     ports:
       - "5432:5432"
     environment:
-#      SPRING_PROFILES_ACTIVE: prod
       POSTGRES_USER: discodeit_user
       POSTGRES_PASSWORD: discodeit1234
       POSTGRES_DB: discodeit
-#      SPRING_DATASOURCE_USERNAME: discodeit_user # 이미 위에 있지만 Spring Boot 표준 변수명으로 다시 명시
-#      SPRING_DATASOURCE_PASSWORD: discodeit1234 # 이미 위에 있지만 Spring Boot 표준 변수명으로 다시 명시
 
     volumes:
       - postgres_data:/var/lib/postgresql/data  # 데이터를 영구적으로 저장
-      - ./initdb/schema.sql:/docker-entrypoint-initdb.d/schema.sql  # schema.sql 자동실행
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql  # schema.sql 자동실행
 
   app:
     image: discodeit:local
     container_name: discodeit
     ports:
-      - "8081:8080" # 호스트 8081 -> 컨테이너 8080
-    build:
-      context: . # 애플리케이션 서비스를 로컬 Dockerfile에서 빌드
+      - "8081:80" # 호스트 8081 -> 컨테이너 80
+    build: # 애플리케이션 서비스를 로컬 Dockerfile에서 빌드
+      context: . # 현재 디렉토리를 컨텍스트 경로로 지정
       dockerfile: Dockerfile # (선택값)
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/discodeit
-      POSTGRES_USER: discodeit_user
-      POSTGRES_PASSWORD: discodeit1234
-#      POSTGRES_DB: discodeit
+      SPRING_DATASOURCE_USERNAME: discodeit_user
+      SPRING_DATASOURCE_PASSWORD: discodeit1234
 
     env_file:
       - .env
@@ -38,7 +33,7 @@ services:
       - postgres-db
     working_dir: /app
     volumes:
-      - app_uploads_data:/app/uploads
+      - app_uploads_data:/app/uploads # 업로드 파일 영속성 확보
 
 # Docker Compose가 관리할 볼륨 정의
 volumes:
