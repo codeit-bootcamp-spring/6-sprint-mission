@@ -3,6 +3,13 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+!**/src/main/**/generated/
+!**/src/test/**/generated/
+!**/src/main/resources/data/**
+src/main/generated/**
+src/main/resources/data/**
+/uploads/
+logs/
 
 ### IntelliJ IDEA ###
 .idea
@@ -41,3 +48,8 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### environment files ###
+.env
+.env.local
+.env.*.local

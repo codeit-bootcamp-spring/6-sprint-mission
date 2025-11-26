@@ -1,14 +1,18 @@
 discodeit:
   storage:
-    type: local
+    type: ${STORAGE_TYPE}
     local:
       root-path: C:\\spring\\codeit-bootcamp-spring\\6-sprint-mission\\src\\main\\resources\\data\\files\\
+    s3:
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
 spring:
   application:
     name: discodeit
+  config:
+    import: optional:file:.env
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:discodeit-db
     username: sa
     password: password
   jpa:
@@ -18,17 +22,28 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
     open-in-view: false
   boot:
-    admin:
-      client:
-        url: http://localhost:9090
+    #admin:
+      #client:
+        #url: http://localhost:9090
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_S3_ACCESS_KEY}
+        secret-key: ${AWS_S3_SECRET_KEY}
+      region:
+        static: ${ap-northeast-2:ap-northeast-2}
+      s3:
+        bucket: ${AWS_S3_BUCKET}
 code:
   repository:
     type: file
 logging:
     level:
-        root: DEBUG
+        root: INFO
+        com.codeit: DEBUG
 server:
   port: 8081
 management:

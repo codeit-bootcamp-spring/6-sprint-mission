@@ -1,0 +1,27 @@
+services:
+  postgres-db:
+    image: postgres:17-alpine
+    container_name: discodeit-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER:-discodeit_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-discodeit1234}
+      POSTGRES_DB:
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+  app:
+    image: discodeit:latest
+    container_name: discodeit-app
+    ports:
+      - "8081:80"
+    env_file:
+      - .env
+    depends_on:
+      - postgres-db
+    volumes:
+      - discodeit_uploads:/src/main/resources/data/files
+volumes:
+    postgres_data:
+    discodeit_uploads:

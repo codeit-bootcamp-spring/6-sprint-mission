@@ -1,0 +1,129 @@
+@baseUrl = http://localhost:8080/api
+@contentType = application/json
+@userId = f1c0cc3a-4567-4659-99ee-e2e2d6649a13
+@binaryContentId = 121e0b38-5996-4f00-adc6-82d2298feb84
+
+### 1. Create a test userEntity
+# @name createUser
+POST {{baseUrl}}/users
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="userCreateRequest"
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "testuser_{{$timestamp}}@example.com",
+  "password": "Test123!",
+  "description": "Test userEntity"
+}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="profile"; filename="profile.txt"
+Content-Type: text/plain
+
+This is a sample profile image content.
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 2. Login to get JWT token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser",
+  "password": "Test123!"
+}
+
+### Extract token from login response
+@token = {{login.response.body.token}}
+
+### 3. Create a public channelEntity
+# @name createChannel
+POST {{baseUrl}}/channels/public
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "Test Channel",
+  "category": "TEXT",
+  "isVoiceChannel": false,
+  "description": "Test channelEntity description"
+}
+
+### Extract channelEntity ID
+@channelId = fafbc7c7-e68a-4847-bec4-36ae7ec1d015
+
+### 4. Send a messageEntity
+
+POST {{baseUrl}}/messages
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="request"
+Content-Type: application/json
+
+{
+  "content": "Hello, this is a test messageEntity",
+  "channelId": "{{channelId}}",
+  "isReply": false,
+  "authorId": "b3623f06-76c2-4b83-89d9-73d02fc38306"
+}
+
+### Extract messageEntity ID
+@messageId = 7ded9b57-ba7c-4880-a7cf-3bb8b247ef25
+
+### 5. Get messages in channelEntity
+# @name getMessages
+GET {{baseUrl}}/messages?channelId={{channelId}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+### 6. Update the messageEntity
+PATCH {{baseUrl}}/messages/{{messageId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "content": "Updated test messageEntity content"
+}
+
+### 7. Create read status
+# @name createReadStatus
+POST {{baseUrl}}/readStatuses
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "channelId": "{{channelId}}",
+  "userId": "{{userId}}",
+  "lastReadAt": "2025-09-23T04:26:31.089Z"
+}
+
+### 8. Get read statuses
+# @name ReadStatuses
+GET {{baseUrl}}/readStatuses?userId={{userId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### 9. Get binary contents
+# @name GetBinaryContents
+GET {{baseUrl}}/binaryContents?binaryContentIds={{binaryContentId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### 10. Get all channels
+# @name GetAllChannels
+GET {{baseUrl}}/channels?userId={{userId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### 11. Clean up - Delete the messageEntity
+DELETE {{baseUrl}}/messages/{{messageId}}
+Authorization: Bearer {{token}}
+
+### 12. Clean up - Delete the channelEntity
+DELETE {{baseUrl}}/channels/{{channelId}}
+Authorization: Bearer {{token}}

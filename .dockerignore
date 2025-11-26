@@ -1,7 +1,11 @@
 .git
+.gitignore
 .gradle
 build
 .idea
 *.iml
 *.log
 test
+.env
+Dockerfile
+build-and-copy-fe.sh
