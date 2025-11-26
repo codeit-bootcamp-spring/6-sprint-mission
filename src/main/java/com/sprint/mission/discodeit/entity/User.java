@@ -1,58 +1,59 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public class User {
-    private final UUID id; // 유저 아이디
-    private final long createdAt; // 유저 생성 시각
-    private long updatedAt; // 유저 수정 시각
+@Entity
+@Table(name = "users")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)  // JPA를 위한 기본 생성자
+public class User extends BaseUpdatableEntity {
 
-    private String name; // 유저 이름
-    private String status; // 유저 상태
-    private String email; // 유저 이메일
+  @Column(length = 50, nullable = false, unique = true)
+  private String username;
+  @Column(length = 100, nullable = false, unique = true)
+  private String email;
+  @Column(length = 60, nullable = false)
+  private String password;
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "profile_id", columnDefinition = "uuid")
+  private BinaryContent profile;
+  @JsonManagedReference
+  @Setter(AccessLevel.PROTECTED)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus status;
 
-    //생성자 (유저명, 유저 상태, 유저 이메일)
-    public User(String name, String status, String email){
-        this.id = UUID.randomUUID(); // 유저 아이디 난수 생성
-        this.createdAt = System.currentTimeMillis() / 1000L; // 생성 시각
+  public User(String username, String email, String password, BinaryContent profile) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profile = profile;
+  }
 
-        this.name = name; // 유저 이름 초기화
-        this.status = status; // 유저 상태 초기화
-        this.email = email; // 유저 이메일 초기화
+  public void update(String newUsername, String newEmail, String newPassword,
+      BinaryContent newProfile) {
+    if (newUsername != null && !newUsername.equals(this.username)) {
+      this.username = newUsername;
     }
-
-
-    //Getter
-    public UUID getId(){return id;}
-    public long getCreatedAt(){ return createdAt; }
-    public long getUpdatedAt(){ return updatedAt; }
-    public String getName(){ return name; }
-    public String getStatus(){ return status; }
-    public String getEmail(){ return email; }
-
-    //update
-    private void update(){ // 수정 시각  (외부에서 접근할 이유 X - private)
-        this.updatedAt = System.currentTimeMillis() / 1000L;
+    if (newEmail != null && !newEmail.equals(this.email)) {
+      this.email = newEmail;
     }
-    public void setName(String updatedName){ // 유저 이름 업데이트
-        this.name = updatedName;
-        update();
+    if (newPassword != null && !newPassword.equals(this.password)) {
+      this.password = newPassword;
     }
-    public void setStatus(String updatedStatus){ // 유저 상태 업데이트
-        this.status = updatedStatus;
-        update();
+    if (newProfile != null) {
+      this.profile = newProfile;
     }
-    public void setEmail(String updatedEmail){ // 이메일 업데이트
-        this.email = updatedEmail;
-        update();
-    }
-
-    public String toString(){
-        return "[유저 이름: " + name + ", 유저 아이디: " + id +
-                "\n상태: " + status + "\n이메일: " + email +
-                "\n생성 시각: " + createdAt + ", 수정 시각: " + updatedAt + "]\n";
-    }
-
+  }
 }
