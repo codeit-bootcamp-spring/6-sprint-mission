@@ -33,8 +33,8 @@ public record ChannelResponseDto(
         return new ChannelResponseDto(
                 id,
                 ChannelType.PRIVATE,
-                "",
-                "",
+                null,
+                null,
                 participants,
                 lastMessageSentAt
         );

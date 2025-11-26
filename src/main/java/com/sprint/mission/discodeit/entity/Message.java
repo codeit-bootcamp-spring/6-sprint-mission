@@ -23,8 +23,8 @@ import java.util.UUID;
 public class Message extends BaseUpdatableEntity {
 
     @Id
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -35,7 +35,7 @@ public class Message extends BaseUpdatableEntity {
     private Channel channel;
 
     @OneToMany(mappedBy = "message")
-    private List<BinaryContent> attachments;
+    private List<BinaryContent> attachments = new ArrayList<>();
 
     @NotBlank
     @Column(nullable = false)
@@ -43,7 +43,8 @@ public class Message extends BaseUpdatableEntity {
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+    @Builder.Default
+    private Instant createdAt = Instant.now();
 
     @LastModifiedDate
     private Instant updatedAt;

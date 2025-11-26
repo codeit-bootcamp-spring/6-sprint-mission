@@ -27,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 //  -> 테스트 불가능
 //  아직 해결 못 한 상태.
 
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EntityScan(basePackages = "com.sprint.mission.discodeit.entity")
 @ActiveProfiles("test")
@@ -50,11 +49,11 @@ class UserIntegrationTest {
     void setUp() {
         userRepository.deleteAll();
         user = User.builder()
+                .id(userId)
                 .username("test")
                 .email("ex@ex.com")
                 .password("1234")
                 .build();
-//        ReflectionTestUtils.setField(user, "id", userId);
         System.out.println("BeforeEach: User 객체 생성됨");
     }
 

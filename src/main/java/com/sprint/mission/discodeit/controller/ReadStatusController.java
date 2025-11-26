@@ -21,25 +21,23 @@ public class ReadStatusController {
     private final ReadStatusService readStatusService;
 
     @PostMapping
-    public ResponseEntity<ReadStatusResponseDto> create(@Valid @RequestBody ReadStatusCreateRequestDto dto) {
-        ReadStatusResponseDto readStatus = readStatusService.create(dto);
+    public ResponseEntity<ReadStatusResponseDto> create(@Valid @RequestBody ReadStatusCreateRequestDto request) {
+        ReadStatusResponseDto readStatus = readStatusService.create(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(readStatus);
     }
 
-    @GetMapping("/{readStatusId}")
-    public ResponseEntity<List<ReadStatusResponseDto>> findAllByUserId(@PathVariable UUID readStatusId) {
-        return ResponseEntity.ok(readStatusService.findAllByUserId(readStatusId));
+    @GetMapping
+    public ResponseEntity<List<ReadStatusResponseDto>> findAllByUserId(@RequestParam("userId") UUID userId) {
+        return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
     }
 
-    @PatchMapping("/users/{userId}")
-    public ResponseEntity<ReadStatusResponseDto> update(@PathVariable UUID userId,
+    @PatchMapping("/{readStatusId}")
+    public ResponseEntity<ReadStatusResponseDto> update(@PathVariable("readStatusId") UUID readStatusId,
                                                         @Valid @RequestBody ReadStatusUpdateRequestDto request) {
-        ReadStatusResponseDto readStatus = readStatusService.update(userId, request);
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(readStatus);
+        ReadStatusResponseDto readStatus = readStatusService.update(readStatusId, request);
+        return ResponseEntity.ok(readStatus);
     }
 
 }

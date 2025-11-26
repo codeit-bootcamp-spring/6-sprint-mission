@@ -4,14 +4,19 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-LOG_PATH_IS_UNDEFINED/
 .gradle/
-data/
 gradle/
 gradlew
 gradlew.bat
 HELP.md
 settings.gradle
+
+
+.logs/
+.env
+data/
+discodeit.env
+uploads/
 
 ### IntelliJ IDEA ###
 .idea/

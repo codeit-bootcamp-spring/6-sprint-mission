@@ -9,8 +9,6 @@ import java.util.UUID;
 public record BinaryContentResponseDto(
         UUID id,
         String fileName,
-        // String extension,
+        String contentType,
         Long size
-        // BinaryContentType type
-        // byte[] data
 ) {}

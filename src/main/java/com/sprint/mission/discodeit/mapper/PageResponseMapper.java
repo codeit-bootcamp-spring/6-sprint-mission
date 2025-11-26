@@ -6,10 +6,10 @@ import org.springframework.data.domain.Slice;
 
 public class PageResponseMapper {
 
-    public static <T> PageResponse<T> fromSlice(Slice<T> slice){
+    public static <T> PageResponse<T> fromSlice(Slice<T> slice, Object nextCursor) {
         return new PageResponse<>(
                 slice.getContent(),
-                slice.getNumber(),
+                nextCursor,
                 slice.getSize(),
                 slice.hasNext(),
                 null

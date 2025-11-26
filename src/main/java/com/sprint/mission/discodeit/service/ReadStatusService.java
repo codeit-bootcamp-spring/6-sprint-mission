@@ -8,7 +8,6 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
-import com.sprint.mission.discodeit.exception.readstatus.ReadStatusListNotFoundException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
@@ -38,27 +37,26 @@ public class ReadStatusService {
     @Transactional
     public ReadStatusResponseDto create(ReadStatusCreateRequestDto dto){
 
-        User user = userRepository.findById(dto.userId())
-                .orElseThrow(() -> new UserNotFoundException(dto.userId()));
-        Channel channel = channelRepository.findById(dto.channelId())
-                .orElseThrow(() -> new ChannelNotFoundException(dto.channelId()));
+        UUID userId = dto.userId();
+        UUID channelId = dto.channelId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
         // 중복 체크
-        List<ReadStatus> userReadStatuses = readStatusRepository.findAllByUserId(dto.userId());
-        boolean exists = userReadStatuses.stream()
-                .anyMatch(readStatus -> readStatus.getChannel().getId().equals(dto.channelId()));
-        if (exists) {
-            throw new ReadStatusAlreadyExistsException(channel.getId(), user.getId());
+        if (readStatusRepository.existsByUserIdAndChannelId(userId, channelId)) {
+            throw new ReadStatusAlreadyExistsException(userId, channelId);
         }
 
         ReadStatus readStatus = ReadStatus.builder()
                 .user(user)
                 .channel(channel)
-                .lastReadAt(null)
+                .lastReadAt(dto.lastReadAt())
                 .build();
 
         readStatusRepository.save(readStatus);
-
         return readStatusMapper.toDto(readStatus);
     }
 
@@ -72,10 +70,6 @@ public class ReadStatusService {
     @Transactional(readOnly = true)
     public List<ReadStatusResponseDto> findAllByUserId(UUID id){
         List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(id);
-
-        if (readStatuses.isEmpty()) {
-            throw new ReadStatusListNotFoundException(id);
-        }
 
         return readStatuses.stream()
                 .map(readStatusMapper::toDto)

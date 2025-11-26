@@ -3,9 +3,7 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.enums.BinaryContentType;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -13,8 +11,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,12 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@EntityScan(basePackages = "com.sprint.mission.discodeit.entity")
 class UserRepositoryTest {
 
-    @Autowired
-    private TestEntityManager em;
+    // 엔터티를 못 찾는 에러 발생
+//    @Autowired
+//    private TestEntityManager em;
 
     @Autowired
     private UserRepository userRepository;
@@ -40,23 +35,20 @@ class UserRepositoryTest {
     @BeforeEach
     void setUp() {
 
-        // 프로필 이미지 생성
-        BinaryContent profile1 = BinaryContent.builder()
+        BinaryContent profileImage1 = BinaryContent.builder()
                 .fileName("profile1.png")
-                .extension("image/png")
-                .type(BinaryContentType.PROFILE_IMAGE)
+                .contentType("image/png")
+                .size(5L)
                 .build();
 
-        // 사용자 1 생성
         user1 = User.builder()
                 .username("alice")
                 .email("alice@example.com")
                 .password("password")
                 .createdAt(Instant.now())
-                .profileImage(profile1)
+                .profileImage(profileImage1)
                 .build();
 
-        // 사용자 2 생성
         user2 = User.builder()
                 .username("bob")
                 .email("bob@example.com")
@@ -64,7 +56,6 @@ class UserRepositoryTest {
                 .createdAt(Instant.now())
                 .build();
 
-        // 상태 엔티티 생성
         UserStatus status1 = UserStatus.builder()
                 .user(user1)
                 .lastActiveAt(Instant.now())
@@ -78,23 +69,25 @@ class UserRepositoryTest {
         // 양방향 연관관계 설정
         user1.setUserStatus(status1);
         user2.setUserStatus(status2);
+        profileImage1.setUser(user1);
 
-        // 순서: 연관관계 완성 → persist
-        em.persist(user1);
-        em.persist(user2);
-
-        em.flush();
-        em.clear();
+        userRepository.save(user1);
+        userRepository.save(user2);
     }
 
     @Test
     @DisplayName("findByUsernameWithStatusAndProfile() 성공 - UserStatus와 Profile 모두 조회")
     void testFindByUsernameWithStatusAndProfile_성공() {
+
+        // given - setUp()
+
+        // when
         Optional<User> found = userRepository.findByUsernameWithStatusAndProfile("alice");
 
+        // then
         assertThat(found).isPresent();
-        User user = found.get();
 
+        User user = found.get();
         assertThat(user.getUsername()).isEqualTo("alice");
         assertThat(user.getUserStatus()).isNotNull();
         assertThat(user.getProfileImage()).isNotNull();
@@ -103,16 +96,27 @@ class UserRepositoryTest {
 
     @Test
     @DisplayName("findByUsernameWithStatusAndProfile() 실패 - 존재하지 않는 username")
-    void testFindByUsernameWithStatusAndProfile_Fail() {
+    void testFindByUsernameWithStatusAndProfile_실패() {
+
+        // given - setUp()
+
+        // when
         Optional<User> found = userRepository.findByUsernameWithStatusAndProfile("charlie");
+
+        // then
         assertThat(found).isEmpty();
     }
 
     @Test
     @DisplayName("findAllWithStatusAndProfile() 조회 - 페이징/정렬")
     void testFindAllWithStatusAndProfile() {
+
+        // given - setUp()
+
+        // when
         List<User> users = userRepository.findAllWithStatusAndProfile();
 
+        // then
         assertThat(users).hasSize(2);
         assertThat(users)
                 .extracting(User::getUsername)

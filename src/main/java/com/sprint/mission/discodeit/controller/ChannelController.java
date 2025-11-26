@@ -9,7 +9,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,9 +23,9 @@ public class ChannelController {
 
     @PostMapping("/private")
     public ResponseEntity<ChannelResponseDto> createPrivateChannel(
-            @Valid @RequestBody PrivateChannelCreateRequestDto dto
+            @Valid @RequestBody PrivateChannelCreateRequestDto request
     ) {
-        ChannelResponseDto channel = channelService.createPrivateChannel(dto);
+        ChannelResponseDto channel = channelService.create(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED) // 201 Created
                 .body(channel);
@@ -34,27 +33,27 @@ public class ChannelController {
 
     @PostMapping("/public")
     public ResponseEntity<ChannelResponseDto> createPublicChannel(
-            @Valid @RequestBody PublicChannelCreateRequestDto dto
+            @Valid @RequestBody PublicChannelCreateRequestDto request
     ) {
-        ChannelResponseDto channel = channelService.createPublicChannel(dto);
+        ChannelResponseDto channel = channelService.create(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED) // 201 Created
                 .body(channel);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<List<ChannelResponseDto>> findAll(@PathVariable UUID id) {
-        return ResponseEntity.ok(channelService.findAllByUserId(id));
+    @GetMapping
+    public ResponseEntity<List<ChannelResponseDto>> findAllByUserId(@RequestParam("userId") UUID userId) {
+        return ResponseEntity.ok(channelService.findAllByUserId(userId));
     }
 
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ChannelResponseDto> update(@PathVariable UUID id,
-                                                     @Valid @RequestBody PublicChannelUpdateRequestDto dto) {
-        ChannelResponseDto channel = channelService.update(id, dto);
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(channel);
+    public ResponseEntity<ChannelResponseDto> update(
+            @PathVariable UUID id,
+            @Valid @RequestBody PublicChannelUpdateRequestDto request
+    ) {
+        ChannelResponseDto response = channelService.update(id, request);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")

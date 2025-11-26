@@ -1,12 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
-import com.sprint.mission.discodeit.enums.BinaryContentType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -21,11 +19,11 @@ import java.util.UUID;
 public class BinaryContent extends BaseEntity {
 
     @Id
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "message_id")
+    @ManyToOne
+    @JoinColumn(name = "message_id", nullable = true)
     private Message message;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -33,19 +31,17 @@ public class BinaryContent extends BaseEntity {
     private User user;
 
     @Column(nullable = false, updatable = false)
-    private BinaryContentType type;
-
-    @Column(nullable = false, updatable = false)
     private String fileName;
 
     @Column(nullable = false, updatable = false)
-    private String extension;
+    private String contentType;
 
     @Column(nullable = false, updatable = false)
     private Long size;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+    @Builder.Default
+    private Instant createdAt = Instant.now();
 }
 

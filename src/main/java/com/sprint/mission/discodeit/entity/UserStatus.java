@@ -20,9 +20,8 @@ import java.util.UUID;
 public class UserStatus extends BaseUpdatableEntity {
 
     @Id
-    @GeneratedValue
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @OneToOne
     @JoinColumn(name = "user_id")
@@ -33,11 +32,11 @@ public class UserStatus extends BaseUpdatableEntity {
     private Instant lastActiveAt;
 
     @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    @Column(nullable = false, updatable = false)
+    @Builder.Default
+    private Instant createdAt = Instant.now();
 
     @LastModifiedDate
-    @Column(name = "updated_at")
     private Instant updatedAt;
 
     public boolean isOnline() {

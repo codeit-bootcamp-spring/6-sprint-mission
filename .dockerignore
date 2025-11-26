@@ -1,0 +1,21 @@
+# Git
+.git
+.gitignore
+
+# Gradle 캐시
+.gradle
+build/
+
+# 로컬 환경 변수
+.env
+discodeit.env
+
+# 로컬 업로드 폴더
+uploads
+
+# 로그
+.logs
+
+# Dockerfile 및 스크립트
+Dockerfile
+build-and-copy-fe.sh

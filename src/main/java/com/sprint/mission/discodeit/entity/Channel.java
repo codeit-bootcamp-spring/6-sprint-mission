@@ -16,13 +16,14 @@ import java.util.UUID;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "id", callSuper = false)
 @Builder
 @Table(name = "channels")
 public class Channel extends BaseUpdatableEntity {
 
     @Id
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false, updatable = false)
     @Enumerated(EnumType.STRING)
@@ -34,7 +35,6 @@ public class Channel extends BaseUpdatableEntity {
     @OneToMany(mappedBy = "channel")
     private List<ReadStatus> readStatuses;
 
-    @NotBlank
     @Column(nullable = false)
     private String name;
 
@@ -42,7 +42,8 @@ public class Channel extends BaseUpdatableEntity {
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+    @Builder.Default
+    private Instant createdAt = Instant.now();;
 
     @LastModifiedDate
     private Instant updatedAt;
