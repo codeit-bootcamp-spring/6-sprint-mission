@@ -13,9 +13,9 @@
   </appender>
 
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>logs/discodeit.log</file>
+    <file>.logs/discodeit.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-      <fileNamePattern>logs/archive/discodeit.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <fileNamePattern>.logs/archive/discodeit.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
       <maxFileSize>10MB</maxFileSize>
       <maxHistory>30</maxHistory>
       <totalSizeCap>1GB</totalSizeCap>
@@ -25,18 +25,10 @@
     </encoder>
   </appender>
 
-  <springProfile name="test">
+  <springProfile name="dev | local">
     <logger name="com.sprint.mission.discodeit" level="DEBUG"/>
-    <!--    <logger name="org.hibernate.SQL" level="DEBUG"/>-->
-    <!--    <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>-->
-    <root level="INFO">
-      <appender-ref ref="FILE"/>
-      <appender-ref ref="CONSOLE"/>
-    </root>
-  </springProfile>
-
-  <springProfile name="dev">
-    <logger name="com.sprint.mission.discodeit" level="DEBUG"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>
     <root level="INFO">
       <appender-ref ref="FILE"/>
       <appender-ref ref="CONSOLE"/>
@@ -44,6 +36,7 @@
   </springProfile>
 
   <springProfile name="prod">
+    <logger name="org.hibernate.SQL" level="INFO"/>
     <root level="INFO">
       <appender-ref ref="FILE"/>
       <appender-ref ref="CONSOLE"/>

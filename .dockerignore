@@ -1,0 +1,23 @@
+# Git
+.git
+.gitignore
+SwaggerTest
+/discodeit.env
+
+# Gradle 캐시
+.gradle
+build/
+
+# IDE 설정
+.idea/
+*.iml
+
+# 로컬 환경 변수
+.env
+
+# 로그, 업로드 폴더
+.logs/
+.discodeit/
+
+# Dockerfile
+Dockerfile

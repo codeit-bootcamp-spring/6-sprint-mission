@@ -51,8 +51,8 @@ class ChannelServiceTest {
   private BasicChannelService channelService;
 
   @Test
-  @DisplayName("공개 채널 생성 테스트")
-  void createPublicChannel() {
+  @DisplayName("공개 채널 생성 테스트 성공")
+  void createPublicChannel_Success() {
     // given
     CreatePublicChannelRequest request = CreatePublicChannelRequest.builder()
         .name("public channel")
@@ -72,8 +72,8 @@ class ChannelServiceTest {
   }
 
   @Test
-  @DisplayName("비공개 채널 생성 테스트")
-  void createPrivateChannel() {
+  @DisplayName("비공개 채널 생성 테스트 성공")
+  void createPrivateChannel_Success() {
     // given
     UUID firstUserId = UUID.randomUUID();
     UUID secondUserId = UUID.randomUUID();
@@ -120,8 +120,8 @@ class ChannelServiceTest {
   }
 
   @Test
-  @DisplayName("공개 채널 업데이트 테스트")
-  void updateChannel() {
+  @DisplayName("공개 채널 업데이트 테스트 성공")
+  void updateChannel_Success() {
     // given
     UUID channelId = UUID.randomUUID();
 
@@ -145,8 +145,8 @@ class ChannelServiceTest {
   }
 
   @Test
-  @DisplayName("채널 삭제 테스트")
-  void deleteChannel() {
+  @DisplayName("채널 삭제 테스트 성공")
+  void deleteChannel_Success() {
     // given
     UUID channelId = UUID.randomUUID();
 
@@ -173,8 +173,8 @@ class ChannelServiceTest {
   }
 
   @Test
-  @DisplayName("사용자 ID로 채널 조회 테스트")
-  void findChannelsByUserId() {
+  @DisplayName("사용자 ID로 채널 조회 테스트 성공")
+  void findChannelsByUserId_Success() {
     // given
     UUID userId = UUID.randomUUID();
 

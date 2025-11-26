@@ -1,37 +1,49 @@
+# - build는 앱을 패키징하는 작업이므로 환경변수가 없어도 문제 없음.
+# - run은 실제로 앱을 실행하는 작업이므로 환경변수가 반드시 필요
+# 내부 환경변수 주입 -> ide
+# 외부 환경변수 주입 -> 터미널, 배포서버
+
 spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
   application:
     name: discodeit
-  boot:
-    admin:
-      client:
-        instance:
-          name: discodeit
   messages:
     basename: messages
     encoding: UTF-8
+  servlet:
+    multipart:
+      maxFileSize: 10MB
+      maxRequestSize: 50MB
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
     show-sql: false
     open-in-view: false
-  servlet:
-    multipart:
-      maxFileSize: 10MB
-      maxRequestSize: 50MB
+
+  # 이 설정을 통하여 AWS S3 SDK가 자동으로 자격증명을 인식
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_S3_ACCESS_KEY}
+        secret-key: ${AWS_S3_SECRET_KEY}
+      region:
+        static: ${AWS_S3_REGION:ap-northeast-2}
+
 
 info:
   app:
-    name: Discodeit
-    version: 1.7.0
+    name: ${PROJECT_NAME:Discodeit}
+    version: ${PROJECT_VERSION:1.2-M8}
     java-version: 17
     spring-boot-version: 3.5.5
-    ddl-auto: none
+    ddl-auto: validate
     storage:
       type: local
-      root-path: /binary-data
+      root-path: .discodeit/storage
     multipart:
       max-file-size: 10MB
       max-request-size: 50MB
@@ -50,5 +62,12 @@ management:
 
 discodeit:
   storage:
-    type: local
-    root-path: /binary-data
+    type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
+    local:
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+    s3:
+      access-key: ${AWS_S3_ACCESS_KEY}
+      secret-key: ${AWS_S3_SECRET_KEY}
+      region: ${AWS_S3_REGION}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)

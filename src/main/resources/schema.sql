@@ -1,4 +1,4 @@
-CREATE TABLE binary_contents
+CREATE TABLE IF NOT EXISTS binary_contents
 (
     id           UUID PRIMARY KEY,
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE binary_contents
     content_type VARCHAR(100)             NOT NULL
 );
 
-CREATE TABLE users
+CREATE TABLE IF NOT EXISTS users
 (
     id         UUID PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE users
             ON DELETE SET NULL
 );
 
-CREATE TABLE user_statuses
+CREATE TABLE IF NOT EXISTS user_statuses
 (
     id             UUID PRIMARY KEY,
     created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE user_statuses
             ON DELETE CASCADE
 );
 
-CREATE TABLE channels
+CREATE TABLE IF NOT EXISTS channels
 (
     id          UUID PRIMARY KEY,
     created_at  TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE channels
     type        VARCHAR(10)              NOT NULL
 );
 
-CREATE TABLE messages
+CREATE TABLE IF NOT EXISTS messages
 (
     id         UUID PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE messages
             ON DELETE SET NULL
 );
 
-CREATE TABLE message_attachments
+CREATE TABLE IF NOT EXISTS message_attachments
 (
     message_id    UUID,
     attachment_id UUID,
@@ -78,7 +78,7 @@ CREATE TABLE message_attachments
             ON DELETE CASCADE
 );
 
-CREATE TABLE read_statuses
+CREATE TABLE IF NOT EXISTS read_statuses
 (
     id           UUID PRIMARY KEY,
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL,

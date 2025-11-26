@@ -1,14 +1,12 @@
+# dev 프로파일은 .env 환경변수로 설정된 Postgres DB를 사용
 spring:
-  boot:
-    admin:
-      client:
-        url: http://localhost:9090
+  sql:
+    init:
+      mode: always
+      platform: postgres
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    driver-class-name: org.postgresql.Driver
+    # 명시안해도 환경변수 경로를 통해 자동 주입됨
+
+server:
+  port: 8080

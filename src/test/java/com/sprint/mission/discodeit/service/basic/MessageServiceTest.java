@@ -59,8 +59,8 @@ class MessageServiceTest {
   private BasicMessageService messageService;
 
   @Test
-  @DisplayName("첨부파일 없는 메시지 생성 테스트")
-  void createMessage_noAttachment() {
+  @DisplayName("첨부파일 없는 메시지 생성 테스트 성공")
+  void createMessage_NoAttachment_Success() {
     // given
     CreateMessageRequest request = CreateMessageRequest.builder().channelId(null).authorId(null)
         .content("Hello, World!").attachmentIds(Collections.emptyList()).build();
@@ -78,8 +78,8 @@ class MessageServiceTest {
   }
 
   @Test
-  @DisplayName("첨부파일 있는 메시지 생성 테스트")
-  void createMessage_withAttachments() {
+  @DisplayName("첨부파일 있는 메시지 생성 테스트 성공")
+  void createMessage_WithAttachments_Success() {
     // given
     CreateMessageRequest request = CreateMessageRequest.builder().channelId(null).authorId(null)
         .content("Hello, World!").attachmentIds(List.of(UUID.randomUUID())).build();
@@ -108,8 +108,8 @@ class MessageServiceTest {
   }
 
   @Test
-  @DisplayName("메시지 업데이트 테스트")
-  void updateMessage() {
+  @DisplayName("메시지 업데이트 테스트 성공")
+  void updateMessage_Success() {
     // given
     UUID messageId = UUID.randomUUID();
 
@@ -128,8 +128,8 @@ class MessageServiceTest {
   }
 
   @Test
-  @DisplayName("메시지 삭제 테스트")
-  void deleteMessage() {
+  @DisplayName("메시지 삭제 테스트 성공")
+  void deleteMessage_Success() {
     // given
     UUID messageId = UUID.randomUUID();
 
@@ -147,8 +147,8 @@ class MessageServiceTest {
   }
 
   @Test
-  @DisplayName("채널 ID로 메시지 조회 테스트")
-  void findMessagesByChannelId() {
+  @DisplayName("채널 ID로 메시지 조회 테스트 성공")
+  void findMessagesByChannelId_Success() {
     // given
     UUID channelId = UUID.randomUUID();
     Instant cursor = Instant.now();

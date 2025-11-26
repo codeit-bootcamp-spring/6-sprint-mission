@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
-@EnableJpaAuditing          // createAt, updateAt 자동 설정을 위한 어노테이션
+@EnableJpaAuditing          // createdAt, updatedAt 자동 설정을 위한 어노테이션
 public class DiscodeitApplication {
 
   public static void main(String[] args) {
