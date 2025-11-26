@@ -1,40 +1,30 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.response.PagedResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
+import org.mapstruct.Mapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 
-import java.util.List;
-import java.util.stream.Collectors;
+@Mapper(componentModel = "spring")
+public interface PageResponseMapper {
 
-public final class PageResponseMapper {
+  default <T> PageResponse<T> fromSlice(Slice<T> slice, Object nextCursor) {
+    return new PageResponse<>(
+        slice.getContent(),
+        nextCursor,
+        slice.getSize(),
+        slice.hasNext(),
+        null
+    );
+  }
 
-    private PageResponseMapper() {
-    }
-
-    public static <T, R> PagedResponse<R> fromPage(Page<T> page, java.util.function.Function<T, R> converter) {
-
-        List<R> content = page.getContent().stream()
-                .map(converter)
-                .collect(Collectors.toList());
-
-        int number = page.getNumber();
-        int size = page.getSize();
-        boolean hasNext = page.hasNext();
-        Long totalElements = page.getTotalElements();
-
-        return PagedResponse.of(content, number, size, hasNext, totalElements);
-    }
-
-    public static <T, R> PagedResponse<R> fromSlice(Slice<T> slice, java.util.function.Function<T, R> converter) {
-
-        List<R> content = slice.getContent().stream()
-                .map(converter)
-                .collect(Collectors.toList());
-        int number = slice.getNumber();
-        int size = slice.getSize();
-        boolean hasNext = slice.hasNext();
-
-        return PagedResponse.of(content, number, size, hasNext);
-    }
+  default <T> PageResponse<T> fromPage(Page<T> page, Object nextCursor) {
+    return new PageResponse<>(
+        page.getContent(),
+        nextCursor,
+        page.getSize(),
+        page.hasNext(),
+        page.getTotalElements()
+    );
+  }
 }

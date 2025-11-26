@@ -1,38 +1,20 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import com.sprint.mission.discodeit.dto.message.BinaryContentDto;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.UUID;
 
 public record MessageCreateRequest(
-        String content,
-        UUID channelId,
-        UUID authorId,
-        MultipartFile attachment
+    @NotBlank(message = "메시지 내용은 필수입니다")
+    @Size(max = 2000, message = "메시지 내용은 2000자 이하여야 합니다")
+    String content,
+    
+    @NotNull(message = "채널 ID는 필수입니다")
+    UUID channelId,
+    
+    @NotNull(message = "작성자 ID는 필수입니다")
+    UUID authorId
 ) {
 
-    public CreateMessageWithContent toContentDto() throws IOException {
-        BinaryContentDto binaryContent = null;
-
-        if (attachment != null && !attachment.isEmpty()) {
-            UUID tempId = UUID.randomUUID();
-            binaryContent = BinaryContentDto.from(attachment, tempId);
-        }
-
-        return new CreateMessageWithContent(
-                this.content,
-                this.channelId,
-                this.authorId,
-                binaryContent
-        );
-    }
-
-    public record CreateMessageWithContent(
-            String content,
-            UUID channelId,
-            UUID authorId,
-            BinaryContentDto binaryContent
-    ) {}
 }

@@ -1,136 +1,135 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.message.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
-import com.sprint.mission.discodeit.dto.response.PagedResponse;
-import com.sprint.mission.discodeit.dto.request.MessageCreateRequest.CreateMessageWithContent;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-
-import jakarta.persistence.EntityNotFoundException;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-@RequiredArgsConstructor
+@Slf4j
 @Service
-@Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
 
-    private final MessageRepository messageRepository;
-    private final ChannelRepository channelRepository;
-    private final UserRepository userRepository;
-    private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
+  private final MessageRepository messageRepository;
+  private final ChannelRepository channelRepository;
+  private final UserRepository userRepository;
+  private final MessageMapper messageMapper;
+  private final BinaryContentStorage binaryContentStorage;
+  private final BinaryContentRepository binaryContentRepository;
+  private final PageResponseMapper pageResponseMapper;
 
-    @Override
-    @Transactional
-    public MessageResponse create(CreateMessageWithContent createRequest) {
-        UUID channelId = createRequest.channelId();
-        UUID authorId = createRequest.authorId();
+  @Transactional
+  @Override
+  public MessageDto create(MessageCreateRequest messageCreateRequest,
+      List<BinaryContentCreateRequest> binaryContentCreateRequests) {
+    log.debug("메시지 생성 시작: request={}", messageCreateRequest);
+    UUID channelId = messageCreateRequest.channelId();
+    UUID authorId = messageCreateRequest.authorId();
 
-        Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new EntityNotFoundException("Channel with id " + channelId + " does not exist"));
-        User author = userRepository.findById(authorId)
-                .orElseThrow(() -> new EntityNotFoundException("Author with id " + authorId + " does not exist"));
+    Channel channel = channelRepository.findById(channelId)
+        .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
+    User author = userRepository.findById(authorId)
+        .orElseThrow(() -> UserNotFoundException.withId(authorId));
 
-        List<BinaryContent> attachments = new ArrayList<>();
-        BinaryContentDto attachmentDto = createRequest.binaryContent();
+    List<BinaryContent> attachments = binaryContentCreateRequests.stream()
+        .map(attachmentRequest -> {
+          String fileName = attachmentRequest.fileName();
+          String contentType = attachmentRequest.contentType();
+          byte[] bytes = attachmentRequest.bytes();
 
-        if (attachmentDto != null) {
-            UUID contentId = UUID.randomUUID();
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+              contentType);
+          binaryContentRepository.save(binaryContent);
+          binaryContentStorage.put(binaryContent.getId(), bytes);
+          return binaryContent;
+        })
+        .toList();
 
-            binaryContentStorage.put(contentId, attachmentDto.data());
+    String content = messageCreateRequest.content();
+    Message message = new Message(
+        content,
+        channel,
+        author,
+        attachments
+    );
 
-            BinaryContent binaryContent = new BinaryContent(
-                    attachmentDto.filename(),
-                    attachmentDto.size(),
-                    attachmentDto.contentType()
-            );
-            attachments.add(binaryContent);
-        }
+    messageRepository.save(message);
+    log.info("메시지 생성 완료: id={}, channelId={}", message.getId(), channelId);
+    return messageMapper.toDto(message);
+  }
 
-        String content = createRequest.content();
+  @Transactional(readOnly = true)
+  @Override
+  public MessageDto find(UUID messageId) {
+    return messageRepository.findById(messageId)
+        .map(messageMapper::toDto)
+        .orElseThrow(() -> MessageNotFoundException.withId(messageId));
+  }
 
-        Message message = new Message(
-                content,
-                channel,
-                author,
-                attachments
-        );
-        Message savedMessage = messageRepository.save(message);
+  @Transactional(readOnly = true)
+  @Override
+  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createAt,
+      Pageable pageable) {
+    Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(channelId,
+            Optional.ofNullable(createAt).orElse(Instant.now()),
+            pageable)
+        .map(messageMapper::toDto);
 
-        return MessageResponse.from(savedMessage);
+    Instant nextCursor = null;
+    if (!slice.getContent().isEmpty()) {
+      nextCursor = slice.getContent().get(slice.getContent().size() - 1)
+          .createdAt();
     }
 
-    @Override
-    public MessageResponse find(UUID messageId) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Message with id " + messageId + " not found"));
-        return MessageResponse.from(message);
+    return pageResponseMapper.fromSlice(slice, nextCursor);
+  }
+
+  @Transactional
+  @Override
+  public MessageDto update(UUID messageId, MessageUpdateRequest request) {
+    log.debug("메시지 수정 시작: id={}, request={}", messageId, request);
+    Message message = messageRepository.findById(messageId)
+        .orElseThrow(() -> MessageNotFoundException.withId(messageId));
+
+    message.update(request.newContent());
+    log.info("메시지 수정 완료: id={}, channelId={}", messageId, message.getChannel().getId());
+    return messageMapper.toDto(message);
+  }
+
+  @Transactional
+  @Override
+  public void delete(UUID messageId) {
+    log.debug("메시지 삭제 시작: id={}", messageId);
+    if (!messageRepository.existsById(messageId)) {
+      throw MessageNotFoundException.withId(messageId);
     }
-
-    @Override
-    public PagedResponse<MessageResponse> findAllByChannelId(UUID channelId, int page) {
-
-        int requestSize = 50;
-        int pageSizeForQuery = requestSize + 1;
-        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
-        Pageable pageable = PageRequest.of(page, pageSizeForQuery, sort);
-        List<Message> messagesWithExtra = messageRepository.findAllByChannelId(channelId, pageable);
-        boolean hasNext = messagesWithExtra.size() > requestSize;
-        List<Message> contentMessages = hasNext
-                ? messagesWithExtra.subList(0, requestSize)
-                : messagesWithExtra;
-
-        List<MessageResponse> responseList = contentMessages.stream()
-                .map(MessageResponse::from)
-                .collect(Collectors.toList());
-
-        return PagedResponse.of(responseList, page, requestSize, hasNext);
-    }
-
-    @Override
-    @Transactional
-    public MessageResponse update(UUID messageId, MessageUpdateRequest request) {
-        String newContent = request.newContent();
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Message with id " + messageId + " not found"));
-
-        message.update(newContent);
-        return MessageResponse.from(message);
-    }
-
-    @Override
-    @Transactional
-    public void delete(UUID messageId) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Message with id " + messageId + " not found"));
-
-        message.getAttachments().forEach(attachment -> {
-            binaryContentRepository.delete(attachment);
-        });
-
-        messageRepository.delete(message);
-    }
+    messageRepository.deleteById(messageId);
+    log.info("메시지 삭제 완료: id={}", messageId);
+  }
 }

@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,46 +13,48 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.List;
-import java.util.UUID;
 import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
 
-@Tag(name="BinaryContent")
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/binaryContents")
-public class BinaryContentController {
+public class BinaryContentController implements BinaryContentApi {
 
   private final BinaryContentService binaryContentService;
+  private final BinaryContentStorage binaryContentStorage;
 
-  @Operation(summary = "BinaryContentId 로 조회", operationId = "findBinaryContent")
-  @GetMapping(path = "/{id}")
-  public ResponseEntity<BinaryContentResponse> find(@PathVariable("id") UUID binaryContentId) {
-    BinaryContent binaryContent = binaryContentService.find(binaryContentId);
-    BinaryContentResponse response = BinaryContentResponse.from(binaryContent);
+  @GetMapping(path = "{binaryContentId}")
+  public ResponseEntity<BinaryContentDto> find(
+      @PathVariable("binaryContentId") UUID binaryContentId) {
+    log.info("바이너리 컨텐츠 조회 요청: id={}", binaryContentId);
+    BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
+    log.debug("바이너리 컨텐츠 조회 응답: {}", binaryContent);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(response);
+        .body(binaryContent);
   }
 
-  @Operation(summary = "BinaryContentId 의 모든 Content 조회", operationId = "findAllBinaryContentByIdIn")
   @GetMapping
-  public ResponseEntity<List<BinaryContentResponse>> findAllByIdIn(
+  public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
       @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
-    List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
-    List<BinaryContentResponse> responseList = BinaryContentResponse.fromList(binaryContents);
+    log.info("바이너리 컨텐츠 목록 조회 요청: ids={}", binaryContentIds);
+    List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+    log.debug("바이너리 컨텐츠 목록 조회 응답: count={}", binaryContents.size());
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(responseList);
+        .body(binaryContents);
   }
 
-    @Operation(summary = "파일 다운로드", operationId = "downloadBinaryContent")
-    @GetMapping(path = "/{pathBinaryContentId}/download")
-    public ResponseEntity<?> download(
-            @PathVariable("pathBinaryContentId") UUID pathBinaryContentId,
-            @RequestParam("binaryContentId") UUID paramBinaryContentId) {
-        return binaryContentService.download(paramBinaryContentId);
-    }
+  @GetMapping(path = "{binaryContentId}/download")
+  public ResponseEntity<?> download(
+      @PathVariable("binaryContentId") UUID binaryContentId) {
+    log.info("바이너리 컨텐츠 다운로드 요청: id={}", binaryContentId);
+    BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
+    ResponseEntity<?> response = binaryContentStorage.download(binaryContentDto);
+    log.debug("바이너리 컨텐츠 다운로드 응답: contentType={}, contentLength={}", 
+        response.getHeaders().getContentType(), response.getHeaders().getContentLength());
+    return response;
+  }
 }
-

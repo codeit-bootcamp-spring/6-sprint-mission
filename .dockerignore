@@ -1,0 +1,32 @@
+
+# Git 파일 제외
+.git
+
+
+
+# Java / Maven / Gradle
+target/
+build/
+.gradle/
+
+
+# Log files
+*.log
+logs/
+temp/
+tmp/
+
+
+
+# IDE 및 운영체제 관련 파일 제외
+.idea/             # IntelliJ, WebStorm 등
+*.iml              # IntelliJ 모듈 파일
+.vscode/           # VS Code 설정
+Thumbs.db          # Windows 썸네일 캐시
+.DS_Store          # macOS 파일 저장소
+*.swp              # Vim 스왑 파일
+
+
+
+# 환경 설정 파일
+.env
