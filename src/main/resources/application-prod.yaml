@@ -13,23 +13,27 @@ spring:
       max-request-size: 10MB
       file-size-threshold: 1MB
   datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
-    driver-class-name: org.postgresql.Driver
-    username: {}
-    password: {}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
-    hibernate:
-      ddl-auto: create
     properties:
       hibernate:
         format_sql: false
-    show_sql: true
-    open-in-view: false
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+
 discodeit:
-  repository:
-    type: cloud
+  storage:
+    type: ${STORAGE_TYPE:local}
     local:
-      root-path: /Users/mac/myWs/uploadedFilesimg
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+    s3:
+      access-key: ${AWS_S3_ACCESS_KEY}
+      secret-key: ${AWS_S3_SECRET_KEY}
+      region: ${AWS_S3_REGION:ap-northeast-2}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
 
 file:
   upload:
@@ -42,3 +46,5 @@ file:
       # /Users/mac/ 이부분이 각자 컴퓨터 맞게
       path: /Users/mac/myWs/uploadedFilesimg
 
+server:
+  port: 80

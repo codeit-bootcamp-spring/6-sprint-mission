@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.exception.file.FileOutPutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,11 +24,11 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@ConditionalOnExpression("'${discodeit.repository.type}'=='local'")
+@ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
 public class LocalBinaryContentStorage implements BinaryContentStorage {
     private final Path root;
 
-    LocalBinaryContentStorage(@Value("${discodeit.repository.local.root-path}") Path root) {
+    LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") Path root) {
         this.root = root;
         init();
     }

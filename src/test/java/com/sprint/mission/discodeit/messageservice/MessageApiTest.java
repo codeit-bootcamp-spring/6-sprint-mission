@@ -105,7 +105,7 @@ public class MessageApiTest {
     }
 
     @Test
-    @DisplayName("메세지 잘못된 요청 실패 검증")
+    @DisplayName("메세지 유저,채널 아이디 미입력 잘못된 요청 실패 검증")
     @Sql("/test-delete-all.sql")
     void messageCreateApi_fail() throws Exception {
         UUID userId = null;
@@ -143,7 +143,7 @@ public class MessageApiTest {
 
     }
     @Test
-    @DisplayName("메시지 잘못된 요청 실패 검증")
+    @DisplayName("메시지 내용 미입력 잘못된 요청 실패 검증")
     @Sql("/test-delete-all.sql")
     void messageUpdateApi_fail() throws Exception {
         UUID messageId = UUID.randomUUID();

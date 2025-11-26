@@ -3,6 +3,9 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+discodeit.env
+docker-compose.yaml
+.env
 
 ### IntelliJ IDEA ###
 .idea

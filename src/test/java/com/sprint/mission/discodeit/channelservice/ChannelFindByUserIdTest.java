@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.channelservice;
 import com.sprint.mission.discodeit.dto.Channel.ChannelDto;
-import com.sprint.mission.discodeit.dto.Channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.User.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -9,7 +8,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.enumtype.ChannelType;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -40,7 +38,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ChannelFindByUserId {
+public class ChannelFindByUserIdTest {
 
     @Mock
     private ChannelRepository channelRepository;

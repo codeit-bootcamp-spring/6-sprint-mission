@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ChannelUpdate {
+public class ChannelUpdateTest {
 
     @Mock
     private ChannelRepository channelRepository;

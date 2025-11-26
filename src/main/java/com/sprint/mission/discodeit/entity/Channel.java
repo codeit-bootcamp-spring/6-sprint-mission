@@ -31,7 +31,6 @@ public class Channel extends BaseUpdatableEntity {
         this.description = description;
     }
 
-    @Builder
     public Channel() {
         this.type = ChannelType.PRIVATE;
         this.name = "";

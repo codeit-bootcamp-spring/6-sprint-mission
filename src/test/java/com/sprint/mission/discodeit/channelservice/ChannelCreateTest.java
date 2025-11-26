@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.Channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.Channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.User.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
@@ -36,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ChannelCreate {
+public class ChannelCreateTest {
 
     @Mock
     private ChannelRepository channelRepository;

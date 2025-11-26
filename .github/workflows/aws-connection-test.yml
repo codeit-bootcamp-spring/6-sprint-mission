@@ -1,0 +1,19 @@
+name: aws-connection-test.yml
+on:
+  workflow_dispatch:
+
+jobs:
+  test-aws-connection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.0
+        with:
+          aws-access-key-id: ${{secrets.AWS_DEPLOY_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_DEPLOY_SECRET_ACCESS_KEY}}
+          aws-region: ${{secrets.AWS_REGION}}
+
+      - name: Test AWS CLI
+        run: |
+          aws sts get-caller-identity
+          aws ecr describe-repositories --repository-names discodeit

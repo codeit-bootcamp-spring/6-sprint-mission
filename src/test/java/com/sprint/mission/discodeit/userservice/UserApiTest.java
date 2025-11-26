@@ -128,7 +128,7 @@ public class UserApiTest {
     }
 
     @Test
-    @DisplayName("유저 생성 잘못된 요청 실패 검증")
+    @DisplayName("유저 생성 유저이름 미입력 잘못된 요청 실패 검증")
     void userCreatApi_fail() throws Exception {
         UserCreateRequest request = UserCreateRequest.builder()
                 .username(null)

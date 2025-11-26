@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.dto.Channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.Channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.Channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +45,8 @@ public class ChannelApiTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         ChannelDto channelDto = response.getBody();
         assertThat(channelDto).isNotNull();
+        assertThat(channelDto.name()).isEqualTo(request.name());
+        assertThat(channelDto.description()).isEqualTo(request.description());
 
     }
 
@@ -63,23 +64,24 @@ public class ChannelApiTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         ChannelDto channelDto = response.getBody();
         assertThat(channelDto).isNotNull();
+        assertThat(channelDto.participants().get(0).id()).isEqualTo(request.participantIds().get(0));
+        assertThat(channelDto.participants().get(1).id()).isEqualTo(request.participantIds().get(1));
 
     }
 
     @Test
-    @DisplayName("공개 채널 잘못된 요청 실패 검증")
+    @DisplayName("공개 채널 이름 미입력 잘못된 요청 실패 검증")
     void createPublicApiTest_fail() {
         PublicChannelCreateRequest request = PublicChannelCreateRequest.builder()
                 .name(null)
                 .description("테스트중")
                 .build();
         ResponseEntity<ChannelDto> response = this.restTemplate.postForEntity("/api/channels/public", request, ChannelDto.class);
-
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    @DisplayName("비공개 채널 잘못된 요청 실패 검증")
+    @DisplayName("비공개 채널 유저 미입력 잘못된 요청 실패 검증")
     void createCPrivateApiTest_fail() {
         List<UUID> userIds = new ArrayList<>();
 

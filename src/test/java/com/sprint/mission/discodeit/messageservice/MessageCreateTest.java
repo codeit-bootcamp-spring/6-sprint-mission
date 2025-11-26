@@ -18,7 +18,6 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.support.BinaryContentFixture;
 import com.sprint.mission.discodeit.support.ChannelFixture;
 import com.sprint.mission.discodeit.support.MessageFixture;
 import com.sprint.mission.discodeit.support.UserFixture;
@@ -43,7 +42,7 @@ import static org.mockito.Mockito.verify;
 
 
 @ExtendWith(MockitoExtension.class)
-public class MessageCreate {
+public class MessageCreateTest {
 
     @Mock
     private MessageRepository messageRepository;
