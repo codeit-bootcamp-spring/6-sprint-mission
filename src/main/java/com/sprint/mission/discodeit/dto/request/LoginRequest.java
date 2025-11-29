@@ -1,14 +1,12 @@
 package com.sprint.mission.discodeit.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 public record LoginRequest(
-    @NotBlank
-    @Size(min = 5)
+    @NotBlank(message = "사용자 이름은 필수입니다")
     String username,
-    @Size(min = 10, max = 16)
-    @NotBlank
+    
+    @NotBlank(message = "비밀번호는 필수입니다")
     String password
 ) {
 

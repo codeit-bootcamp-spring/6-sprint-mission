@@ -1,0 +1,42 @@
+name: AWS connection test
+on:
+  workflow_dispatch:
+
+jobs:
+  test-aws-connection:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Set up JDK
+      uses: actions/setup-java@v5
+      with:
+        java-version: '17'
+        distribution: 'corretto'
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x ./gradlew
+
+    - name: Generate coverage report
+      run: ./gradlew clean test jacocoTestReport || true
+
+    - name: Upload coverage to CodeCov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./build/reports/jacoco/test/jacocoTestReport.xml
+        flags: unittests
+        name: codecov-umbrella
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v5
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ vars.AWS_REGION }}
+
+    - name: Test AWS CLI
+      run: |
+        aws sts get-caller-identity
+        aws ecr describe-repositories --repository-names discodeit-ecr

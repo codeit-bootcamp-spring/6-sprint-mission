@@ -7,9 +7,9 @@ services:
     container_name: local_postgres
     # 데이터베이스 id, password 등 설정
     environment:
-      POSTGRES_USER: discodeit_user
-      POSTGRES_PASSWORD: discodeit1234
-      POSTGRES_DB: discodeit
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
       TZ: Asia/Seoul
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
     ports:
@@ -17,6 +17,31 @@ services:
     # 데이터 영속성을 위한 설정
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  app:
+    image: discodeit:local
+    container_name: discodeit-test
+    environment:
+      SPRING_ACTIVE_PROFILE: ${SPRING_ACTIVE_PROFILE}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      JVM_OPTS: ${JVM_OPTS}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
+      STORAGE_TYPE: ${STORAGE_TYPE}
+      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH}
+    ports:
+      - "8081:80"
+    volumes:
+      - binary-content-storage:/app/.discodeit/storage
+    depends_on:
+      - postgres-db
 
 volumes:
   db_data:
+  binary-content-storage:

@@ -1,48 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - [%X{requestId}] %msg%n"/>
+    <!-- 로그 레벨별 색상 설정 -->
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+    
+    <!-- MDC 값을 포함한 로그 패턴 설정 -->
+    <property name="LOG_PATTERN" value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %clr(%-5level) %-36logger{36} [%X{requestId} | %X{requestMethod} | %X{requestUri}] - %msg%n"/>
+    <property name="LOG_FILE_PATH" value=".logs"/>
+    <property name="LOG_FILE_NAME" value="application"/>
 
+    <!-- 콘솔 출력 설정 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
+    <!-- 파일 출력 설정 -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>.logs/application.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <!--> 용량이 초과되어 같은 날짜의 로그 파일이 더 필요한 경우 인덱스로 구분 <-->
-            <fileNamePattern>.logs/application.%d{yyyy-MM-dd}.%i.log</fileNamePattern> <!--날짜.인덱스-->
-            <maxFileSize>100MB</maxFileSize>
-            <maxHistory>30</maxHistory> <!--> 기간(30일(개)까지) <-->
-            <totalSizeCap>5GB</totalSizeCap>
-        </rollingPolicy>
+        <file>${LOG_FILE_PATH}/${LOG_FILE_NAME}.log</file>
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE_PATH}/${LOG_FILE_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
     </appender>
 
-    <root level="info">
+    <!-- 루트 로거 설정 - 레벨은 application.yaml에서 관리 -->
+    <root>
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
     </root>
-
-    <!--> 더 구체적인 설정이므로 아래 설정에 한해서 root를 덮어씀 <-->
-    <!--> hibernate는 SQL로그를 debug레벨로 설정하기 설정에서 debug레벨로 맞춰서 설정하지 않으면 출력안됌 <-->
-    <!--> bind로그는 trace레벨로 설정해야 출력됌 <-->
-    <logger name="org.hibernate.SQL" level="debug"/> <!--> SQL로그 설정 <-->
-    <logger name="org.hibernate.orm.jdbc.bind" level="trace"/>
-
-    <springProfile name="prod">
-        <root level="info">
-            <appender-ref ref="FILE"/>
-        </root>
-    </springProfile>
-
-    <springProfile name="dev">
-        <root level="debug"> <!-- > 작성된 로그를 포함한 모든 로그의 설정 <-->
-            <appender-ref ref="CONSOLE"/>
-        </root>
-    </springProfile>
-
-</configuration>
+</configuration> 
