@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
@@ -23,15 +24,20 @@ public class SecurityConfig {
 
   private final AuthenticationSuccessHandler loginSuccessHandler;
   private final AuthenticationFailureHandler loginFailureHandler;
+  private final LogoutSuccessHandler logoutSuccessHandler;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-        .formLogin(login ->
-          login.loginProcessingUrl("/api/auth/login")
-              .successHandler(loginSuccessHandler)
-              .failureHandler(loginFailureHandler)
-              .permitAll()
+        .formLogin(login -> login
+            .loginProcessingUrl("/api/auth/login")
+            .successHandler(loginSuccessHandler)
+            .failureHandler(loginFailureHandler)
+            .permitAll()
+        )
+        .logout(logout -> logout
+            .logoutUrl("/api/auth/logout")
+            .logoutSuccessHandler(logoutSuccessHandler)
         )
         .authorizeHttpRequests(authorize -> authorize
             .anyRequest().permitAll()
