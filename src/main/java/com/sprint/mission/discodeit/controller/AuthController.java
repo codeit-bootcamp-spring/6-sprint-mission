@@ -38,10 +38,10 @@ public class AuthController {
   /**
    * 사용자 로그인
    *
-   * @param loginRequest 로그인 요청 정보
-   * @return 로그인된 사용자 정보
+   * //@param loginRequest 로그인 요청 정보
+   * //@return 로그인된 사용자 정보
    */
-  @Operation(
+  /*@Operation(
       summary = "사용자 로그인",
       description = "사용자 인증을 수행하고 JWT 토큰을 발급합니다.",
       responses = {
@@ -80,7 +80,7 @@ public class AuthController {
 
     return ResponseEntity.ok(authApiMapper.toFindUserResponse(user));
 
-  }
+  }*/
 
   @GetMapping("csrf-token")
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
