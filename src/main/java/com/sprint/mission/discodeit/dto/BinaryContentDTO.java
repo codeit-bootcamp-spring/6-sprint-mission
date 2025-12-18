@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
-import com.sprint.mission.discodeit.enums.ContentType;
+import com.sprint.mission.discodeit.entity.enums.ContentType;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AccessLevel;

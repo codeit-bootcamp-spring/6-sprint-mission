@@ -14,7 +14,7 @@ import com.sprint.mission.discodeit.dto.api.response.MessageResponseDTO.FindMess
 import com.sprint.mission.discodeit.dto.api.response.PagingResponseDTO;
 import com.sprint.mission.discodeit.dto.api.response.PagingResponseDTO.CursorPageResponse;
 import com.sprint.mission.discodeit.dto.api.response.PagingResponseDTO.OffsetPageResponse;
-import com.sprint.mission.discodeit.enums.ContentType;
+import com.sprint.mission.discodeit.entity.enums.ContentType;
 import com.sprint.mission.discodeit.mapper.api.BinaryContentApiMapper;
 import com.sprint.mission.discodeit.mapper.api.MessageApiMapper;
 import com.sprint.mission.discodeit.mapper.api.UserApiMapper;

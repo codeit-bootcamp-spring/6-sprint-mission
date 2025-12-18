@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.sprint.mission.discodeit.dto.ChannelDTO;
 import com.sprint.mission.discodeit.entity.ChannelEntity;
-import com.sprint.mission.discodeit.enums.ChannelType;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.exception.channel.NoSuchChannelException;
 import com.sprint.mission.discodeit.mapper.ChannelEntityMapper;
 import com.sprint.mission.discodeit.mapper.UserEntityMapper;

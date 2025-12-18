@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,7 @@ public class SecurityConfig {
             )
             .csrf(csrf ->
                     csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                            .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
             );
 
         return http.build();

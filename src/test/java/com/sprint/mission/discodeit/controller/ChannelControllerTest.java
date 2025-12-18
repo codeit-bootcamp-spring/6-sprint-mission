@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.ChannelDTO;
 import com.sprint.mission.discodeit.dto.api.request.ChannelRequestDTO;
 import com.sprint.mission.discodeit.dto.api.response.ChannelResponseDTO;
-import com.sprint.mission.discodeit.enums.ChannelType;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.exception.channel.NoSuchChannelException;
 import com.sprint.mission.discodeit.mapper.api.ChannelApiMapper;
 import com.sprint.mission.discodeit.service.ChannelService;

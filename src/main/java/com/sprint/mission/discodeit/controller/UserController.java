@@ -10,7 +10,7 @@ import com.sprint.mission.discodeit.dto.api.request.UserRequestDTO.UserStatusUpd
 import com.sprint.mission.discodeit.dto.api.request.UserRequestDTO.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.api.response.UserResponseDTO.CheckUserOnlineResponse;
 import com.sprint.mission.discodeit.dto.api.response.UserResponseDTO.FindUserResponse;
-import com.sprint.mission.discodeit.enums.ContentType;
+import com.sprint.mission.discodeit.entity.enums.ContentType;
 import com.sprint.mission.discodeit.mapper.api.UserApiMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;

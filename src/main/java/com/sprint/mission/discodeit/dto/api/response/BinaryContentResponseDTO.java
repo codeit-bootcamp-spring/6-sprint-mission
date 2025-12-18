@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.dto.api.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sprint.mission.discodeit.enums.ContentType;
+import com.sprint.mission.discodeit.entity.enums.ContentType;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;

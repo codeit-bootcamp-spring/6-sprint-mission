@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.ChannelDTO;
 import com.sprint.mission.discodeit.entity.ChannelEntity;
 import com.sprint.mission.discodeit.entity.ReadStatusEntity;
-import com.sprint.mission.discodeit.enums.ChannelType;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.exception.channel.InvalidChannelDataException;
 import com.sprint.mission.discodeit.exception.channel.NoSuchChannelException;
 import com.sprint.mission.discodeit.mapper.ChannelEntityMapper;
