@@ -20,7 +20,10 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-        .formLogin(Customizer.withDefaults())
+        .formLogin(login ->
+          login.loginProcessingUrl("/api/auth/login")
+              .permitAll()
+        )
         .authorizeHttpRequests(authorize -> authorize
             .anyRequest().permitAll()
         )
