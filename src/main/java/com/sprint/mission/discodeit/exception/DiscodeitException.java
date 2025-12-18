@@ -5,7 +5,7 @@ import java.util.Map;
 import lombok.Getter;
 
 @Getter
-public class DiscodeitException extends RuntimeException{
+public class DiscodeitException extends RuntimeException {
 
   final Instant timestamp;
   final ErrorCode errorCode;

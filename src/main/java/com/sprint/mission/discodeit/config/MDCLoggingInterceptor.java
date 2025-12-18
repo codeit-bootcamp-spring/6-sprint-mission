@@ -11,7 +11,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class MDCLoggingInterceptor implements HandlerInterceptor {
 
   @Override
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+  public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
+      Object handler) {
 
     UUID requestId = UUID.randomUUID();
     MDC.put("requestId", requestId.toString());
@@ -25,7 +26,8 @@ public class MDCLoggingInterceptor implements HandlerInterceptor {
   }
 
   @Override
-  public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception e) {
+  public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
+      Object handler, Exception e) {
     MDC.clear();
   }
 

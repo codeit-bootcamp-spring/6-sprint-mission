@@ -49,7 +49,8 @@ public class ChannelDTO {
   }
 
   @Builder
-  public record CreatePrivateChannelCommand(ChannelType type, List<UUID> participants, String description) {
+  public record CreatePrivateChannelCommand(ChannelType type, List<UUID> participants,
+                                            String description) {
 
   }
 

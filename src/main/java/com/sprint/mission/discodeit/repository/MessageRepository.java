@@ -27,7 +27,8 @@ public interface MessageRepository extends JpaRepository<MessageEntity, UUID> {
   Page<MessageEntity> findByChannelId(@Param("channelId") UUID channelId, Pageable pageable);
 
   @Query("SELECT m FROM MessageEntity m LEFT JOIN FETCH m.author LEFT JOIN FETCH m.channel LEFT JOIN FETCH m.author.userStatus WHERE m.channel.id = :channelId AND m.createdAt > :createdAt ORDER BY m.createdAt DESC LIMIT :size")
-  Slice<MessageEntity> findByChannelIdAndCreatedAt(@Param("channelId") UUID channelId, @Param("createdAt") Instant createdAt, @Param("size") int size);
+  Slice<MessageEntity> findByChannelIdAndCreatedAt(@Param("channelId") UUID channelId,
+      @Param("createdAt") Instant createdAt, @Param("size") int size);
 
   @Query(value = "SELECT m FROM MessageEntity m LEFT JOIN FETCH m.author LEFT JOIN FETCH m.channel ORDER BY m.createdAt")
   Page<MessageEntity> findAll(Pageable pageable);

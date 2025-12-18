@@ -98,11 +98,12 @@ public class UserController {
         .email(userCreateRequest.email())
         .password(userCreateRequest.password())
         .description(userCreateRequest.description())
-        .profileImage(profile == null || profile.isEmpty() ? null : BinaryContentCreateCommand.builder()
-            .fileName(profile.getName())
-            .data(profile.getBytes())
-            .contentType(ContentType.IMAGE)
-            .build())
+        .profileImage(
+            profile == null || profile.isEmpty() ? null : BinaryContentCreateCommand.builder()
+                .fileName(profile.getName())
+                .data(profile.getBytes())
+                .contentType(ContentType.IMAGE)
+                .build())
         .build();
 
     UserDTO.User user = userService.createUser(createUserCommand);

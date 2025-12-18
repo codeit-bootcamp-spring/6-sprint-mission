@@ -24,7 +24,7 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "discodeit.storage", name = "type", havingValue = "s3")
 @Component
-public class S3BinaryContentStorage implements BinaryContentStorage{
+public class S3BinaryContentStorage implements BinaryContentStorage {
 
   private final S3Client s3Client;
   private final S3Presigner s3Presigner;
@@ -132,7 +132,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage{
     } catch (Exception e) {
 
       log.error("Failed to get object from S3 with id: {}", key, e);
-      return  null;
+      return null;
 
     }
 

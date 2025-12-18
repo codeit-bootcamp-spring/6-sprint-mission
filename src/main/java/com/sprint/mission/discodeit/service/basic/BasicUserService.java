@@ -191,8 +191,10 @@ public class BasicUserService implements UserService {
 
     if (userRepository.existsByEmailOrUsername(request.email(), request.username()) &&
         !updatedUserEntity.getId().equals(request.id())) {
-      log.warn("User with email {} or username {} already exists", request.email(), request.username());
-      throw new AllReadyExistUserException(Map.of("email", request.email(), "username", request.username()));
+      log.warn("User with email {} or username {} already exists", request.email(),
+          request.username());
+      throw new AllReadyExistUserException(
+          Map.of("email", request.email(), "username", request.username()));
     }
 
     if (!securityUtil.hashPassword(request.currentPassword())

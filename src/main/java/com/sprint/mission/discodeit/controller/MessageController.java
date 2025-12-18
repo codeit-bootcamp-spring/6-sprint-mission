@@ -117,7 +117,8 @@ public class MessageController {
 
     MessageDTO.Message message = messageService.createMessage(createMessageCommand);
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(messageApiMapper.toFindMessageResponse(message));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(messageApiMapper.toFindMessageResponse(message));
 
   }
 
@@ -263,19 +264,21 @@ public class MessageController {
       )
       @ModelAttribute CursorRequest pageable) {
 
-    PagingDTO.CursorPage<MessageDTO.Message> messagePage = messageService.findMessagesByChannelIdAndCreatedAt(channelId, cursor, PagingDTO.CursorRequest.of(pageable.size()));
+    PagingDTO.CursorPage<MessageDTO.Message> messagePage = messageService.findMessagesByChannelIdAndCreatedAt(
+        channelId, cursor, PagingDTO.CursorRequest.of(pageable.size()));
 
     CursorPageResponse<FindMessageResponse> response = PagingResponseDTO.CursorPageResponse.<FindMessageResponse>builder()
-        .nextCursor(messagePage.getNextCursor() != null ? MessageResponseDTO.FindMessageResponse.builder()
-            .id(messagePage.getNextCursor().getId())
-            .createdAt(messagePage.getNextCursor().getCreatedAt())
-            .updatedAt(messagePage.getNextCursor().getUpdatedAt())
-            .content(messagePage.getNextCursor().getContent())
-            .channelId(messagePage.getNextCursor().getChannelId())
-            .author(userApiMapper.toFindUserResponse(messagePage.getNextCursor().getAuthor()))
-            .attachments(messagePage.getNextCursor().getAttachments().stream()
-                .map(binaryContentApiMapper::toReadBinaryContentResponse).toList())
-            .build() : null)
+        .nextCursor(
+            messagePage.getNextCursor() != null ? MessageResponseDTO.FindMessageResponse.builder()
+                .id(messagePage.getNextCursor().getId())
+                .createdAt(messagePage.getNextCursor().getCreatedAt())
+                .updatedAt(messagePage.getNextCursor().getUpdatedAt())
+                .content(messagePage.getNextCursor().getContent())
+                .channelId(messagePage.getNextCursor().getChannelId())
+                .author(userApiMapper.toFindUserResponse(messagePage.getNextCursor().getAuthor()))
+                .attachments(messagePage.getNextCursor().getAttachments().stream()
+                    .map(binaryContentApiMapper::toReadBinaryContentResponse).toList())
+                .build() : null)
         .size(messagePage.getSize())
         .hasNext(messagePage.isHasNext())
         .content(messagePage.getContent().stream()

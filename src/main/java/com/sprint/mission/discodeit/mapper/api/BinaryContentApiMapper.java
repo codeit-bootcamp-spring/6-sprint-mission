@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BinaryContentApiMapper {
 
-  public ReadBinaryContentResponse toReadBinaryContentResponse(BinaryContent binaryContent){
+  public ReadBinaryContentResponse toReadBinaryContentResponse(BinaryContent binaryContent) {
 
     return BinaryContentResponseDTO.ReadBinaryContentResponse.builder()
         .id(binaryContent.getId())

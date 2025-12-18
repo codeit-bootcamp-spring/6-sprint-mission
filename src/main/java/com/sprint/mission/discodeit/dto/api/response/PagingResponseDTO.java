@@ -15,7 +15,9 @@ public class PagingResponseDTO {
       int size,
       boolean hasNext,
       Long totalElements
-  ) {}
+  ) {
+
+  }
 
   @Builder
   public record CursorPageResponse<T>(
@@ -24,5 +26,7 @@ public class PagingResponseDTO {
       int size,
       boolean hasNext,
       Long totalElements
-  ) {}
+  ) {
+
+  }
 }

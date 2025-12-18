@@ -14,6 +14,7 @@ public class UserDTO {
 
   //login request DTO
   public record LoginCommand(String username, String password) {
+
   }
 
   public static LoginCommand toLoginCommand(String username, String password) {
@@ -49,9 +50,10 @@ public class UserDTO {
       String description,
       BinaryContentCreateCommand profileImage) {
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile(
-          "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,}$");
+        "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,}$");
 
     public boolean isEmailValid(String email) {
       return EMAIL_PATTERN.matcher(email).matches();

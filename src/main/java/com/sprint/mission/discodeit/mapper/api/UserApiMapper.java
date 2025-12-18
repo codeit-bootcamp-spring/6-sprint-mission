@@ -28,7 +28,8 @@ public class UserApiMapper {
         .build();
   }
 
-  public CheckUserOnlineResponse userStatusToCheckUserOnlineResponse(UserStatusDTO.UserStatus userStatus) {
+  public CheckUserOnlineResponse userStatusToCheckUserOnlineResponse(
+      UserStatusDTO.UserStatus userStatus) {
     return UserResponseDTO.CheckUserOnlineResponse.builder()
         .id(userStatus.getId())
         .userId(userStatus.getUserId())

@@ -48,7 +48,8 @@ public class BasicChannelService implements ChannelService {
         .description(request.description())
         .build();
 
-    log.debug("Creating channel with name {}, description {}", channelEntity.getName(), channelEntity.getDescription());
+    log.debug("Creating channel with name {}, description {}", channelEntity.getName(),
+        channelEntity.getDescription());
 
     return channelEntityMapper.toChannel(channelRepository.save(channelEntity));
 
@@ -63,7 +64,8 @@ public class BasicChannelService implements ChannelService {
         .description(request.description())
         .build();
 
-    ChannelDTO.Channel channel = channelEntityMapper.toChannel(channelRepository.save(channelEntity));
+    ChannelDTO.Channel channel = channelEntityMapper.toChannel(
+        channelRepository.save(channelEntity));
 
     List<ReadStatusEntity> readStatusEntityList = request.participants().stream()
         .map(userId -> ReadStatusEntity.builder()
@@ -111,11 +113,11 @@ public class BasicChannelService implements ChannelService {
   @Override
   public List<ChannelDTO.Channel> findChannelsByUserId(UUID userId) {
 
-
-    List<ChannelDTO.Channel> channelList = new ArrayList<>(readStatusRepository.findByUserId(userId).stream()
-        .map(ReadStatusEntity::getChannel)
-        .map(channelWithParticipants::addParticipantsToChannel)
-        .toList());
+    List<ChannelDTO.Channel> channelList = new ArrayList<>(
+        readStatusRepository.findByUserId(userId).stream()
+            .map(ReadStatusEntity::getChannel)
+            .map(channelWithParticipants::addParticipantsToChannel)
+            .toList());
 
     channelList.addAll(channelRepository.findByType(ChannelType.PUBLIC).stream()
         .map(channelEntityMapper::toChannel)
@@ -161,7 +163,8 @@ public class BasicChannelService implements ChannelService {
     updatedChannelEntity.update(request.name(), request.description());
 
     log.debug("Updating channel with id {}, name {}, description {}",
-        updatedChannelEntity.getId(), updatedChannelEntity.getName(), updatedChannelEntity.getDescription());
+        updatedChannelEntity.getId(), updatedChannelEntity.getName(),
+        updatedChannelEntity.getDescription());
 
     return channelEntityMapper.toChannel(channelRepository.save(updatedChannelEntity));
 
@@ -199,7 +202,8 @@ public class BasicChannelService implements ChannelService {
         return channel;
       }
 
-      List<ReadStatusEntity> readStatusEntityList = readStatusRepository.findByChannelId(channelEntity.getId());
+      List<ReadStatusEntity> readStatusEntityList = readStatusRepository.findByChannelId(
+          channelEntity.getId());
 
       channel.addParticipants(readStatusEntityList.stream()
           .map(ReadStatusEntity::getUser)
@@ -212,7 +216,6 @@ public class BasicChannelService implements ChannelService {
     }
 
   }
-
 
 
 }

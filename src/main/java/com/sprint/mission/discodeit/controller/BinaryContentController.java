@@ -72,9 +72,11 @@ public class BinaryContentController {
 
     log.info("Reading binary content with ID: {}", id);
 
-    BinaryContentDTO.BinaryContent readBinaryContentResult = binaryContentService.findBinaryContentById(id);
+    BinaryContentDTO.BinaryContent readBinaryContentResult = binaryContentService.findBinaryContentById(
+        id);
 
-    return ResponseEntity.ok(binaryContentApiMapper.toReadBinaryContentResponse(readBinaryContentResult));
+    return ResponseEntity.ok(
+        binaryContentApiMapper.toReadBinaryContentResponse(readBinaryContentResult));
 
   }
 
@@ -142,7 +144,8 @@ public class BinaryContentController {
 
     log.info("Downloading binary content with ID: {}", id);
 
-    BinaryContentDTO.BinaryContent readBinaryContentResult = binaryContentService.findBinaryContentById(id);
+    BinaryContentDTO.BinaryContent readBinaryContentResult = binaryContentService.findBinaryContentById(
+        id);
 
     return binaryContentStorage.download(readBinaryContentResult);
 

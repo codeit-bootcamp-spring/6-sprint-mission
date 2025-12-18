@@ -75,11 +75,12 @@ public class ReadStatusController {
       )
       @RequestBody @Valid ReadStatusRequestDTO.ReadStatusCreateRequest readStatusCreateRequest) {
 
-    ReadStatusDTO.ReadStatus readStatus = readStatusService.createReadStatus(ReadStatusDTO.CreateReadStatusCommand.builder()
-        .channelId(readStatusCreateRequest.channelId())
-        .userId(readStatusCreateRequest.userId())
-        .lastReadTimeAt(readStatusCreateRequest.lastReadAt())
-        .build());
+    ReadStatusDTO.ReadStatus readStatus = readStatusService.createReadStatus(
+        ReadStatusDTO.CreateReadStatusCommand.builder()
+            .channelId(readStatusCreateRequest.channelId())
+            .userId(readStatusCreateRequest.userId())
+            .lastReadTimeAt(readStatusCreateRequest.lastReadAt())
+            .build());
 
     return ResponseEntity.status(201).body(readStatusApiMapper.toReadStatusResponse(readStatus));
 
@@ -119,11 +120,11 @@ public class ReadStatusController {
       )
       @RequestBody @Valid ReadStatusUpdateRequest readStatusUpdateRequest) {
 
-
-    ReadStatusDTO.ReadStatus readStatus = readStatusService.updateReadStatus(ReadStatusDTO.UpdateReadStatusCommand.builder()
-        .id(readStatusId)
-        .lastReadAt(readStatusUpdateRequest.newLastReadAt())
-        .build());
+    ReadStatusDTO.ReadStatus readStatus = readStatusService.updateReadStatus(
+        ReadStatusDTO.UpdateReadStatusCommand.builder()
+            .id(readStatusId)
+            .lastReadAt(readStatusUpdateRequest.newLastReadAt())
+            .build());
 
     return ResponseEntity.ok(readStatusApiMapper.toReadStatusResponse(readStatus));
 
