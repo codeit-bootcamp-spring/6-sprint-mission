@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.dto.UserDTO;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.entity.UserStatusEntity;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.exception.user.AllReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
@@ -208,7 +209,7 @@ class BasicUserServiceTest {
     // given
     UserDTO.UpdateUserRoleCommand command = new UserDTO.UpdateUserRoleCommand(
         testUserId,
-        "ADMIN"
+        Role.ADMIN
     );
 
     when(userRepository.findById(testUserId))
