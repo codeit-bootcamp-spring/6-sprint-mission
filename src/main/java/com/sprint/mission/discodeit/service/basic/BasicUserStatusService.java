@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,6 +91,7 @@ public class BasicUserStatusService implements UserStatusService {
 
   }
 
+  @PreAuthorize("hasPermission(#request.id(), 'UserStatus', 'UPDATE')")
   @Transactional
   @Override
   public UserStatusDTO.UserStatus updateUserStatus(UserStatusDTO.UpdateUserStatusCommand request) {

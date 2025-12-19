@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +42,7 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentStorage binaryContentStorage;
   private final MessageEntityMapper messageEntityMapper;
 
+  @PreAuthorize("hasRole('ROLE_USER')")
   @Transactional
   @Override
   public MessageDTO.Message createMessage(MessageDTO.CreateMessageCommand request) {
@@ -201,6 +203,7 @@ public class BasicMessageService implements MessageService {
 
   }
 
+  @PreAuthorize("hasRole('ROLE_USER')")
   @Transactional
   @Override
   public MessageDTO.Message updateMessage(MessageDTO.UpdateMessageCommand request) {
@@ -220,6 +223,7 @@ public class BasicMessageService implements MessageService {
 
   }
 
+  @PreAuthorize("hasRole('ROLE_USER')")
   @Transactional
   @Override
   public void deleteMessageById(UUID id) {
