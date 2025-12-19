@@ -202,6 +202,29 @@ class BasicUserServiceTest {
   }
 
   @Test
+  @DisplayName("사용자 ROLE 업데이트 성공 테스트")
+  void updateUserRole_Success() {
+
+    // given
+    UserDTO.UpdateUserRoleCommand command = new UserDTO.UpdateUserRoleCommand(
+        testUserId,
+        "ADMIN"
+    );
+
+    when(userRepository.findById(testUserId))
+        .thenReturn(Optional.of(testUserEntity));
+    when(userEntityMapper.toUser(testUserEntity))
+        .thenReturn(testUserDto);
+
+    // when
+    UserDTO.User result = basicUserService.updateUserRole(command);
+
+    // then
+    assertNotNull(result);
+
+  }
+
+  @Test
   @DisplayName("사용자 삭제 성공 테스트")
   void deleteUserById_Success() {
 
