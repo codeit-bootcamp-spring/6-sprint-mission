@@ -1,11 +1,14 @@
 package com.sprint.mission.discodeit.config;
 
+
+import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -18,7 +21,10 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .anyRequest().permitAll()
         )
-        .csrf(csrf -> csrf.disable()
+        .csrf(csrf -> csrf
+            // Double Submit Cookie Pattern
+            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
         );
     return http.build();
   }
