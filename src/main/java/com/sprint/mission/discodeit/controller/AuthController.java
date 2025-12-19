@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.UserDTO;
+import com.sprint.mission.discodeit.dto.api.request.UserRequestDTO;
 import com.sprint.mission.discodeit.dto.api.response.UserResponseDTO.FindUserResponse;
 import com.sprint.mission.discodeit.entity.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.mapper.api.AuthApiMapper;
@@ -7,6 +9,7 @@ import com.sprint.mission.discodeit.mapper.api.UserApiMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
@@ -14,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -78,6 +82,23 @@ public class AuthController {
     return ResponseEntity.ok(authApiMapper.toFindUserResponse(user));
 
   }*/
+
+  @PutMapping("/role")
+  public ResponseEntity<FindUserResponse> changeUserRole(
+      @Valid UserRequestDTO.UserRoleUpdateRequest request
+  ) {
+
+    log.info("Role change attempt for user ID: {}", request.userId());
+
+    UserDTO.User updatedUser = userService.updateUserRole(
+        UserDTO.UpdateUserRoleCommand.builder()
+            .userId(request.userId())
+            .newRole(request.newRole())
+            .build()
+    );
+
+    return ResponseEntity.ok(userApiMapper.toFindUserResponse(updatedUser));
+  }
 
   @GetMapping("/csrf-token")
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {

@@ -242,7 +242,7 @@ public class BasicUserService implements UserService {
           throw new NoSuchUserException();
         });
 
-    updatedUserEntity.updateRole(Role.valueOf(request.newRole()));
+    updatedUserEntity.updateRole(request.newRole());
 
     log.debug("User role with id {} updated successfully", request.userId());
 

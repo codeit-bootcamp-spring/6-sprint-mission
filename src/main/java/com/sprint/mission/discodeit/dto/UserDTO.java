@@ -128,7 +128,7 @@ public class UserDTO {
   @Builder
   public record UpdateUserRoleCommand(
       UUID userId,
-      String newRole
+      Role newRole
   ) {
 
   }
