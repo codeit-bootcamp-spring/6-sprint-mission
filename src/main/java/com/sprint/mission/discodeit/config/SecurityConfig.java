@@ -48,10 +48,10 @@ public class SecurityConfig {
             .logoutSuccessHandler(logoutSuccessHandler)
         )
         .authorizeHttpRequests(auth -> auth
-            .anyRequest().authenticated()
-            .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+            .requestMatchers("/api/auth/**").permitAll()
+            .anyRequest().authenticated()
         )
         .csrf(csrf ->
             csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
