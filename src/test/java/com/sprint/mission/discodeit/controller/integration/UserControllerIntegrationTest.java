@@ -1,12 +1,11 @@
-package com.sprint.mission.discodeit.controller;
+package com.sprint.mission.discodeit.controller.integration;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
+import com.sprint.mission.discodeit.controller.UserController;
 import com.sprint.mission.discodeit.service.UserService;
-import java.time.Instant;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +18,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+// todo - webEnvironment 옵션
+// todo - api 통합 테스트
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
 @ActiveProfiles("test")
-class MessageControllerIntegrationTest {
+class UserControllerIntegrationTest {
+
+  @Autowired
+  private UserService userService;
+
+  @Autowired
+  private UserController userController;
+
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @Autowired
   private ApplicationContext context;
@@ -34,22 +44,19 @@ class MessageControllerIntegrationTest {
   private TestRestTemplate restTemplate;
 
   @Test
-  @DisplayName("메시지 get api 통합 테스트")
-  void getMessage_integrationTest() {
-    // given
-    UUID messageId = UUID.randomUUID();
+  @DisplayName("유저 get api 통합 테스트")
+  void getUser_integrationTest() {
 
-    String url = "http://localhost:" + port + "/api/messages?channelId=" + messageId;
+    // given
+    String url = "http://localhost:" + port + "/api/users";
 
     // when
     ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 
     // then
-    String content = JsonPath.read(response.getBody(), "$.content").toString();
-
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(content).isEqualTo("[]");
-    assertThat(context.getBean("messageController")).isInstanceOf(MessageController.class);
-    assertThat(context.getBean(MessageController.class)).isNotNull();
+    assertThat(response.getBody()).isEqualTo("[]");
+    assertThat(context.getBean("userController")).isInstanceOf(UserController.class);
+    assertThat(context.getBean(UserController.class)).isNotNull();
   }
 }

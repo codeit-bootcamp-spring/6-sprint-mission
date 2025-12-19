@@ -1,7 +1,8 @@
-package com.sprint.mission.discodeit.controller;
+package com.sprint.mission.discodeit.controller.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.sprint.mission.discodeit.controller.ChannelController;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
