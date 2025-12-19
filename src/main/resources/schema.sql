@@ -15,6 +15,7 @@ CREATE TABLE users
     username   varchar(50)      NOT NULL UNIQUE,
     email      varchar(100)     NOT NULL UNIQUE,
     password   varchar(255)     NOT NULL,
+    role       varchar(20)      NOT NULL,
     profile_id uuid             REFERENCES binary_contents (id) ON DELETE SET NULL
 );
 
