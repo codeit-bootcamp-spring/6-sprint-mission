@@ -319,4 +319,21 @@ public class GlobalExceptionHandler {
 
   }
 
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleMethodArgumentNotValidExceptionForForbidden(
+      MethodArgumentNotValidException e) {
+
+    log.error("MethodArgumentNotValidException occurred - Forbidden", e);
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErrorApiDTO.ErrorApiResponse.builder()
+        .timestamp(Instant.now())
+        .code(String.valueOf(HttpStatus.FORBIDDEN.value()))
+        .message(e.getBindingResult().getAllErrors().get(0).getDefaultMessage())
+        .exceptionType(String.valueOf(HttpStatus.FORBIDDEN.value()))
+        .status(HttpStatus.FORBIDDEN.value())
+        .build());
+
+  }
+
 }
