@@ -19,6 +19,8 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +35,7 @@ public class BasicUserService implements UserService {
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage storage;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   public User create(CreateUserRequest request, Optional<MultipartFile> profile) {
@@ -64,7 +67,7 @@ public class BasicUserService implements UserService {
     user = new User(
         request.username(),
         request.email(),
-        request.password()
+        passwordEncoder.encode(request.password())
     );
     UserStatus userStatus = new UserStatus(user, Instant.now());
     user.setUserStatus(userStatus);
@@ -115,8 +118,17 @@ public class BasicUserService implements UserService {
           log.warn("User not found. userId: {}", userId);
           return new UserNotFoundException(Map.of("유저 고유 아이디", userId));
         });
+
+    String rawNewPassword = updateUserRequest.newPassword();
+    boolean matches = passwordEncoder.matches(rawNewPassword, user.getPassword());
+    String encodedNewPassword = null;
+
+    if (rawNewPassword != null && !matches) {
+      encodedNewPassword = passwordEncoder.encode(rawNewPassword);
+    }
+
     user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(),
-        updateUserRequest.newPassword());
+        encodedNewPassword);
 
     Optional<BinaryContent> binaryContent = profile.map(
         file -> {
