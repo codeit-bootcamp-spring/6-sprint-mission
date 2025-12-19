@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.UserDTO;
+import com.sprint.mission.discodeit.dto.UserDTO.UpdateUserRoleCommand;
+import com.sprint.mission.discodeit.dto.UserDTO.User;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.entity.UserStatusEntity;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.exception.user.AllReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
@@ -227,6 +230,23 @@ public class BasicUserService implements UserService {
     log.debug("User with id {} updated successfully", request.id());
 
     return userEntityMapper.toUser(userRepository.save(updatedUserEntity));
+
+  }
+
+  @Override
+  public UserDTO.User updateUserRole(UpdateUserRoleCommand request) {
+
+    UserEntity updatedUserEntity = userRepository.findById(request.userId())
+        .orElseThrow(() -> {
+          log.warn("User with id {} not found", request.userId());
+          throw new NoSuchUserException();
+        });
+
+    updatedUserEntity.updateRole(Role.valueOf(request.newRole()));
+
+    log.debug("User role with id {} updated successfully", request.userId());
+
+    return userEntityMapper.toUser(updatedUserEntity);
 
   }
 
