@@ -19,8 +19,7 @@ public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
 
     @Override
     public String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
-        String header = request.getHeader(csrfToken.getHeaderName());
-        return (StringUtils.isBlank(header) ? this.plain : this.xor).resolveCsrfTokenValue(request, csrfToken);
+        return this.plain.resolveCsrfTokenValue(request, csrfToken);
     }
 
     @Override

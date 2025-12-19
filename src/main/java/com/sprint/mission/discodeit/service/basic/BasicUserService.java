@@ -148,7 +148,7 @@ public class BasicUserService implements UserService {
 
     public BinaryContentSave getBinaryContent(MultipartFile multipartFile) {
         log.info("프로필 파일 저장 시작");
-        if (multipartFile.isEmpty()) {
+        if (multipartFile == null || multipartFile.isEmpty()) {
             log.info("메시지 첨부파일 없음");
             return null;
         } else {
