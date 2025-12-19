@@ -56,9 +56,9 @@ public class UserRequestDTO {
 
   @Builder
   public record UserRoleUpdateRequest(
-      @NotBlank
+      @NotBlank(message = "사용자 ID를 입력하세요.")
       UUID userId,
-      @NotNull
+      @NotNull(message = "새로운 역할을 입력하세요.")
       Role newRole
   ) {
 
