@@ -29,6 +29,7 @@
     <logger name="com.sprint.mission.discodeit" level="DEBUG"/>
     <logger name="org.hibernate.SQL" level="DEBUG"/>
     <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>
+    <logger name="org.springframework.security" level="TRACE"/>
     <root level="INFO">
       <appender-ref ref="FILE"/>
       <appender-ref ref="CONSOLE"/>
