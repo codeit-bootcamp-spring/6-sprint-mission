@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.dto;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDTO.BinaryContentCreateCommand;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -34,6 +35,7 @@ public class UserDTO {
     private String email;
     private String password;
     private BinaryContentDTO.BinaryContent profileId;
+    private Role role;
     private Boolean isOnline;
 
     public void updateStatus(boolean online) {
@@ -82,6 +84,7 @@ public class UserDTO {
       String email,
       String description,
       UUID profileImageId,
+      Role role,
       boolean isOnline,
       Long createdAt,
       Long updatedAt

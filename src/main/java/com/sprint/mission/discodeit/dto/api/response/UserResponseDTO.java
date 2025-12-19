@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.dto.api.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sprint.mission.discodeit.dto.api.response.BinaryContentResponseDTO.ReadBinaryContentResponse;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -18,6 +19,7 @@ public class UserResponseDTO {
       String email,
       @JsonProperty("profile")
       ReadBinaryContentResponse profile,
+      Role role,
       @JsonProperty("online")
       boolean isOnline
   ) {

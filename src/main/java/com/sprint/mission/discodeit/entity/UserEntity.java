@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.enums.Role;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,6 +35,9 @@ public class UserEntity extends BaseUpdatableEntity {
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user", optional = false)
   private UserStatusEntity userStatus;
 
+  @Column(nullable = false)
+  private Role role = Role.USER;
+
   @Builder
   public UserEntity(String username, String email, String password) {
     this.username = username;
@@ -53,6 +57,10 @@ public class UserEntity extends BaseUpdatableEntity {
 
   public void updateUserStatus(UserStatusEntity userStatus) {
     this.userStatus = userStatus;
+  }
+
+  public void updateRole(Role role) {
+    this.role = role;
   }
 
   public boolean isOnline() {
