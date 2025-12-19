@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 
-import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.dto.auth.AuthRequest;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.AuthRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.service.AuthService;

@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.MessageDto;
-import com.sprint.mission.discodeit.dto.message.CreateMessageRequest;
-import com.sprint.mission.discodeit.dto.message.UpdateMessageRequest;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
+import com.sprint.mission.discodeit.dto.request.CreateMessageRequest;
+import com.sprint.mission.discodeit.dto.request.UpdateMessageRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
@@ -10,7 +10,6 @@ import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import jakarta.validation.Valid;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

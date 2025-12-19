@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.auth.AuthRequest;
+import com.sprint.mission.discodeit.dto.request.AuthRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.UserRepository;

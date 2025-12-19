@@ -4,7 +4,6 @@ package com.sprint.mission.discodeit.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.dto.user.CreateUserRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

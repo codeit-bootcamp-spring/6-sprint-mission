@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
 
-import com.sprint.mission.discodeit.dto.userstatus.CreateUserStatus;
-import com.sprint.mission.discodeit.dto.userstatus.UpdateUserStatusRequest;
+import com.sprint.mission.discodeit.dto.request.CreateUserStatusRequest;
+import com.sprint.mission.discodeit.dto.request.UpdateUserStatusRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -29,14 +29,14 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserRepository userRepository;
 
   @Override
-  public UserStatus create(CreateUserStatus createUserStatus) {
-    if (userStatusRepository.existsById(createUserStatus.userId())) {
+  public UserStatus create(CreateUserStatusRequest createUserStatusRequest) {
+    if (userStatusRepository.existsById(createUserStatusRequest.userId())) {
       throw new IllegalArgumentException("이미 유저상태 객체가 있습니다");
     }
-    User user = userRepository.findById(createUserStatus.userId())
+    User user = userRepository.findById(createUserStatusRequest.userId())
         .orElseThrow(() -> {
-          log.warn("User not found. userId: {}", createUserStatus.userId());
-          return new UserNotFoundException(Map.of("유저 고유 아이디", createUserStatus.userId()));
+          log.warn("User not found. userId: {}", createUserStatusRequest.userId());
+          return new UserNotFoundException(Map.of("유저 고유 아이디", createUserStatusRequest.userId()));
         });
     UserStatus userStatus = new UserStatus(user, Instant.now());
     user.setUserStatus(userStatus);

@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.message.CreateMessageRequest;
-import com.sprint.mission.discodeit.dto.message.UpdateMessageRequest;
+import com.sprint.mission.discodeit.dto.request.CreateMessageRequest;
+import com.sprint.mission.discodeit.dto.request.UpdateMessageRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;

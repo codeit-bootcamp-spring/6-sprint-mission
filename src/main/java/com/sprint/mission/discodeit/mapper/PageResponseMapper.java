@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.MessageDto;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import java.time.Instant;
 import java.util.List;
