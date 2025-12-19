@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.config;
 
 
-import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
-import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.LoginSuccessHandler;
-import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
@@ -24,6 +25,7 @@ public class SecurityConfig {
 
     private final LoginSuccessHandler loginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
+    private final LogoutSuccessHandler logoutSuccessHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -40,7 +42,30 @@ public class SecurityConfig {
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
                 )
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID","XSRF-TOKEN")
+                        .logoutSuccessHandler(logoutSuccessHandler)
+                )
                 .build();
+    }
+
+    @Bean
+    public CommandLineRunner initData(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        return args -> {
+            if(userRepository.findByUsername("admin").isEmpty()) {
+                User user = new User(
+                        "admin",
+                        "admin@admin.com",
+                        passwordEncoder.encode("admin"),
+                        null,
+                        Role.ADMIN
+                        );
+                userRepository.save(user);
+            }
+        };
     }
 
     @Bean

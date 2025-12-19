@@ -11,5 +11,6 @@ public interface UserService {
       UserDto create(MultipartFile multipartFile, UserCreateRequest userCreateRequest);
       List<UserDto> findAll();
       UserDto update(MultipartFile multipartFile , UUID userId, UserUpdateRequest userUpdateRequest);
+      UserDto roleUpdate(UserRoleUpdateRequest userUpdateRequest);
       void delete(UUID id);
 }

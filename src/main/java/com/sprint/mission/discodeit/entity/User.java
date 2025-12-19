@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.dto.User.UpdateUserDto;
+import com.sprint.mission.discodeit.security.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -31,12 +32,16 @@ public class User extends BaseUpdatableEntity {
     @OneToOne(mappedBy = "user")
     private UserStatus status;
 
+    @Column(nullable = false)
+    Role role;
 
-    public User(String username, String email, String password, BinaryContent profile) {
+
+    public User(String username, String email, String password, BinaryContent profile, Role role) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.profile = profile;
+        this.role = role;
     }
 
     @Builder
@@ -86,5 +91,8 @@ public class User extends BaseUpdatableEntity {
         if (anyValueUpdated) {
             this.updatedAtNow();
         }
+    }
+    public void updateRole(Role role) {
+        this.role = role;
     }
 }

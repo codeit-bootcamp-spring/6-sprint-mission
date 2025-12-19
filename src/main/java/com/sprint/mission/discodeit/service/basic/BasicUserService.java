@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.Role;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +65,8 @@ public class BasicUserService implements UserService {
                 userCreateRequest.username(),
                 userCreateRequest.email(),
                 userPassword,
-                profile
+                profile,
+                Role.USER
         );
 
         //유저에 유저 상태 추가
@@ -131,6 +133,15 @@ public class BasicUserService implements UserService {
         binaryContentRepository.deleteById(user.getProfile().getId());
         userStatusRepository.deleteById(userStatus.getId());
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public UserDto roleUpdate(UserRoleUpdateRequest userUpdateRequest) {
+        User user = userRepository.findById(userUpdateRequest.userId())
+                .orElseThrow(UserNotFoundException::new);
+        user.updateRole(userUpdateRequest.newRole());
+        userRepository.save(user);
+        return userMapper.toDto(user);
     }
 
     public void isDuplicate(String name, String email) {
