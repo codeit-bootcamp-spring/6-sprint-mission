@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -109,18 +110,20 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageDto update(UUID messageId, String newContent) {
-        log.info("메시지 업데이트 요청 수신:  messageId={}",messageId);
-        Message messageUpdated = messageRepository.findById(messageId)
+    @PreAuthorize("hasPermission(#id, 'Message', 'UPDATE')")
+    public MessageDto update(UUID id, String newContent) {
+        log.info("메시지 업데이트 요청 수신:  messageId={}",id);
+        Message messageUpdated = messageRepository.findById(id)
                 .orElseThrow(MessageNotFoundException::new);
 
         messageUpdated.update(newContent);
         messageRepository.save(messageUpdated);
-        log.info("메시지 업데이트 완료: messageId={}", messageId);
+        log.info("메시지 업데이트 완료: messageId={}", id);
         return messageMapper.toDto(messageUpdated);
     }
 
     @Override
+    @PreAuthorize("hasPermission(#id, 'Message', 'DELETE')")
     public void delete(UUID id) {
         Message message = messageRepository
                 .findById(id).orElseThrow(MessageNotFoundException::new);

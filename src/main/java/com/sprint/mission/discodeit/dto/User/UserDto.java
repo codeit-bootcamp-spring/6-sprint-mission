@@ -6,7 +6,7 @@ import lombok.Builder;
 
 import java.util.UUID;
 
-@Builder
+@Builder(toBuilder = true)
 public record UserDto(
         UUID id,
         String username,

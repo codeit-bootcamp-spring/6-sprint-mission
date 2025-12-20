@@ -33,9 +33,6 @@ public class MessageRepositoryTest {
     private ChannelRepository channelRepository;
 
     @Autowired
-    private UserStatusRepository userStatusRepository;
-
-    @Autowired
     private BinaryContentRepository binaryContentRepository;
 
     @Autowired
@@ -79,7 +76,6 @@ public class MessageRepositoryTest {
 
         binaryContentRepository.saveAll(List.of(binaryContent,binaryContent2));
         userRepository.save(user);
-        userStatusRepository.save(userStatus);
         channelRepository.save(channel);
         messageRepository.save(message);
         messageRepository.save(message2);

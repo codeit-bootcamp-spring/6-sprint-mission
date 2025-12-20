@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.User.UserDto;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.AuthService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.util.List;
@@ -15,7 +17,9 @@ import java.util.List;
 )
 public interface UserMapper {
 
-    @Mapping(target = "online", expression = "java(user.getStatus().isConnecting(Instant.now()))")
+    @Mapping(target = "online", source = "online")
+    UserDto toDto(User user,boolean online);
+
     UserDto toDto(User user);
 
     List<UserDto> toDtoList(List<User> users);

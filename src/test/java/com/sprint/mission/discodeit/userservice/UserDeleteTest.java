@@ -9,7 +9,6 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.support.BinaryContentFixture;
 import com.sprint.mission.discodeit.support.UserFixture;
@@ -36,9 +35,6 @@ public class UserDeleteTest {
     private UserRepository userRepository;
 
     @Mock
-    private UserStatusRepository userStatusRepository;
-
-    @Mock
     private BinaryContentRepository binaryContentRepository;
 
     @InjectMocks
@@ -61,8 +57,6 @@ public class UserDeleteTest {
 
         //유저레포 반환값 설정
         when(userRepository.findById(any(UUID.class))).thenReturn(Optional.of(user));
-        //유저레포 반환값 설정
-        when(userStatusRepository.findByUserId(any(UUID.class))).thenReturn(Optional.of(userStatus));
 
         //when
         basicUserService.delete(userId);
@@ -70,9 +64,6 @@ public class UserDeleteTest {
         //then
         verify(userRepository,times(1)).findById(any(UUID.class));
         verify(userRepository,times(1)).deleteById(any(UUID.class));
-
-        verify(userStatusRepository,times(1)).findByUserId(any(UUID.class));
-        verify(userStatusRepository,times(1)).deleteById(any(UUID.class));
 
         verify(binaryContentRepository,times(1)).deleteById(any(UUID.class));
     }
@@ -91,19 +82,4 @@ public class UserDeleteTest {
 
     }
 
-    @Test
-    @DisplayName("유저 없음 실패 검증2")
-    void deleteUser_fail_2() {
-        UUID userId = UUID.randomUUID();
-        User user = UserFixture.createUser(new BinaryContent());
-        UserFixture.setUserId(user, userId);
-        UserStatus userStatus = new UserStatus(user);
-        when(userStatusRepository.findByUserId(any(UUID.class))).thenReturn(Optional.of(userStatus));
-
-        DiscodeitException exception = assertThrows(UserNotFoundException.class, () -> {
-            basicUserService.delete(userId);
-        });
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
-
-    }
 }
