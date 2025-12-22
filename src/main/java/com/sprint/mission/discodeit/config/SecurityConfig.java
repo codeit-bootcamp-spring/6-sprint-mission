@@ -60,6 +60,7 @@ public class SecurityConfig {
         )
         .rememberMe(remember -> remember
           .key(rememberMeKey)
+          .authenticationSuccessHandler(loginSuccessHandler)
           .tokenValiditySeconds(60 * 60 * 24 * 30))
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
