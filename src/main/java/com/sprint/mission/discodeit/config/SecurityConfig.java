@@ -16,6 +16,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,6 +25,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
@@ -45,7 +48,14 @@ public class SecurityConfig {
             .permitAll()
         )
         .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)// 기본값이나 명시적으로 설정
+            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            .sessionConcurrency(concurrency -> {
+              concurrency
+                  .maximumSessions(1)
+                  .maxSessionsPreventsLogin(true)
+                  .expiredUrl("/api/auth/login?expired")
+                  .sessionRegistry(sessionRegistry());
+            })
         )
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
@@ -76,6 +86,16 @@ public class SecurityConfig {
     String hierarchy = "ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER";
     return RoleHierarchyImpl.fromHierarchy(hierarchy);
 
+  }
+
+  @Bean
+  public SessionRegistry sessionRegistry() {
+    return new SessionRegistryImpl();
+  }
+
+  @Bean
+  public HttpSessionEventPublisher httpSessionEventPublisher() {
+    return new HttpSessionEventPublisher();
   }
 
   public CommandLineRunner initAdminAccount() {
