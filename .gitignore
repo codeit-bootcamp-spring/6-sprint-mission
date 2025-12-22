@@ -44,3 +44,9 @@ bin/
 ### 숨김 파일 ###
 .*
 !.gitignore
+
+
+### Github Actions ###
+!.github/
+
+*.env*

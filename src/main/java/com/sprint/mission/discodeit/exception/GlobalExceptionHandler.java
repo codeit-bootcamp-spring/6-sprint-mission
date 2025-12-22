@@ -1,221 +1,75 @@
 package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.dto.response.ErrorResponse;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(AuthException.class)
-    public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex) {
-        log.error("AuthException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ErrorResponse> handleException(Exception e) {
+    log.error("예상치 못한 오류 발생: {}", e.getMessage(), e);
+    ErrorResponse errorResponse = new ErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR.value());
+    return ResponseEntity
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(errorResponse);
+  }
 
-    @ExceptionHandler(AuthorNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleAuthorNotFoundException(AuthorNotFoundException ex) {
-        log.error("AuthorNotFoundException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
+  @ExceptionHandler(DiscodeitException.class)
+  public ResponseEntity<ErrorResponse> handleDiscodeitException(DiscodeitException exception) {
+    log.error("커스텀 예외 발생: code={}, message={}", exception.getErrorCode(), exception.getMessage(), exception);
+    HttpStatus status = determineHttpStatus(exception);
+    ErrorResponse response = new ErrorResponse(exception, status.value());
+    return ResponseEntity
+        .status(status)
+        .body(response);
+  }
 
-    @ExceptionHandler(BinaryContentNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleBinaryContentNotFoundException(
-        BinaryContentNotFoundException ex) {
-        log.error("BinaryContentNotFoundException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    log.error("요청 유효성 검사 실패: {}", ex.getMessage());
+    
+    Map<String, Object> validationErrors = new HashMap<>();
+    ex.getBindingResult().getAllErrors().forEach(error -> {
+      String fieldName = ((FieldError) error).getField();
+      String errorMessage = error.getDefaultMessage();
+      validationErrors.put(fieldName, errorMessage);
+    });
+    
+    ErrorResponse response = new ErrorResponse(
+        Instant.now(), 
+        "VALIDATION_ERROR",
+        "요청 데이터 유효성 검사에 실패했습니다",
+        validationErrors,
+        ex.getClass().getSimpleName(),
+        HttpStatus.BAD_REQUEST.value()
+    );
+    
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(response);
+  }
 
-    @ExceptionHandler(ChannelNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleChannelNotFoundException(
-        ChannelNotFoundException ex) {
-        log.error("ChannelNotFoundException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
-
-    @ExceptionHandler(DuplicateEmailException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateEmailException(
-        DuplicateEmailException ex) {
-        log.error("DuplicateEmailException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
-
-    @ExceptionHandler(DuplicateUserException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateUserException(
-        DuplicateUserException ex) {
-        log.error("DuplicateUserException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
-
-    @ExceptionHandler(MessageNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleMessageNotFoundException(
-        MessageNotFoundException ex) {
-        log.error("MessageNotFoundException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
-
-    @ExceptionHandler(ReadStatusAlreadyExistException.class)
-    public ResponseEntity<ErrorResponse> handleReadStatusAlreadyExistException(
-        ReadStatusAlreadyExistException ex) {
-        log.error("ReadStatusAlreadyExistException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
-
-    @ExceptionHandler(ReadStatusNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleReadStatusNotFoundException(
-        ReadStatusNotFoundException ex) {
-        log.error("ReadStatusNotFoundException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
-
-    @ExceptionHandler(UpdatePrivateChannelException.class)
-    public ResponseEntity<ErrorResponse> handleUpdatePrivateChannelException(
-        UpdatePrivateChannelException ex) {
-        log.error("UpdatePrivateChannelException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
-
-    @ExceptionHandler(UserAlreadyExistException.class)
-    public ResponseEntity<ErrorResponse> handleUserAlreadyExistException(
-        UserAlreadyExistException ex) {
-        log.error("UserAlreadyExistException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex) {
-        log.error("UserNotFoundException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
-
-    @ExceptionHandler(UserStatusNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserStatusNotFoundException(
-        UserStatusNotFoundException ex) {
-        log.error("UserStatusNotFoundException occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message(ex.getMessage())
-            .code(ex.getErrorCode().getCode())
-            .timestamp(ex.getTimestamp())
-            .details(ex.getDetails())
-            .exceptionType(ex.getErrorCode().getClass().getSimpleName())
-            .status(ex.getErrorCode().getHttpStatus().value())
-            .build();
-        return new ResponseEntity<>(errorResponse, ex.getErrorCode().getHttpStatus());
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(
-        MethodArgumentNotValidException ex) {
-        log.error("Validation exception occurred: {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .message("Validation failed for one or more arguments.")
-            .code("G002")
-            .timestamp(java.time.Instant.now())
-            .details(Map.of("errors", ex.getBindingResult().getAllErrors()))
-            .exceptionType(ex.getClass().getSimpleName())
-            .status(org.springframework.http.HttpStatus.BAD_REQUEST.value())
-            .build();
-        return new ResponseEntity<>(errorResponse, org.springframework.http.HttpStatus.BAD_REQUEST);
-    }
+  private HttpStatus determineHttpStatus(DiscodeitException exception) {
+    ErrorCode errorCode = exception.getErrorCode();
+    return switch (errorCode) {
+      case USER_NOT_FOUND, CHANNEL_NOT_FOUND, MESSAGE_NOT_FOUND, BINARY_CONTENT_NOT_FOUND, 
+           READ_STATUS_NOT_FOUND -> HttpStatus.NOT_FOUND;
+      case DUPLICATE_USER, DUPLICATE_READ_STATUS -> HttpStatus.CONFLICT;
+      case INVALID_USER_CREDENTIALS -> HttpStatus.UNAUTHORIZED;
+      case PRIVATE_CHANNEL_UPDATE, INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
+      case INTERNAL_SERVER_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
+    };
+  }
 }
