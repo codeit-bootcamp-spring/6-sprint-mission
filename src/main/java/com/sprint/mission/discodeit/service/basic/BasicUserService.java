@@ -25,6 +25,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentStorage binaryContentStorage;
   private final UserEntityMapper userEntityMapper;
   private final SecurityUtil securityUtil;
+  private final SessionRegistry sessionRegistry;
 
   @Transactional
   @Override
@@ -246,6 +249,12 @@ public class BasicUserService implements UserService {
         });
 
     updatedUserEntity.updateRole(request.newRole());
+
+    List<SessionInformation> sessions = sessionRegistry.getAllSessions(
+        updatedUserEntity.getUsername(), false);
+    for (SessionInformation session : sessions) {
+      session.expireNow();
+    }
 
     log.debug("User role with id {} updated successfully", request.userId());
 

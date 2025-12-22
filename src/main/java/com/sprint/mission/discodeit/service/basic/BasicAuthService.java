@@ -1,14 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserDTO;
-import com.sprint.mission.discodeit.entity.UserEntity;
-import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
-import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
 import com.sprint.mission.discodeit.mapper.UserEntityMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +14,6 @@ public class BasicAuthService implements AuthService {
   private final UserRepository userRepository;
   private final UserEntityMapper userEntityMapper;
   private final PasswordEncoder passwordEncoder;
-  private final SessionRegistry sessionRegistry;
 
   /*@Override
   public UserDTO.User login(UserDTO.LoginCommand loginCommand) {
