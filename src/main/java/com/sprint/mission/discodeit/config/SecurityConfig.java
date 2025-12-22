@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestHandler;
+import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,9 +21,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
@@ -35,9 +36,12 @@ public class SecurityConfig {
   private final AuthenticationSuccessHandler loginSuccessHandler;
   private final AuthenticationFailureHandler loginFailureHandler;
   private final LogoutSuccessHandler logoutSuccessHandler;
+  private final UserDetailsService userDetailsService;
+  private final DataSource dataSource;
 
   @Value("${security.key.remember-me}")
   private String rememberMeKey;
+
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -59,9 +63,12 @@ public class SecurityConfig {
             })
         )
         .rememberMe(remember -> remember
-          .key(rememberMeKey)
-          .authenticationSuccessHandler(loginSuccessHandler)
-          .tokenValiditySeconds(60 * 60 * 24 * 30))
+            .key(rememberMeKey)
+            .rememberMeParameter("remember-me")
+            .userDetailsService(userDetailsService)
+            .tokenRepository(tokenRepository())
+            .authenticationSuccessHandler(loginSuccessHandler)
+            .tokenValiditySeconds(60 * 60 * 24 * 30))
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
             .logoutSuccessHandler(logoutSuccessHandler)
@@ -101,6 +108,13 @@ public class SecurityConfig {
   @Bean
   public HttpSessionEventPublisher httpSessionEventPublisher() {
     return new HttpSessionEventPublisher();
+  }
+
+  @Bean
+  public PersistentTokenRepository tokenRepository() {
+    JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
+    repo.setDataSource(dataSource);
+    return repo;
   }
 
 }
