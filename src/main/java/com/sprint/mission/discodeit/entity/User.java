@@ -5,20 +5,18 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.*;
 
 @Entity
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id", callSuper = false)
 @Table(name = "users")
 public class User extends BaseUpdatableEntity {
 
@@ -32,9 +30,11 @@ public class User extends BaseUpdatableEntity {
     // 참여중인 채널은 ReadStatus 엔터티로 확인 가능.
     // ReadStatus와 양방향매핑 불필요.
 
+    @Setter
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus userStatus;
 
+    @Setter
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private BinaryContent profileImage;
 
@@ -58,16 +58,16 @@ public class User extends BaseUpdatableEntity {
     @LastModifiedDate
     private Instant updatedAt;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id);
+    public void update(String newEmail, String newUsername, String newPassword){
+        if (newEmail != null) {
+            this.email = newEmail;
+        }
+        if (newUsername != null) {
+            this.username = newUsername;
+        }
+        if (newPassword != null) {
+            this.password = newPassword;
+        }
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
 }

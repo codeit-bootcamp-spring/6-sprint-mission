@@ -131,33 +131,24 @@ public class ChannelService {
     }
 
     @Transactional
-    public ChannelResponseDto update(UUID id, PublicChannelUpdateRequestDto dto) {
+    public ChannelResponseDto update(UUID id, PublicChannelUpdateRequestDto request) {
         // validateCreator(user, channel);
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new ChannelNotFoundException(id));
 
         if (channel.getType() == ChannelType.PRIVATE) throw new PrivateChannelUpdateException(id);
 
-        if (dto.newName() != null) channel.setName(dto.newName());
-        if (dto.newDescription() != null) channel.setDescription(dto.newDescription());
+        channel.updatePublicChannel(request.newName(), request.newDescription());
         channelRepository.save(channel);
         log.info("채널 수정이 완료되었습니다. id=" + channel.getId());
 
-        if (channel.getType() == ChannelType.PRIVATE) {
-            return ChannelResponseDto.privateChannel(
-                    channel.getId(),
-                    getUserResponseDtos(channel.getId()),
-                    lastMessageSentAt(channel.getId())
-            );
-        }
-        else {
-            return ChannelResponseDto.publicChannel(
-                    channel.getId(),
-                    channel.getName(),
-                    channel.getDescription(),
-                    lastMessageSentAt(channel.getId())
-            );
-        }
+        return ChannelResponseDto.publicChannel(
+                channel.getId(),
+                channel.getName(),
+                channel.getDescription(),
+                lastMessageSentAt(channel.getId())
+        );
+
     }
 
     // 채널 삭제

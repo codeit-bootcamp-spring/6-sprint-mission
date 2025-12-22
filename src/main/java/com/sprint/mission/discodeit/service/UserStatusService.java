@@ -41,7 +41,7 @@ public class UserStatusService {
                 () -> new UserNotFoundException(dto.userId()));
 
         UserStatus userStatus = userStatusMapper.toEntity(dto);
-        userStatus.setLastActiveAt(Instant.now());
+        userStatus.updateLastActiveAt(Instant.now());
 
         userStatusRepository.save(userStatus);
         log.info("UserStatus 생성 완료: " +  userStatus.getId());
@@ -68,7 +68,7 @@ public class UserStatusService {
     public UserStatusResponseDto update(UUID id, UserStatusUpdateRequestDto dto){
         UserStatus userStatus = userStatusRepository.findById(id)
                 .orElseThrow(() -> new UserStatusNotFoundException(id));
-        userStatus.setLastActiveAt(Instant.now());
+        userStatus.updateLastActiveAt(Instant.now());
         log.info("UserStatus 번경 완료: " + userStatus.getId());
         userStatusRepository.save(userStatus);
 
@@ -82,7 +82,7 @@ public class UserStatusService {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> UserStatusNotFoundException.byUserId(userId));
 
-        userStatus.setLastActiveAt(dto.newLastActiveAt());
+        userStatus.updateLastActiveAt(dto.newLastActiveAt());
         log.info("UserStatus 번경 완료: " + userStatus.getId());
         userStatusRepository.save(userStatus);
 
@@ -95,8 +95,4 @@ public class UserStatusService {
         log.info("UserStatus 삭제 완료: " + id);
     }
 
-//    @Transactional
-//    public void clear(){
-//        userStatusRepository.clear();
-//    }
 }

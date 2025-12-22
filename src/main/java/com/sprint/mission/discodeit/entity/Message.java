@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -51,5 +51,11 @@ public class Message extends BaseUpdatableEntity {
 
     public void setBinaryContents(List<BinaryContent> attachments) {
         this.attachments = (attachments != null ? attachments : new ArrayList<>());
+    }
+
+    public void update(String content) {
+        if (content != null) {
+            this.content = content;
+        }
     }
 }

@@ -12,7 +12,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Entity
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -43,5 +43,9 @@ public class UserStatus extends BaseUpdatableEntity {
         if (lastActiveAt == null) return false;
         Instant fiveMinuteAgo = Instant.now().minus(5, ChronoUnit.MINUTES);
         return lastActiveAt.isAfter(fiveMinuteAgo); // 5분전 시각이 마지막 접속시간보다 뒤이면 false 반환
+    }
+
+    public void updateLastActiveAt(Instant lastActiveAt) {
+        this.lastActiveAt = lastActiveAt;
     }
 }

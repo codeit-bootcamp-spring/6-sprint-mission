@@ -124,27 +124,26 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        if (request.newUsername() != null){
+        String newEmail = request.newEmail();
+        String newUsername = request.newUsername();
+
+        if (newEmail != null) {
+            userRepository.findByEmail(newEmail)
+                    .filter(existingUser -> !existingUser.getEmail().equals(user.getEmail()))
+                    .ifPresent(existingUser -> {
+                        throw new UserAlreadyExistsException(newEmail);
+                    });
+        }
+
+        if (newUsername != null){
             userRepository.findByUsername(request.newUsername())
                     .filter(existingUser -> !existingUser.getId().equals(user.getId()))
                     .ifPresent(existingUser -> {
-                        throw UserAlreadyExistsException.byUsername(request.newUsername());
+                        throw UserAlreadyExistsException.byUsername(newUsername);
                     });
-            user.setUsername(request.newUsername());
         }
 
-        if (request.newEmail() != null) {
-            userRepository.findByEmail(request.newEmail())
-                    .filter(existingUser -> !existingUser.getEmail().equals(user.getEmail()))
-                    .ifPresent(existingUser -> {
-                        throw new UserAlreadyExistsException(request.newEmail());
-                    });
-            user.setEmail(request.newEmail());
-        }
-
-        if (request.newPassword() != null) {
-            user.setPassword(request.newPassword());
-        }
+        user.update(newEmail, newUsername, request.newPassword());
 
         if (profileImageRequest != null) {
             byte[] bytes = profileImageRequest.bytes();
@@ -163,7 +162,7 @@ public class UserService {
         log.info("사용자 수정이 완료되었습니다. id=" + user.getId());
 
         BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
-        return userMapper.toDto(user/*, user.getUserStatus(), profileImage*/);
+        return userMapper.toDto(user/*, user.getUserStatus(), profileImage */);
     }
 
     // 유저 삭제

@@ -46,7 +46,7 @@ public class AuthService {
             log.info("UserStatus를 생성했습니다: " + newUserStatus.getId());
             user.setUserStatus(newUserStatus);
         } else {
-            user.getUserStatus().setLastActiveAt(Instant.now());
+            user.getUserStatus().updateLastActiveAt(Instant.now());
         }
 
         log.info("로그인 되었습니다: " +  user.getId());

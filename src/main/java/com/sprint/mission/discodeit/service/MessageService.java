@@ -118,11 +118,10 @@ public class MessageService {
     // 내용 수정
     @Transactional
     public MessageResponseDto update(UUID id, MessageUpdateRequestDto dto) {
-        // validateWriter(user, message);
         Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new MessageNotFoundException(id));
 
-        message.setContent(dto.newContent());
+        message.update(dto.newContent());
         messageRepository.save(message);
         log.info("메시지 수정이 완료되었습니다. id=" + message.getId());
 
@@ -132,7 +131,6 @@ public class MessageService {
     // 삭제
     @Transactional
     public void delete(UUID id) {
-        // validateWriter(user, message);
         Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new MessageNotFoundException(id));
 
