@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.mapper.UserEntityMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +19,9 @@ public class BasicAuthService implements AuthService {
   private final UserRepository userRepository;
   private final UserEntityMapper userEntityMapper;
   private final PasswordEncoder passwordEncoder;
+  private final SessionRegistry sessionRegistry;
 
-  @Override
+  /*@Override
   public UserDTO.User login(UserDTO.LoginCommand loginCommand) {
 
     UserEntity userEntity = userRepository.findByUsername(loginCommand.username())
@@ -31,5 +33,5 @@ public class BasicAuthService implements AuthService {
       throw new PasswordMismatchException();
     }
 
-  }
+  }*/
 }
