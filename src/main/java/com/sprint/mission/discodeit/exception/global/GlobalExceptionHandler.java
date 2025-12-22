@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.controller.global;
+package com.sprint.mission.discodeit.exception.global;
 
 import com.sprint.mission.discodeit.dto.api.ErrorApiDTO;
 import com.sprint.mission.discodeit.exception.binarycontent.NoSuchBinaryContentException;
