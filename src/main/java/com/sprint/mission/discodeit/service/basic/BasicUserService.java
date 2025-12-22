@@ -187,6 +187,7 @@ public class BasicUserService implements UserService {
   }
 
   @Transactional
+  @PreAuthorize("hasPermission(#request.id(), 'USER', 'UPDATE')")
   @Override
   public UserDTO.User updateUser(UserDTO.UpdateUserCommand request) {
 
@@ -262,7 +263,7 @@ public class BasicUserService implements UserService {
 
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasPermission(#id, 'USER', 'DELETE')")
   @Override
   public void deleteUserById(UUID id) {
 

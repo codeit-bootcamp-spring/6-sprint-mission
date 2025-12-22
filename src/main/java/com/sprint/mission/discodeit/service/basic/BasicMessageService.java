@@ -203,7 +203,7 @@ public class BasicMessageService implements MessageService {
 
   }
 
-  @PreAuthorize("hasRole('ROLE_USER')")
+  @PreAuthorize("hasPermission(#request.id(), 'MESSAGE', 'UPDATE')")
   @Transactional
   @Override
   public MessageDTO.Message updateMessage(MessageDTO.UpdateMessageCommand request) {
@@ -223,7 +223,7 @@ public class BasicMessageService implements MessageService {
 
   }
 
-  @PreAuthorize("hasRole('ROLE_USER')")
+  @PreAuthorize("hasPermission(#request.id(), 'MESSAGE', 'DELETE')")
   @Transactional
   @Override
   public void deleteMessageById(UUID id) {
