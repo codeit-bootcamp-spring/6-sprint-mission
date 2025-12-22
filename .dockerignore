@@ -1,0 +1,23 @@
+# Gradle
+.gradle
+gradle-build/
+build/
+
+# IDEs
+.idea
+.vscode
+*.iml
+
+# Git
+.git
+.gitignore
+
+# Local artifacts
+.discodeit
+logs
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
+*/__pycache__
