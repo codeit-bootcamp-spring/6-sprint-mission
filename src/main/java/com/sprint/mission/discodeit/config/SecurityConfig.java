@@ -52,7 +52,7 @@ public class SecurityConfig {
             .sessionConcurrency(concurrency -> {
               concurrency
                   .maximumSessions(1)
-                  .maxSessionsPreventsLogin(true)
+                  .maxSessionsPreventsLogin(false)
                   .expiredUrl("/api/auth/login?expired")
                   .sessionRegistry(sessionRegistry());
             })
