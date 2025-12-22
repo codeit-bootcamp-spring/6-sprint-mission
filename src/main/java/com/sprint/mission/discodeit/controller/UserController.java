@@ -38,10 +38,10 @@ public class UserController {
             profileRequest = resolveProfileRequest(image);
         }
 
-        UserResponseDto user = userService.create(request, profileRequest);
+        UserResponseDto response = userService.create(request, profileRequest);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(user);
+                .body(response);
     }
 
     @GetMapping
