@@ -1,12 +1,7 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.dto.UserDTO;
-import com.sprint.mission.discodeit.dto.UserDTO.UpdateUserRoleCommand;
-import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestHandler;
-import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -36,7 +31,6 @@ public class SecurityConfig {
   private final AuthenticationSuccessHandler loginSuccessHandler;
   private final AuthenticationFailureHandler loginFailureHandler;
   private final LogoutSuccessHandler logoutSuccessHandler;
-  private final UserService userService;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -98,24 +92,5 @@ public class SecurityConfig {
     return new HttpSessionEventPublisher();
   }
 
-  public CommandLineRunner initAdminAccount() {
-    return args -> {
 
-      if (!userService.existUserByUsername("admin")) {
-        UserDTO.CreateUserCommand adminUser = new UserDTO.CreateUserCommand(
-            "admin",
-            "admin@admin.com",
-            "Admin@1234",
-            "관리자",
-            null
-        );
-
-        userService.updateUserRole(UpdateUserRoleCommand.builder()
-                .userId(userService.createUser(adminUser).getId())
-                .newRole(Role.ADMIN)
-            .build());
-
-      }
-    };
-  }
 }
