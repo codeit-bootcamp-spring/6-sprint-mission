@@ -28,3 +28,6 @@ code:
 logging:
   level:
     root: INFO
+security:
+  key:
+    remember-me: test-remember-me-key

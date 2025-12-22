@@ -49,6 +49,10 @@ logging:
 server:
   port: 80
 
+security:
+  key:
+    remember-me: ${SECURITY_KEY_REMEMBER_ME:prod-remember-me-key}
+
 
 
 

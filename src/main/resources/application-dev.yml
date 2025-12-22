@@ -81,5 +81,9 @@ info:
         max-file-size: 10MB
         max-request-size: 10MB
 
+security:
+  key:
+    remember-me: ${SECURITY_KEY_REMEMBER_ME:dev-remember-me-key}
+
 
 
