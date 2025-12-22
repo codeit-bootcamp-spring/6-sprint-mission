@@ -29,4 +29,17 @@ public class DiscodeitUserDetails implements UserDetails {
   public String getUsername() {
     return user.getUsername();
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) return false;
+    DiscodeitUserDetails that = (DiscodeitUserDetails) o;
+    return user.getId().equals(that.user.getId());
+  }
+
+  @Override
+  public int hashCode() {
+    return user.getId().hashCode();
+  }
+
 }
