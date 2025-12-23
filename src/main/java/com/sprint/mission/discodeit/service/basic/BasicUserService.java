@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.request.CreateUserRequest;
 import com.sprint.mission.discodeit.dto.request.UpdateUserRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.User.Role;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -64,11 +65,12 @@ public class BasicUserService implements UserService {
           }
         }
     );
-    user = new User(
-        request.username(),
-        request.email(),
-        passwordEncoder.encode(request.password())
-    );
+    user = User.builder()
+        .username(request.username())
+        .email(request.email())
+        .password(passwordEncoder.encode(request.password()))
+        .role(Role.USER)
+        .build();
     UserStatus userStatus = new UserStatus(user, Instant.now());
     user.setUserStatus(userStatus);
     user.setProfile(binaryContentOptional.orElse(null));
