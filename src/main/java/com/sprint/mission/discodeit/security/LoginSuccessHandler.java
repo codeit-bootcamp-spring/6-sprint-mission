@@ -8,7 +8,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,8 +29,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     UserDto userDto = userDetails.getUserDto();
 
     response.setStatus(HttpStatus.OK.value());
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.setCharacterEncoding("UTF-8");
-    objectMapper.writeValue(response.getWriter(), Map.of("data", userDto));
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
+    objectMapper.writeValue(response.getWriter(), userDto);
   }
 }

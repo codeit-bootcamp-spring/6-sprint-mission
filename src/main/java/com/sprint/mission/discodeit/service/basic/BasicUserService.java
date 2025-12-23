@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.CreateUserRequest;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UpdateUserRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.User.Role;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -171,6 +172,13 @@ public class BasicUserService implements UserService {
     }
     log.debug("이름: {}, 이메일: {}", updated.getUsername(), updated.getEmail());
     return updated;
+  }
+
+  public User updateRole(RoleUpdateRequest updateRequest) {
+    User user = userRepository.findById(updateRequest.userId())
+        .orElseThrow(UserNotFoundException::new);
+    user.updateRole(updateRequest.newRole());
+    return user;
   }
 
   @Override

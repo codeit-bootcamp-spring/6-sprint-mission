@@ -46,11 +46,6 @@ public class User extends BaseUpdatableEntity {
   @Transient
   private Boolean online;
 
-  public enum Role {
-    USER,
-    ADMIN
-  }
-
   @Builder
   public User(String username, String email, Role role, String password) {
     this.username = username;
@@ -93,6 +88,12 @@ public class User extends BaseUpdatableEntity {
   public void update(BinaryContent profile) {
     if (profile != null && profile != this.profile) {
       this.profile = profile;
+    }
+  }
+
+  public void updateRole(Role role) {
+    if (role != null && role != this.role) {
+      this.role = role;
     }
   }
 

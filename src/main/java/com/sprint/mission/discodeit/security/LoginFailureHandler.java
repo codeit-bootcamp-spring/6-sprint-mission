@@ -25,8 +25,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
   public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
       AuthenticationException exception) throws IOException, ServletException {
     response.setStatus(HttpStatus.UNAUTHORIZED.value());
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.setCharacterEncoding("UTF-8");
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
     objectMapper.writeValue(response.getWriter(), Map.of("message", "인증 실패"));
     log.info("Login failed. ipAddress: {} | Reason: {}", getClientIpAddr(request), exception.getMessage());
   }
