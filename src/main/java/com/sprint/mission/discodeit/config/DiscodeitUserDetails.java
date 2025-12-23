@@ -13,36 +13,36 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DiscodeitUserDetails implements UserDetails {
 
-    private final UserResponseDto userDto;
+    private final UserResponseDto userResponseDto;
     private final String password;
 
-    @Override
+    @Override // 계정 잠금 여부
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
+        return true;
     }
 
-    @Override
+    @Override // 계정 잠금 여부
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return true;
     }
 
-    @Override
+    @Override // 비밀번호 만료 여부
     public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
+        return true;
     }
 
-    @Override
+    @Override // 계정 활성화 여부
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return true;
     }
 
-    @Override
+    @Override // TODO 권한 만든다면 수정 필요
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
     }
 
     @Override
     public String getUsername() {
-        return "";
+        return userResponseDto.username();
     }
 }

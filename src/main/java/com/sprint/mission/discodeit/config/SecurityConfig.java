@@ -34,9 +34,9 @@ public class SecurityConfig {
 
                 // 폼 로그인
                 .formLogin(login -> login
+                        .loginPage("/api/auth/login")
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
-                        .loginPage("/api/auth/login")
 
                 )
 
