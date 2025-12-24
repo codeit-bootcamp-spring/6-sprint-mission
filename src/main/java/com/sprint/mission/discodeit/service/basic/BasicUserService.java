@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.common.SecurityUtil;
 import com.sprint.mission.discodeit.dto.request.CreateUserRequest;
-import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UpdateUserRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.common.Role;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -35,6 +35,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentStorage storage;
   private final PasswordEncoder passwordEncoder;
   private final PersistentTokenRepository persistentTokenRepository;
+  private final SecurityUtil securityUtil;
 
   @Override
   public User create(CreateUserRequest request, Optional<MultipartFile> profile) {
@@ -111,10 +112,9 @@ public class BasicUserService implements UserService {
         });
 
     String rawNewPassword = updateUserRequest.newPassword();
-    boolean matches = passwordEncoder.matches(rawNewPassword, user.getPassword());
     String encodedNewPassword = null;
 
-    if (rawNewPassword != null && !matches) {
+    if (rawNewPassword != null && !passwordEncoder.matches(rawNewPassword, user.getPassword())) {
       encodedNewPassword = passwordEncoder.encode(rawNewPassword);
     }
 
@@ -145,6 +145,8 @@ public class BasicUserService implements UserService {
     user.update(binaryContent.orElse(null));
 
     User updated = userRepository.save(user);
+
+    securityUtil.refreshAuthentication(user);
 
     log.info("유저 정보 업데이트: id={}", updated.getId());
     if (updated.getProfile() != null) {
