@@ -54,21 +54,14 @@ public class UserDTO {
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
         "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
-    private static final Pattern PASSWORD_PATTERN = Pattern.compile(
-        "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,}$");
 
     public boolean isEmailValid(String email) {
       return EMAIL_PATTERN.matcher(email).matches();
     }
 
-    public boolean isPasswordValid(String password) {
-      //길이는 8자리 이상, 영어 대소문자, 숫자, 특수문자 포함
-      return PASSWORD_PATTERN.matcher(password).matches();
-    }
-
     public CreateUserCommand {
 
-      if (!isPasswordValid(password) || !isEmailValid(email) || username.isBlank()) {
+      if (!isEmailValid(email) || username.isBlank()) {
         throw new IllegalArgumentException("Invalid user data.");
       }
 

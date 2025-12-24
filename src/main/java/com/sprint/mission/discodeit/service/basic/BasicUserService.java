@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ public class BasicUserService implements UserService {
   private final UserEntityMapper userEntityMapper;
   private final SecurityUtil securityUtil;
   private final SessionRegistry sessionRegistry;
+  private final PasswordEncoder passwordEncoder;
 
   @Transactional
   @Override
@@ -54,7 +56,7 @@ public class BasicUserService implements UserService {
 
     UserEntity userEntity = UserEntity.builder()
         .email(request.email())
-        .password(securityUtil.hashPassword(request.password()))
+        .password(passwordEncoder.encode(request.password()))
         .username(request.username())
         .build();
 
