@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.exception;
 
+import com.sprint.mission.discodeit.enums.ErrorCode;
+
 import java.time.Instant;
 import java.util.Map;
 

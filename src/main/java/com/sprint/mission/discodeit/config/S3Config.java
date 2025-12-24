@@ -14,16 +14,15 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
  * S3 클라이언트 생성과 관련된 설정
  */
 @Configuration
-@ConfigurationProperties(prefix = "discodeit.storage.s3")
 public class S3Config {
 
-    @Value("${AWS_ACCESS_KEY}")
+    @Value("${discodeit.storage.s3.access-key}")
     private String accessKey;
 
-    @Value("${AWS_SECRET_KEY}")
+    @Value("${discodeit.storage.s3.secret-key}")
     private String secretKey;
 
-    @Value("${AWS_REGION}")
+    @Value("${discodeit.storage.s3.region}")
     private String region;
 
     @Bean

@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.enums.ChannelType;
+import com.sprint.mission.discodeit.enums.Role;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
@@ -14,6 +15,9 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +61,7 @@ public class ChannelService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     public ChannelResponseDto create(PublicChannelCreateRequestDto request) {
         Channel channel = Channel.builder()
                 .type(ChannelType.PUBLIC)
@@ -131,8 +136,9 @@ public class ChannelService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     public ChannelResponseDto update(UUID id, PublicChannelUpdateRequestDto request) {
-        // validateCreator(user, channel);
+
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new ChannelNotFoundException(id));
 
@@ -153,10 +159,14 @@ public class ChannelService {
 
     // 채널 삭제
     @Transactional
-    public void deleteById(UUID id) {
+    public void deleteById(UUID id, User user) {
 
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new ChannelNotFoundException(id));
+
+        if (channel.getType() == ChannelType.PUBLIC && user.getRole() == Role.USER) {
+            throw new AccessDeniedException("권한이 없습니다."); // TODO 커스텀예외?
+        }
 
         List<Message> messages = messageRepository.findByChannelId(id);
         if (messages != null) {
@@ -195,12 +205,7 @@ public class ChannelService {
                 .orElse(null);
     }
 
-//    public ChannelResponseDto getChannelDto(Channel channel, List<UserResponseDto> participants, Instant lastMessageSentAt) {
-//        // MapStruct가 생성한 ChannelMapperImpl 클래스의 toDto 메서드를 사용
-//        return channelMapper.toDto(channel, participants, lastMessageSentAt);
-//    }
-
-    // 다건 조회 시 사용
+    // 다건 조회
     public List<UserResponseDto> getUserResponseDtos(UUID channelId) {
 
         List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelIdWithUser(channelId);
@@ -213,36 +218,7 @@ public class ChannelService {
 
         }
 
-
-//        // ReadStatus 가져오기 (다대다 연결테이블)
-//        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channelId);
-//
-//        // User, UserId 가져오기
-//        List<User> users = readStatuses.stream()
-//                .map(ReadStatus::getUser)
-//                .toList();
-//        List<UUID> userIds = readStatuses.stream()
-//                .map(readStatus -> readStatus.getUser().getId())
-//                .collect(Collectors.toList());
-//
-//        // UserStatus 가져오기
-//        List<UserStatus> userStatuses = userStatusRepository.findAllById(userIds);
-//
-//        Map<UUID, UserStatus> statusMap = userStatuses.stream()
-//                .collect(Collectors.toMap(status -> status.getUser().getId(), status -> status));
-//
-//        List<UserResponseDto> userResponseDtos;
-//        return userResponseDtos = users.stream()
-//                .map(user -> {
-//                    UserStatus userStatus = statusMap.get(user.getId());
-//                    BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
-//                            return userMapper.toDto(user, userStatus,  profileImage);
-//                    }
-//                )
-//                .toList();
-//    }
-
-    // 단건 조회 시 사용
+    // 단건 조회
     private List<UserResponseDto> getUserResponseDtos(Channel channel) {
         return channel.getReadStatuses().stream()
                 .map(ReadStatus::getUser)

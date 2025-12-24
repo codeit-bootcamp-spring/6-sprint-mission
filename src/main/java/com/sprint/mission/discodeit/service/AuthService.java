@@ -1,22 +1,16 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.auth.LoginRequestDto;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -27,6 +21,7 @@ public class AuthService {
     private final UserMapper userMapper;
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public UserResponseDto updateUserRole(UserRoleUpdateRequest request) {
 
         User user = userRepository.findById(request.userId())
@@ -36,5 +31,5 @@ public class AuthService {
         userRepository.save(user);
         return userMapper.toDto(user);
     }
-    
+
 }
