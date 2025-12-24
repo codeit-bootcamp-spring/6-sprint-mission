@@ -30,11 +30,6 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(optional = true, orphanRemoval = true)
   @JoinColumn(name = "profile_id")
   private BinaryContent profile;
-  // 양방향 관계는 순환참조 문제 발생 가능성 있음
-  // dto 변환 시 한쪽은 상대 엔티티 제외
-  @OneToOne(mappedBy = "user", optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
-  private UserStatus userStatus;
-  //
   @Column(unique = true, nullable = false)
   private String username;
   @Column(unique = true, nullable = false)
@@ -43,8 +38,6 @@ public class User extends BaseUpdatableEntity {
   private String password;
   @Enumerated(EnumType.STRING)
   private Role role;
-  @Transient
-  private Boolean online;
 
   @Builder
   public User(String username, String email, Role role, String password) {
@@ -52,14 +45,6 @@ public class User extends BaseUpdatableEntity {
     this.email = email;
     this.password = password;
     this.role = role;
-    this.online = true;
-  }
-
-  public void setUserStatus(UserStatus userStatus) {
-    this.userStatus = userStatus;
-    if (userStatus != null && userStatus.getUser() != this) {
-      userStatus.setUser(this);
-    }
   }
 
   // 프론트엔드에서 유저이름과 이메일을 같은값으로 수정하면 null로 들어옴. null 체크
@@ -95,9 +80,5 @@ public class User extends BaseUpdatableEntity {
     if (role != null && role != this.role) {
       this.role = role;
     }
-  }
-
-  public void update(boolean online) {
-    this.online = online;
   }
 }

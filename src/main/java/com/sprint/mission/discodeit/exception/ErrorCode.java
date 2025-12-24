@@ -15,7 +15,6 @@ public enum ErrorCode {
 
   MESSAGE_NOT_FOUND(404, "MS001", "메시지를 찾을 수 없습니다."),
   READ_STATUS_NOT_FOUND(404, "RS001", "읽기상태를 찾을 수 없습니다."),
-  USER_STATUS_NOT_FOUND(404, "US101", "유저상태를 찾을 수 없습니다."),
   BINARY_CONTENT_NOT_FOUND(404, "BC001", "바이너리 데이터를 찾을 수 없습니다."),
 
   // Common

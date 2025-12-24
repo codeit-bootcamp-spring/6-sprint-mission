@@ -23,11 +23,15 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
@@ -41,7 +45,7 @@ public class SecurityConfig {
 
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
     http
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
@@ -53,6 +57,11 @@ public class SecurityConfig {
                 "/api/auth/logout",
                 "/actuator/health").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+            .requestMatchers(
+                "/actuator/**",
+                "/swagger-ui.html",
+                "/swagger-ui/**",
+                "/v3/**").hasRole("ADMIN")
             .requestMatchers("/api/auth/me").authenticated()
             .anyRequest().authenticated()
         )
@@ -68,6 +77,15 @@ public class SecurityConfig {
                   response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
                   objectMapper.writeValue(response.getWriter(), Map.of("message", "접근 권한이 없습니다."));
                 }
+            )
+        )
+        .sessionManagement(session -> session
+            // 기본 세션 정책 설정
+            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            .sessionConcurrency(concurrency -> concurrency
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(true)
+                .sessionRegistry(sessionRegistry)
             )
         )
         .csrf(csrf -> csrf
@@ -102,6 +120,16 @@ public class SecurityConfig {
     DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
     handler.setRoleHierarchy(roleHierarchy);
     return handler;
+  }
+
+  @Bean
+  public SessionRegistry sessionRegistry() {
+    return new SessionRegistryImpl();
+  }
+
+  @Bean
+  public HttpSessionEventPublisher httpSessionEventPublisher() {
+    return new HttpSessionEventPublisher();
   }
 
   @Bean

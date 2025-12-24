@@ -1,16 +1,12 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.CreateUserRequest;
 import com.sprint.mission.discodeit.dto.request.UpdateUserRequest;
 import com.sprint.mission.discodeit.dto.request.UpdateUserStatusRequest;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -36,9 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
   private final UserService userService;
-  private final UserStatusService userStatusService;
   private final UserMapper userMapper;
-  private final UserStatusMapper userStatusMapper;
 
   @GetMapping
   public ResponseEntity<List<UserDto>> readUser() {
@@ -78,12 +72,12 @@ public class UserController {
     return ResponseEntity.ok(userId + " 삭제되었습니다");
   }
 
-  @PatchMapping(value = "/{userId}/userStatus", consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<UserStatusDto> stateUser(
-      @PathVariable UUID userId,
-      @Valid @RequestBody UpdateUserStatusRequest request
-  ) {
-    UserStatus updated = userStatusService.update(userId, request);
-    return ResponseEntity.ok(userStatusMapper.toDto(updated));
-  }
+//  @PatchMapping(value = "/{userId}/userStatus", consumes = {MediaType.APPLICATION_JSON_VALUE})
+//  public ResponseEntity<UserStatusDto> stateUser(
+//      @PathVariable UUID userId,
+//      @Valid @RequestBody UpdateUserStatusRequest request
+//  ) {
+//    UserStatus updated = userStatusService.update(userId, request);
+//    return ResponseEntity.ok(userStatusMapper.toDto(updated));
+//  }
 }

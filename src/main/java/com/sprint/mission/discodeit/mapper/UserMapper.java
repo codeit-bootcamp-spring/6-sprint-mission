@@ -12,7 +12,6 @@ public interface UserMapper {
 
   // User의 profile을 BinaryContentMapper.todto를 이용해 UserDto의 profile로 매핑
   @Mapping(source = "profile", target = "profile", qualifiedByName = "binaryContentToDto")
-  @Mapping(source = "userStatus.online", target = "online")
   @Named("userToDto")
   UserDto toDto(User user);
 

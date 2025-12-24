@@ -4,21 +4,31 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
-@RequiredArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class DiscodeitUserDetails implements UserDetails {
+
+  private final UUID id;
 
   private final UserDto userDto;
 
   private final String password;
 
   private final Role role;
+
+  public DiscodeitUserDetails(UserDto userDto, String password, Role role) {
+    this.id = userDto.id();
+    this.userDto = userDto;
+    this.password = password;
+    this.role = role;
+  }
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

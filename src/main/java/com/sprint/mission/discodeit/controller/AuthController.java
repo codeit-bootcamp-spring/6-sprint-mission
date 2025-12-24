@@ -30,7 +30,6 @@ public class AuthController {
 
   @GetMapping("/me")
   public ResponseEntity<UserDto> getUserDto(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-    System.out.println("현재 유저 권한: " + userDetails.getAuthorities());
     return ResponseEntity.ok(userDetails.getUserDto());
   }
 
