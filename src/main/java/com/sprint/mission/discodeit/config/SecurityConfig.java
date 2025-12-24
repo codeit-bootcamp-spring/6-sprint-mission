@@ -72,9 +72,9 @@ public class SecurityConfig {
             .logoutSuccessHandler(logoutSuccessHandler)
         )
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**",
+                "/swagger-ui.html", "/actuator/**").permitAll()
             .anyRequest().authenticated()
         )
         .csrf(csrf ->
@@ -88,18 +88,6 @@ public class SecurityConfig {
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
-  }
-
-  @Bean
-  public RoleHierarchy roleHierarchy() {
-
-    RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-    roleHierarchy.setHierarchy(
-        "ROLE_ADMIN > ROLE_CHANNEL_MANAGER\n" +
-            "ROLE_CHANNEL_MANAGER > ROLE_USER");
-
-    return roleHierarchy;
-
   }
 
   @Bean

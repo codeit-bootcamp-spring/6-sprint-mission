@@ -1,9 +1,10 @@
-package com.sprint.mission.discodeit.security;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.mapper.UserEntityMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -25,7 +26,8 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
 
     return new DiscodeitUserDetails(
         userEntityMapper.toUser(user),
-        user.getPassword()
+        user.getPassword(),
+        user.getRole().name()
     );
   }
 }

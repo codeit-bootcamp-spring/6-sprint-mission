@@ -23,7 +23,6 @@ public class AuthApiMapper {
                 .build() :
             null)
         .role(user.getRole())
-        .isOnline(user.getIsOnline())
         .build();
 
   }

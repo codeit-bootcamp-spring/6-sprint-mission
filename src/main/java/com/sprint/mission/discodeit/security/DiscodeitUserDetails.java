@@ -15,10 +15,11 @@ public class DiscodeitUserDetails implements UserDetails {
 
   private final UserDTO.User user;
   private final String password;
+  private final String role;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+    return List.of(new SimpleGrantedAuthority("ROLE_" + this.role));
   }
 
   @Override
