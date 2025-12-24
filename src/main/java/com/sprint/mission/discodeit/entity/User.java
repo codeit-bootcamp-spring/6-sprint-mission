@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,7 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -49,7 +47,7 @@ public class User extends BaseUpdatableEntity {
 
   // 프론트엔드에서 유저이름과 이메일을 같은값으로 수정하면 null로 들어옴. null 체크
   // 비밀번호 같은 값은 그대로 값 들어옴
-  public void update(String newUsername, String newEmail, String newPassword) {
+  public boolean update(String newUsername, String newEmail, String newPassword) {
     boolean anyValueUpdated = false;
     if (newUsername != null && !newUsername.equals(this.username)) {
       this.username = newUsername;
@@ -68,6 +66,7 @@ public class User extends BaseUpdatableEntity {
       this.updatedAt = Instant.now();
     }
 
+    return anyValueUpdated;
   }
 
   public void update(BinaryContent profile) {

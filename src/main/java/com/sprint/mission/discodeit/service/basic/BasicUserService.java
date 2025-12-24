@@ -19,6 +19,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +34,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage storage;
   private final PasswordEncoder passwordEncoder;
+  private final PersistentTokenRepository persistentTokenRepository;
 
   @Override
   public User create(CreateUserRequest request, Optional<MultipartFile> profile) {
@@ -116,7 +118,7 @@ public class BasicUserService implements UserService {
       encodedNewPassword = passwordEncoder.encode(rawNewPassword);
     }
 
-    user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(),
+    boolean isUpdated = user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(),
         encodedNewPassword);
 
     Optional<BinaryContent> binaryContent = profile.map(
@@ -149,6 +151,12 @@ public class BasicUserService implements UserService {
       log.info("프로필 사진 업로드: {}", updated.getProfile().getId());
     }
     log.debug("이름: {}, 이메일: {}", updated.getUsername(), updated.getEmail());
+
+    if (isUpdated) {
+      persistentTokenRepository.removeUserTokens(updated.getUsername());
+      log.debug("유저 정보 변경으로 인해 rememberMe 토큰 삭제: username={}", updated.getUsername());
+    }
+
     return updated;
   }
 

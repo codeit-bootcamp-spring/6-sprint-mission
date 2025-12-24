@@ -9,7 +9,9 @@ import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import java.util.Map;
+import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,10 +28,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
@@ -42,7 +47,11 @@ public class SecurityConfig {
   private final LoginSuccessHandler loginSuccessHandler;
   private final LoginFailureHandler loginFailureHandler;
   private final ObjectMapper objectMapper;
+  private final UserDetailsService userDetailsService;
+  private final DataSource dataSource;
 
+  @Value("${remember.me.key}")
+  private String rememberMeKey;
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
@@ -84,9 +93,18 @@ public class SecurityConfig {
             .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             .sessionConcurrency(concurrency -> concurrency
                 .maximumSessions(1)
-                .maxSessionsPreventsLogin(true)
+                .maxSessionsPreventsLogin(false)
                 .sessionRegistry(sessionRegistry)
             )
+        )
+        .rememberMe(rememberMe -> rememberMe
+            .key(rememberMeKey)
+            // 10일 동안 유효
+            .tokenValiditySeconds(60 * 60 * 24 * 10)
+            .rememberMeParameter("remember-me")
+            .userDetailsService(userDetailsService)
+            // Persistent Token 방식 설정
+            .tokenRepository(tokenRepository())
         )
         .csrf(csrf -> csrf
             // Double Submit Cookie Pattern
@@ -101,8 +119,16 @@ public class SecurityConfig {
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+            .deleteCookies("remember-me")
         );
     return http.build();
+  }
+
+  @Bean
+  public PersistentTokenRepository tokenRepository() {
+    JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+    tokenRepository.setDataSource(dataSource);
+    return tokenRepository;
   }
 
   // 역할 계층 정의
