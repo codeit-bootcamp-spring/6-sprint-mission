@@ -100,11 +100,7 @@ public class SecurityConfig {
                   objectMapper.writeValue(response.getWriter(), Map.of("message", "다른 곳에서 로그인되어 세션이 만료되었습니다."));
                 })
             )
-            .invalidSessionStrategy((request, response) -> {
-              response.setStatus(HttpStatus.UNAUTHORIZED.value());
-              response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
-              objectMapper.writeValue(response.getWriter(), Map.of("message", "세션이 유효하지 않습니다. 다시 로그인 해주세요."));
-            })
+            .invalidSessionUrl("/index.html")
         )
         .rememberMe(rememberMe -> rememberMe
             .key(rememberMeKey)
