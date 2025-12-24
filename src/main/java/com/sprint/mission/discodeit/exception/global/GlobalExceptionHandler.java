@@ -18,6 +18,7 @@ import java.time.Instant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -317,6 +318,21 @@ public class GlobalExceptionHandler {
             .status(HttpStatus.NOT_FOUND.value())
             .build());
 
+  }
+
+  @ExceptionHandler(AuthorizationDeniedException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAuthorizationDeniedException(
+      AuthorizationDeniedException e) {
+    log.error("AuthorizationDeniedException occurred", e);
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(ErrorApiDTO.ErrorApiResponse.builder()
+            .timestamp(Instant.now())
+            .code(String.valueOf(HttpStatus.FORBIDDEN.value()))
+            .message("Authorization Denied: " + e.getMessage())
+            .exceptionType(String.valueOf(HttpStatus.FORBIDDEN.value()))
+            .status(HttpStatus.FORBIDDEN.value())
+            .build());
   }
 
 }

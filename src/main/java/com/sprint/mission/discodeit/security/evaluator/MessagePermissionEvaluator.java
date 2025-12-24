@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.security.evaluator;
 
-import com.sprint.mission.discodeit.dto.MessageDTO.Message;
 import com.sprint.mission.discodeit.entity.MessageEntity;
 import com.sprint.mission.discodeit.exception.message.NoSuchMessageException;
 import com.sprint.mission.discodeit.repository.MessageRepository;

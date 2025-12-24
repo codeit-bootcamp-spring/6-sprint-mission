@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -94,7 +93,7 @@ public class SecurityConfig {
   @Bean
   public RoleHierarchy roleHierarchy() {
 
-    String hierarchy = "ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER";
+    String hierarchy = "ROLE_ADMIN > ROLE_CHANNEL_MANAGER\\nROLE_CHANNEL_MANAGER > ROLE_USER";
     return RoleHierarchyImpl.fromHierarchy(hierarchy);
 
   }
