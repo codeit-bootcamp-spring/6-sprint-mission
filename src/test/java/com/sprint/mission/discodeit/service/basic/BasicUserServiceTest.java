@@ -36,8 +36,6 @@ class BasicUserServiceTest {
   @Mock
   private UserRepository userRepository;
   @Mock
-  private UserStatusRepository userStatusRepository;
-  @Mock
   private BinaryContentRepository binaryContentRepository;
   @Mock
   private BinaryContentStorage binaryContentStorage;
@@ -55,7 +53,6 @@ class BasicUserServiceTest {
   private final String testPassword = "Testpass123@";
   private final String testHashedPassword = "hashedPassword123@";
   private UserEntity testUserEntity;
-  private UserStatusEntity testUserStatusEntity;
   private UserDTO.User testUserDto;
 
   @BeforeEach
@@ -67,11 +64,6 @@ class BasicUserServiceTest {
         .password(testHashedPassword)
         .build();
 
-    testUserStatusEntity = UserStatusEntity.builder()
-        .user(testUserEntity)
-        .lastActiveAt(java.time.Instant.now())
-        .build();
-
     testUserDto = UserDTO.User.builder()
         .id(testUserId)
         .username(testUsername)
@@ -79,8 +71,6 @@ class BasicUserServiceTest {
         .password(testHashedPassword)
         .isOnline(true)
         .build();
-
-    testUserEntity.updateUserStatus(testUserStatusEntity);
 
   }
 
@@ -261,7 +251,6 @@ class BasicUserServiceTest {
 
     // given
     when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUserEntity));
-    when(userStatusRepository.findByUserId(testUserId)).thenReturn(Optional.of(testUserStatusEntity));
     when(userEntityMapper.toUser(testUserEntity)).thenReturn(testUserDto);
 
     // when

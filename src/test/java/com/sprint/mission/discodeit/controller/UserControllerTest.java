@@ -41,8 +41,6 @@ class UserControllerTest {
   @MockitoBean
   private UserService userService;
   @MockitoBean
-  private UserStatusService userStatusService;
-  @MockitoBean
   private UserApiMapper userApiMapper;
 
   private final UUID testUserId = UUID.randomUUID();
@@ -217,10 +215,6 @@ class UserControllerTest {
             .isOnline(true)
             .build();
 
-    when(userStatusService.findUserStatusByUserId(testUserId))
-        .thenReturn(userStatus);
-    when(userStatusService.updateUserStatus(any(UserStatusDTO.UpdateUserStatusCommand.class)))
-        .thenReturn(userStatus);
     when(userApiMapper.userStatusToCheckUserOnlineResponse(any(UserStatusDTO.UserStatus.class)))
         .thenReturn(response);
 
@@ -251,8 +245,6 @@ class UserControllerTest {
         .isOnline(true)
         .build();
 
-    when(userStatusService.findUserStatusByUserId(testUserId))
-        .thenReturn(userStatus);
     when(userApiMapper.userStatusToCheckUserOnlineResponse(any(UserStatusDTO.UserStatus.class)))
         .thenReturn(response);
 
@@ -271,8 +263,6 @@ class UserControllerTest {
   void checkUserOnlineStatus_Fail_UserNotFound() throws Exception {
 
     //given
-    when(userStatusService.findUserStatusByUserId(testUserId))
-        .thenThrow(new NoSuchUserStatusException());
 
     //when & then
     mockMvc.perform(MockMvcRequestBuilders
