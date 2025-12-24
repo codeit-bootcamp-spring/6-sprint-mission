@@ -160,13 +160,6 @@ public class BasicUserService implements UserService {
     return updated;
   }
 
-  public User updateRole(RoleUpdateRequest updateRequest) {
-    User user = userRepository.findById(updateRequest.userId())
-        .orElseThrow(UserNotFoundException::new);
-    user.updateRole(updateRequest.newRole());
-    return user;
-  }
-
   @Override
   public void delete(UUID userId) {
     if (!userRepository.existsById(userId)) {

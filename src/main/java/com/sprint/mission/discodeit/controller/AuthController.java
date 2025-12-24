@@ -5,8 +5,8 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.service.basic.BasicAuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,8 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-  private final UserService userService;
   private final UserMapper userMapper;
+  private final BasicAuthService authService;
 
   @GetMapping("/me")
   public ResponseEntity<UserDto> getUserDto(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
@@ -37,7 +37,7 @@ public class AuthController {
   public ResponseEntity<UserDto> updateUserRole(
       @RequestBody RoleUpdateRequest updateRequest
   ) {
-    User updated = userService.updateRole(updateRequest);
+    User updated = authService.updateRole(updateRequest);
     return ResponseEntity.ok(userMapper.toDto(updated));
   }
 

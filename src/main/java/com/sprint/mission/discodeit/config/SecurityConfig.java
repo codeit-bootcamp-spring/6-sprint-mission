@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
@@ -89,13 +90,22 @@ public class SecurityConfig {
             )
         )
         .sessionManagement(session -> session
-            // 기본 세션 정책 설정
-            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             .sessionConcurrency(concurrency -> concurrency
                 .maximumSessions(1)
                 .maxSessionsPreventsLogin(false)
                 .sessionRegistry(sessionRegistry)
+                .expiredSessionStrategy(event -> {
+                  HttpServletResponse response = event.getResponse();
+                  response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                  response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
+                  objectMapper.writeValue(response.getWriter(), Map.of("message", "다른 곳에서 로그인되어 세션이 만료되었습니다."));
+                })
             )
+            .invalidSessionStrategy((request, response) -> {
+              response.setStatus(HttpStatus.UNAUTHORIZED.value());
+              response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
+              objectMapper.writeValue(response.getWriter(), Map.of("message", "세션이 유효하지 않습니다. 다시 로그인 해주세요."));
+            })
         )
         .rememberMe(rememberMe -> rememberMe
             .key(rememberMeKey)
@@ -119,7 +129,7 @@ public class SecurityConfig {
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
-            .deleteCookies("remember-me")
+            .deleteCookies("remember-me", "JSESSIONID")
         );
     return http.build();
   }
@@ -174,6 +184,16 @@ public class SecurityConfig {
                 .email("admin@gmail.com")
                 .password(passwordEncoder.encode("testtest"))
                 .role(Role.ADMIN)
+                .build()
+        );
+      }
+      if (userRepository.findByUsername("channelManager").isEmpty()) {
+        userRepository.save(
+            User.builder()
+                .username("channelManager")
+                .email("channelManager@gmail.com")
+                .password(passwordEncoder.encode("testtest"))
+                .role(Role.CHANNEL_MANAGER)
                 .build()
         );
       }
