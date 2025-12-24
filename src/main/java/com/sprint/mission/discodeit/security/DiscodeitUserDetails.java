@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.security;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.common.Role;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;

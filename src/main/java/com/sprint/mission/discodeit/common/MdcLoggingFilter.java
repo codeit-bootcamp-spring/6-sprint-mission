@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.config;
+package com.sprint.mission.discodeit.common;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
