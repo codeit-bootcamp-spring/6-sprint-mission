@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.UserDTO;
 import com.sprint.mission.discodeit.dto.api.request.UserRequestDTO;
 import com.sprint.mission.discodeit.dto.api.response.UserResponseDTO.FindUserResponse;
-import com.sprint.mission.discodeit.entity.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.mapper.api.AuthApiMapper;
 import com.sprint.mission.discodeit.mapper.api.UserApiMapper;
 import com.sprint.mission.discodeit.service.AuthService;
