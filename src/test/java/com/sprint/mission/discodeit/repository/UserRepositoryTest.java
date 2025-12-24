@@ -117,7 +117,7 @@ class UserRepositoryTest {
     entityManager.clear();
 
     // when
-    List<User> users = userRepository.findAllWithProfileAndStatus();
+    List<User> users = userRepository.findAllWithProfile();
 
     // then
     assertThat(users).hasSize(2);

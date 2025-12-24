@@ -19,29 +19,29 @@ services:
       - db_data:/var/lib/postgresql/data
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
-  app:
-    image: discodeit:local
-    container_name: discodeit-test
-    environment:
-      SPRING_ACTIVE_PROFILE: ${SPRING_ACTIVE_PROFILE}
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      JVM_OPTS: ${JVM_OPTS}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_REGION: ${AWS_REGION}
-      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
-      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
-      STORAGE_TYPE: ${STORAGE_TYPE}
-      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH}
-    ports:
-      - "8081:80"
-    volumes:
-      - binary-content-storage:/app/.discodeit/storage
-    depends_on:
-      - postgres-db
+#  app:
+#    image: discodeit:local
+#    container_name: discodeit-test
+#    environment:
+#      SPRING_ACTIVE_PROFILE: ${SPRING_ACTIVE_PROFILE}
+#      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+#      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+#      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+#      JVM_OPTS: ${JVM_OPTS}
+#      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+#      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+#      AWS_REGION: ${AWS_REGION}
+#      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+#      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
+#      STORAGE_TYPE: ${STORAGE_TYPE}
+#      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH}
+#    ports:
+#      - "8081:80"
+#    volumes:
+#      - binary-content-storage:/app/.discodeit/storage
+#    depends_on:
+#      - postgres-db
 
 volumes:
   db_data:
-  binary-content-storage:
+#  binary-content-storage:
