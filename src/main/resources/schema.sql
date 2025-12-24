@@ -50,16 +50,6 @@ CREATE TABLE read_statuses
     UNIQUE (user_id, channel_id)
 );
 
-CREATE TABLE user_statuses
-(
-    id             uuid PRIMARY KEY NOT NULL,
-    created_at     timestamp with time zone      NOT NULL,
-    updated_at     timestamp with time zone,
-    user_id        uuid             NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    last_active_at timestamp with time zone      NOT NULL,
-    UNIQUE (user_id)
-);
-
 CREATE TABLE message_attachments
 (
     message_id    uuid NOT NULL REFERENCES messages (id) ON DELETE CASCADE,

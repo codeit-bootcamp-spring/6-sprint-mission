@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.UserDTO;
 import com.sprint.mission.discodeit.dto.UserDTO.UpdateUserRoleCommand;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
-import com.sprint.mission.discodeit.entity.UserStatusEntity;
 import com.sprint.mission.discodeit.exception.user.AllReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
@@ -12,7 +11,6 @@ import com.sprint.mission.discodeit.exception.userstatus.NoSuchUserStatusExcepti
 import com.sprint.mission.discodeit.mapper.UserEntityMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.utils.SecurityUtil;
@@ -35,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final UserEntityMapper userEntityMapper;
@@ -57,11 +54,6 @@ public class BasicUserService implements UserService {
         .password(passwordEncoder.encode(request.password()))
         .username(request.username())
         .build();
-
-    userEntity.updateUserStatus(UserStatusEntity.builder()
-        .user(userEntity)
-        .lastActiveAt(Instant.now())
-        .build());
 
     if (request.profileImage() != null) {
 
@@ -112,14 +104,7 @@ public class BasicUserService implements UserService {
           throw new NoSuchUserException();
         });
 
-    UserStatusEntity userStatusEntity = userStatusRepository.findByUserId(id)
-        .orElseThrow(() -> {
-          log.warn("User status with user id {} not found", id);
-          throw new NoSuchUserStatusException();
-        });
-
     UserDTO.User user = userEntityMapper.toUser(userEntity);
-    user.updateStatus(userStatusEntity.isOnline());
 
     return user;
 
@@ -134,14 +119,7 @@ public class BasicUserService implements UserService {
           throw new NoSuchUserException();
         });
 
-    UserStatusEntity userStatusEntity = userStatusRepository.findByUserId(userEntity.getId())
-        .orElseThrow(() -> {
-          log.warn("User status with user id {} not found", userEntity.getId());
-          throw new NoSuchUserStatusException();
-        });
-
     UserDTO.User user = userEntityMapper.toUser(userEntity);
-    user.updateStatus(userStatusEntity.isOnline());
 
     return user;
 
@@ -156,14 +134,7 @@ public class BasicUserService implements UserService {
           throw new NoSuchUserException();
         });
 
-    UserStatusEntity userStatusEntity = userStatusRepository.findByUserId(userEntity.getId())
-        .orElseThrow(() -> {
-          log.warn("User status with user id {} not found", userEntity.getId());
-          throw new NoSuchUserStatusException();
-        });
-
     UserDTO.User user = userEntityMapper.toUser(userEntity);
-    user.updateStatus(userStatusEntity.isOnline());
 
     return user;
 
@@ -175,14 +146,6 @@ public class BasicUserService implements UserService {
 
     return userRepository.findAll().stream()
         .map(userEntityMapper::toUser)
-        .peek(user -> {
-          UserStatusEntity userStatusEntity = userStatusRepository.findByUserId(user.getId())
-              .orElseThrow(() -> {
-                log.warn("User status with user id {} not found", user.getId());
-                throw new NoSuchUserStatusException();
-              });
-          user.updateStatus(userStatusEntity.isOnline());
-        })
         .toList();
   }
 
@@ -274,7 +237,6 @@ public class BasicUserService implements UserService {
         });
 
     binaryContentRepository.deleteById(userEntity.getProfileId().getId());
-    userStatusRepository.deleteByUserId(userEntity.getId());
     userRepository.deleteById(id);
 
     log.debug("User with id {} deleted successfully", id);

@@ -32,9 +32,6 @@ public class UserEntity extends BaseUpdatableEntity {
   @JoinColumn(name = "profile_id", unique = true)
   private BinaryContentEntity profileId;
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user", optional = false)
-  private UserStatusEntity userStatus;
-
   @Column(nullable = false)
   private Role role = Role.USER;
 
@@ -55,16 +52,9 @@ public class UserEntity extends BaseUpdatableEntity {
     this.profileId = profileId;
   }
 
-  public void updateUserStatus(UserStatusEntity userStatus) {
-    this.userStatus = userStatus;
-  }
-
   public void updateRole(Role role) {
     this.role = role;
   }
 
-  public boolean isOnline() {
-    return this.userStatus.isOnline();
-  }
 
 }

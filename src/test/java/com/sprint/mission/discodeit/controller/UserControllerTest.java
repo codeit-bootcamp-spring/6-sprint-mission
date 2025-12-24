@@ -17,7 +17,6 @@ import com.sprint.mission.discodeit.exception.userstatus.NoSuchUserStatusExcepti
 import com.sprint.mission.discodeit.mapper.api.UserApiMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;

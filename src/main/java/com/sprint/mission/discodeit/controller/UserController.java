@@ -2,19 +2,15 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDTO.BinaryContentCreateCommand;
 import com.sprint.mission.discodeit.dto.UserDTO;
-import com.sprint.mission.discodeit.dto.UserStatusDTO;
 import com.sprint.mission.discodeit.dto.api.ErrorApiDTO;
 import com.sprint.mission.discodeit.dto.api.request.UserRequestDTO;
 import com.sprint.mission.discodeit.dto.api.request.UserRequestDTO.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.api.request.UserRequestDTO.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.api.request.UserRequestDTO.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.api.response.UserResponseDTO.CheckUserOnlineResponse;
 import com.sprint.mission.discodeit.dto.api.response.UserResponseDTO.FindUserResponse;
 import com.sprint.mission.discodeit.entity.enums.ContentType;
 import com.sprint.mission.discodeit.mapper.api.UserApiMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -36,7 +32,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -54,7 +49,6 @@ public class UserController {
 
   private final AuthService authService;
   private final UserService userService;
-  private final UserStatusService userStatusService;
   private final UserApiMapper userApiMapper;
 
   /**
@@ -239,13 +233,13 @@ public class UserController {
     return ResponseEntity.status(201).body(userList);
 
   }
-
-  /**
+/*
+  *//**
    * 사용자 온라인 상태 확인
    *
    * @param userId 사용자 ID
    * @return 사용자 온라인 상태 정보
-   */
+   *//*
   @Operation(
       summary = "사용자 온라인 상태 확인",
       description = "사용자의 온라인 상태를 확인합니다.",
@@ -273,13 +267,13 @@ public class UserController {
 
   }
 
-  /**
+  *//**
    * 사용자 온라인 상태 업데이트
    *
    * @param userId                  사용자 ID
    * @param userStatusUpdateRequest 상태 업데이트 요청 정보
    * @return 업데이트된 사용자 상태 정보
-   */
+   *//*
   @Operation(
       summary = "사용자 온라인 상태 업데이트",
       description = "사용자의 온라인 상태를 업데이트합니다.",
@@ -321,6 +315,6 @@ public class UserController {
 
     return ResponseEntity.ok(userApiMapper.userStatusToCheckUserOnlineResponse(userStatus));
 
-  }
+  }*/
 
 }

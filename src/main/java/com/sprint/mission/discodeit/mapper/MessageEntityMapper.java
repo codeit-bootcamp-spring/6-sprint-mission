@@ -13,7 +13,6 @@ public interface MessageEntityMapper {
   @Mappings({
       @Mapping(target = "channelId", source = "channel.id"),
       @Mapping(target = "author", source = "author"),
-      @Mapping(target = "author.isOnline", expression = "java(userEntity.isOnline())"),
       @Mapping(target = "attachments", source = "attachments", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_DEFAULT)
   })
   MessageDTO.Message toMessage(MessageEntity messageEntity);
