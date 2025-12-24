@@ -57,7 +57,7 @@ public class UserService {
         User user = User.builder()
                 .email(request.email())
                 .username(request.username())
-                .password(request.password())
+                .password(encodedPassword)
                 .build();
 
         UserStatus userStatus = UserStatus.builder()

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import com.sprint.mission.discodeit.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -50,9 +51,10 @@ public class User extends BaseUpdatableEntity {
     @Column(nullable = false)
     private String password;
 
+    Role role;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    @Builder.Default
     private Instant createdAt = Instant.now();
 
     @LastModifiedDate
@@ -68,6 +70,10 @@ public class User extends BaseUpdatableEntity {
         if (newPassword != null) {
             this.password = newPassword;
         }
+    }
+
+    public void updateRole(Role newRole){
+        this.role = newRole;
     }
 
 }

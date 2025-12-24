@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.dto.auth.LoginRequestDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -22,35 +23,18 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
 
-/*    private final UserRepository userRepository;
+    private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final BinaryContentMapper binaryContentMapper;
 
     @Transactional
-    public UserResponseDto login(LoginRequestDto request){
+    public UserResponseDto updateUserRole(UserRoleUpdateRequest request) {
 
-        // FETCH JOIN으로 UserStatus도 한번에 가져옴
-        User user = userRepository.findByUsernameWithStatusAndProfile(request.username())
-                .orElseThrow(() -> new UserNotFoundException(request.username()));
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new UserNotFoundException(request.userId()));
 
-        if (!user.getPassword().equals(request.password())){
-            throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
-        }
-
-        if (user.getUserStatus() == null) {
-            log.info("해당 유저에 대해 UserStatus가 존재하지 않아 새로 생성합니다: " + user.getUsername());
-            UserStatus newUserStatus = UserStatus.builder()
-                    .user(user)
-                    .lastActiveAt(Instant.now())
-                    .build();
-            log.info("UserStatus를 생성했습니다: " + newUserStatus.getId());
-            user.setUserStatus(newUserStatus);
-        } else {
-            user.getUserStatus().updateLastActiveAt(Instant.now());
-        }
-
-        log.info("로그인 되었습니다: " +  user.getId());
-        BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
+        user.updateRole(request.newRole());
+        userRepository.save(user);
         return userMapper.toDto(user);
-    }*/
+    }
+    
 }

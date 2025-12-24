@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.security.principal;
 
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.enums.Role;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -37,9 +38,10 @@ public class DiscodeitUserDetails implements UserDetails {
         return true;
     }
 
-    @Override // TODO 권한 만든다면 수정 필요
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        String roleWithPrefix = "ROLE_" + userResponseDto.role().name();
+        return List.of(new SimpleGrantedAuthority(roleWithPrefix));
     }
 
     @Override
