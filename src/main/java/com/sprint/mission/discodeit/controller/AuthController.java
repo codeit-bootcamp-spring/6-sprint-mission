@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.config.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.auth.LoginRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -21,12 +21,12 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class AuthController {
 
-    private final AuthService authService;
-
-    @PostMapping("/login")
-    public ResponseEntity<UserResponseDto> login(@Valid @RequestBody LoginRequestDto dto) {
-        return ResponseEntity.ok(authService.login(dto));
-    }
+//    private final AuthService authService;
+//
+//    @PostMapping("/login")
+//    public ResponseEntity<UserResponseDto> login(@Valid @RequestBody LoginRequestDto dto) {
+//        return ResponseEntity.ok(authService.login(dto));
+//    }
 
     @GetMapping("/csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
@@ -39,12 +39,12 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<UserResponseDto> getCurrentUser(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-//        UserResponseDto userDto = UserResponseDto.builder()
-//                .username(userDetails.getUsername())
-//                .email()
-//                .profile()
-//                .online()
-//                .build();
+        UserResponseDto userDto = UserResponseDto.builder()
+                .username(userDetails.getUsername())
+                .email(userDetails.getUserResponseDto().email())
+                .profile(userDetails.getUserResponseDto().profile())
+                .online(userDetails.getUserResponseDto().online())
+                .build();
 
         return ResponseEntity.ok(userDto);
     }

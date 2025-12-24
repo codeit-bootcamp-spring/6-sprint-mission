@@ -22,7 +22,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
+/*    private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final BinaryContentMapper binaryContentMapper;
 
@@ -52,5 +52,5 @@ public class AuthService {
         log.info("로그인 되었습니다: " +  user.getId());
         BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
         return userMapper.toDto(user);
-    }
+    }*/
 }

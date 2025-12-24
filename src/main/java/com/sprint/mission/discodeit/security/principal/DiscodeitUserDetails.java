@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.config;
+package com.sprint.mission.discodeit.security.principal;
 
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import lombok.Getter;

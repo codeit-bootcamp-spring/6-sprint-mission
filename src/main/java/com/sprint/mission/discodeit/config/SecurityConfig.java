@@ -1,8 +1,12 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
+import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestAttributeHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -28,7 +32,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                // CSRF 공격 방어 설정
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestAttributeHandler())
@@ -37,18 +40,17 @@ public class SecurityConfig {
                 // HTTP 기본 인증 사용 여부
                 .httpBasic(basic -> basic.disable())
 
-                // 폼 로그인
                 .formLogin(login -> login
                         .loginPage("/api/auth/login")
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
-
                 )
 
                 // 인가 정책
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/csrf-token").permitAll()
-                        .requestMatchers("/api/**", "/login", "/signup").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers("/api/auth/csrf-token", "/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/me").authenticated()
                         .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
                 )
 
