@@ -39,7 +39,7 @@ public class BasicChannelService implements ChannelService {
   private final UserEntityMapper userEntityMapper;
   private final BasicChannelService.ChannelWithParticipants channelWithParticipants;
 
-  @PreAuthorize("hasRole('ROLE_CHANNEL_MANAGER')")
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
   public ChannelDTO.Channel createChannel(ChannelDTO.CreatePublicChannelCommand request) {
@@ -57,7 +57,7 @@ public class BasicChannelService implements ChannelService {
 
   }
 
-  @PreAuthorize("hasRole('ROLE_USER')")
+  @PreAuthorize("hasRole('USER')")
   @Transactional
   @Override
   public ChannelDTO.Channel createPrivateChannel(ChannelDTO.CreatePrivateChannelCommand request) {
@@ -137,7 +137,7 @@ public class BasicChannelService implements ChannelService {
         .toList();
   }
 
-  @PreAuthorize("hasRole('ROLE_CHANNEL_MANAGER')")
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
   public ChannelDTO.Channel updateChannel(ChannelDTO.UpdateChannelCommand request) {
@@ -174,7 +174,7 @@ public class BasicChannelService implements ChannelService {
 
   }
 
-  @PreAuthorize("hasRole('ROLE_CHANNEL_MANAGER')")
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
   public void deleteChannelById(UUID id) {

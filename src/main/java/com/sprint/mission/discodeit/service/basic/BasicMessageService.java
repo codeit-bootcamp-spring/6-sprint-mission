@@ -42,7 +42,7 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentStorage binaryContentStorage;
   private final MessageEntityMapper messageEntityMapper;
 
-  @PreAuthorize("hasRole('ROLE_USER')")
+  @PreAuthorize("hasRole('USER')")
   @Transactional
   @Override
   public MessageDTO.Message createMessage(MessageDTO.CreateMessageCommand request) {

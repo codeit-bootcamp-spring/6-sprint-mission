@@ -28,7 +28,7 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ChannelRepository channelRepository;
   private final ReadStatusEntityMapper readStatusEntityMapper;
 
-  @PreAuthorize("hasRole('ROLE_USER')")
+  @PreAuthorize("hasRole('USER')")
   @Transactional
   @Override
   public ReadStatusDTO.ReadStatus createReadStatus(ReadStatusDTO.CreateReadStatusCommand request) {
@@ -132,7 +132,7 @@ public class BasicReadStatusService implements ReadStatusService {
         .toList();
   }
 
-  @PreAuthorize("hasRole('ROLE_USER')")
+  @PreAuthorize("hasRole('USER')")
   @Transactional
   @Override
   public ReadStatusDTO.ReadStatus updateReadStatus(ReadStatusDTO.UpdateReadStatusCommand request) {
