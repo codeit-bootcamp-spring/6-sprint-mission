@@ -73,10 +73,12 @@ public class BasicUserService implements UserService {
         String encodedPassword = passwordEncoder.encode(userCreateRequest.password());
 
         User user = new User(username, email, encodedPassword, nullableProfile, Role.USER);
+        userRepository.save(user);
+
         Instant now = Instant.now();
         UserStatus userStatus = new UserStatus(user, now);
+        userStatusRepository.save(userStatus);
 
-        userRepository.save(user);
         log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
         return userMapper.toDto(user);
     }
