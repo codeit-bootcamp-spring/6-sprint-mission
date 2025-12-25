@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,6 +82,7 @@ public class BasicUserService implements UserService {
     }
 
     // 권한 수정 API를 위한 메서드 구현
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     @Override
     public UserDto updateRole(UUID userId, Role newRole) {
