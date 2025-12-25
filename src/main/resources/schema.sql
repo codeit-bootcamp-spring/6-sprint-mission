@@ -1,6 +1,6 @@
 -- 테이블
 -- User
-CREATE TABLE users
+CREATE TABLE public.users
 (
     id         uuid PRIMARY KEY,
     created_at timestamp with time zone NOT NULL,
@@ -8,7 +8,8 @@ CREATE TABLE users
     username   varchar(50) UNIQUE       NOT NULL,
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
-    profile_id uuid
+    profile_id uuid,
+    role       varchar(20)              NOT NULL
 );
 
 -- BinaryContent
