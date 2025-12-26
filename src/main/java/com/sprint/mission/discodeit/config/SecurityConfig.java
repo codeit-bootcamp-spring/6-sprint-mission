@@ -63,7 +63,10 @@ public class SecurityConfig {
                                 .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/index.html", "/favicon.ico", "/assets/**", "/").permitAll()
+                        .requestMatchers(
+                                "/index.html", "/favicon.ico", "/assets/**", "/",
+                                "/swagger-ui/**", "/v*/api-docs/**", "/actuator/**"
+                                ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/csrf-token").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
