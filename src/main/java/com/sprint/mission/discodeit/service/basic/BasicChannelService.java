@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.userDetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
@@ -74,7 +75,8 @@ public class BasicChannelService implements ChannelService {
 
   @Transactional(readOnly = true)
   @Override
-  public List<ChannelDto> findAllByUserId(UUID userId) {
+  public List<ChannelDto> findAllByUserId(DiscodeitUserDetails userDetails) {
+      UUID userId = userDetails.getUserDto().id();
     List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
         .map(ReadStatus::getChannel)
         .map(Channel::getId)

@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.security.userDetails.DiscodeitUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -87,6 +88,6 @@ public interface ChannelApi {
             )
     })
     ResponseEntity<List<ChannelDto>> findAll(
-            @Parameter(description = "조회할 User ID") UUID userId
+            DiscodeitUserDetails userDetails
     );
 } 

@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.security.userDetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.ChannelService;
 import jakarta.validation.Valid;
 
@@ -14,6 +15,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -76,9 +78,9 @@ public class ChannelController implements ChannelApi {
     }
 
     @GetMapping
-    public ResponseEntity<List<ChannelDto>> findAll(@RequestParam("userId") UUID userId) {
-        log.info("사용자별 채널 목록 조회 요청: userId={}", userId);
-        List<ChannelDto> channels = channelService.findAllByUserId(userId);
+    public ResponseEntity<List<ChannelDto>> findAll(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
+        log.info("사용자별 채널 목록 조회 요청: userId={}", userDetails.getUserDto().id());
+        List<ChannelDto> channels = channelService.findAllByUserId(userDetails);
         log.debug("사용자별 채널 목록 조회 응답: count={}", channels.size());
         return ResponseEntity
                 .status(HttpStatus.OK)
