@@ -4,19 +4,23 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +42,7 @@ public class UserService {
     private final BinaryContentMapper binaryContentMapper;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final SessionRegistry sessionRegistry;
 
     // 유저 생성
     @Transactional
@@ -60,12 +65,12 @@ public class UserService {
                 .password(encodedPassword)
                 .build();
 
-        UserStatus userStatus = UserStatus.builder()
-                .user(user)
-                .lastActiveAt(Instant.now())
-                .build();
+//        UserStatus userStatus = UserStatus.builder()
+//                .user(user)
+//                .lastActiveAt(Instant.now())
+//                .build();
 
-        user.setUserStatus(userStatus);
+//        user.setUserStatus(userStatus);
         userRepository.save(user);
 
         if (profileImageRequest != null) {
@@ -112,7 +117,7 @@ public class UserService {
                 .map(user -> {
                     BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
 
-                    return userMapper.toDto(user/*, user.getUserStatus(), profileImage*/);
+                    return userMapper.toDto(user);
                 })
                 .toList();
     }
@@ -163,7 +168,33 @@ public class UserService {
         log.info("사용자 수정이 완료되었습니다. id=" + user.getId());
 
         BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
-        return userMapper.toDto(user/*, user.getUserStatus(), profileImage */);
+        return userMapper.toDto(user);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponseDto updateUserRole(UserRoleUpdateRequest request) {
+
+        UUID userId = request.userId();
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new UserNotFoundException(request.userId()));
+        user.updateRole(request.newRole());
+        userRepository.save(user);
+
+        List<Object> allPrincipals = sessionRegistry.getAllPrincipals();
+
+        for (Object principal : allPrincipals) {
+            if (principal instanceof DiscodeitUserDetails userDetails) {
+                if (userDetails.getUserId().equals(userId)) {
+                    List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal, false);
+                    for (SessionInformation session : sessions) {
+                        session.expireNow();
+                    }
+                }
+            }
+        }
+
+        return userMapper.toDto(user);
     }
 
     // 유저 삭제

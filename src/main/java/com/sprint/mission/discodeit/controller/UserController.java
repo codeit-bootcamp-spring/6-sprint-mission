@@ -4,10 +4,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDto;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequestDto;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +23,6 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-    private final UserStatusService userStatusService;
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<UserResponseDto> register(
@@ -65,13 +61,13 @@ public class UserController {
                 .body(user);
     }
 
-    @PatchMapping("/{userId}/userStatus")
-    public ResponseEntity<UserStatusResponseDto> updateUserStatusByUserId(
-            @PathVariable UUID userId,
-            @Valid @RequestBody UserStatusUpdateRequestDto dto
-    ) {
-        return ResponseEntity.ok(userStatusService.updateByUserId(userId, dto));
-    }
+//    @PatchMapping("/{userId}/userStatus")
+//    public ResponseEntity<UserStatusResponseDto> updateUserStatusByUserId(
+//            @PathVariable UUID userId,
+//            @Valid @RequestBody UserStatusUpdateRequestDto dto
+//    ) {
+//        return ResponseEntity.ok(userStatusService.updateByUserId(userId, dto));
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {

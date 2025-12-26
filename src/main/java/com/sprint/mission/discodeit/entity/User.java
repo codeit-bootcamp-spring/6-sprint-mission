@@ -31,9 +31,6 @@ public class User extends BaseUpdatableEntity {
     // 참여중인 채널은 ReadStatus 엔터티로 확인 가능.
     // ReadStatus와 양방향매핑 불필요.
 
-    @Setter
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserStatus userStatus;
 
     @Setter
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

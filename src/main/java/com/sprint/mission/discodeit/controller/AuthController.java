@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.auth.LoginRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.service.AuthService;
+import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserService userService;
 
     @GetMapping("/csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
@@ -46,9 +48,9 @@ public class AuthController {
         return ResponseEntity.ok(userDto);
     }
 
-    @PutMapping("/role")
+    @PatchMapping("/role")
     public ResponseEntity<UserResponseDto> updateUserRole(@Validated @RequestBody UserRoleUpdateRequest request) {
-        UserResponseDto response = authService.updateUserRole(request);
+        UserResponseDto response = userService.updateUserRole(request);
         return ResponseEntity.ok(response);
     }
 

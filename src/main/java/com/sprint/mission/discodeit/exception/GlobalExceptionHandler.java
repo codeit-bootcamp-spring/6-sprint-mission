@@ -34,7 +34,6 @@ public class GlobalExceptionHandler {
             UserNotFoundException.class,
             ChannelNotFoundException.class,
             MessageNotFoundException.class,
-            UserStatusNotFoundException.class,
             ReadStatusNotFoundException.class,
             BinaryContentNotFoundException.class,
     })
@@ -68,7 +67,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             UserAlreadyExistsException.class,
             BinaryContentAlreadyExistsException.class,
-            UserStatusAlreadyExistsException.class,
             ReadStatusAlreadyExistsException.class,
     })
     public ResponseEntity<ErrorResponse> handleAlreadyExists(DiscodeitException e) {
