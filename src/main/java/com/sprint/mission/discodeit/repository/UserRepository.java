@@ -14,7 +14,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("""
             SELECT u FROM User u
-            LEFT JOIN FETCH u.userStatus
             LEFT JOIN FETCH u.profileImage
             WHERE u.username = :username
     """)
@@ -30,7 +29,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("""
         SELECT u FROM User u
-        LEFT JOIN FETCH u.userStatus
         LEFT JOIN FETCH u.profileImage
     """)
     List<User> findAllWithStatusAndProfile();

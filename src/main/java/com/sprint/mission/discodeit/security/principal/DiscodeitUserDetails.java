@@ -18,7 +18,7 @@ import java.util.UUID;
 @EqualsAndHashCode(of = "userId")
 public class DiscodeitUserDetails implements UserDetails {
 
-    private final UUID userId; // @EqualsAndHashCode 사용 위해 중복되지만 필드로 사용.
+    private final UUID userId; // @EqualsAndHashCode 사용을 위해 중복되지만 필드로 사용.
     private final UserResponseDto userResponseDto;
     private final String password;
 

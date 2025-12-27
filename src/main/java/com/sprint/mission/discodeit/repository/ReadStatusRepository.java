@@ -21,7 +21,6 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
     @Query("""
     SELECT DISTINCT rs FROM ReadStatus rs
     LEFT JOIN FETCH rs.user u
-    LEFT JOIN FETCH u.userStatus
     LEFT JOIN FETCH u.profileImage
     WHERE rs.channel.id = :channelId
     """)

@@ -19,7 +19,6 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
         SELECT DISTINCT c FROM Channel c
         LEFT JOIN FETCH c.readStatuses rs
         LEFT JOIN FETCH rs.user u
-        LEFT JOIN FETCH u.userStatus
         LEFT JOIN FETCH u.profileImage
         WHERE c.id = :id
     """)
@@ -28,7 +27,6 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
     @Query("SELECT DISTINCT c FROM Channel c " +
             "LEFT JOIN FETCH c.messages m " +
             "LEFT JOIN FETCH m.author a " +
-            "LEFT JOIN FETCH a.userStatus " +
             "LEFT JOIN FETCH a.profileImage")
     List<Channel> findAllWithMessagesAndUsers();
 

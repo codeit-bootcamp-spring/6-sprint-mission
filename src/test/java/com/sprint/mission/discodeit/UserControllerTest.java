@@ -4,11 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.controller.UserController;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDto;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequestDto;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +38,6 @@ class UserControllerTest {
     @MockBean
     private UserService userService;
 
-    @MockBean
-    private UserStatusService userStatusService;
-
     @Test
     @DisplayName("POST /api/users - 회원 등록 성공")
     void 사용자_생성_성공() throws Exception {
@@ -62,13 +56,12 @@ class UserControllerTest {
                 objectMapper.writeValueAsBytes(requestDto)
         );
 
-        UserResponseDto responseDto = new UserResponseDto(
-                UUID.randomUUID(),
-                "alice@example.com",
-                "alice",
-                null,
-                true
-        );
+        UserResponseDto responseDto = UserResponseDto.builder()
+                .email("alice@example.com")
+                .username("alice")
+                .profile(null)
+                .online(true)
+                .build();
 
         when(userService.create(any(UserCreateRequestDto.class), any()))
                 .thenReturn(responseDto);
@@ -102,25 +95,7 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    @DisplayName("PATCH /api/users/{userId}/userStatus - 유저 상태 업데이트 성공")
-    void 사용자_상태_수정_성공() throws Exception {
 
-        // given
-        UUID userId = UUID.randomUUID();
-        UserStatusUpdateRequestDto updateDto = new UserStatusUpdateRequestDto(Instant.now());
-        UserStatusResponseDto responseDto = new UserStatusResponseDto(userId, Instant.now());
-
-        // when
-        when(userStatusService.updateByUserId(eq(userId), any(UserStatusUpdateRequestDto.class)))
-                .thenReturn(responseDto);
-
-        // then
-        mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDto)))
-                .andExpect(status().isOk());
-    }
 
     @Test
     @DisplayName("DELETE /api/users/{id} - 사용자 삭제 성공")

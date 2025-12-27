@@ -48,9 +48,12 @@ public class User extends BaseUpdatableEntity {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     Role role;
 
     @CreatedDate
+    @Builder.Default
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 

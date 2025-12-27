@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -35,18 +34,11 @@ class UserRepositoryTest {
     @BeforeEach
     void setUp() {
 
-        BinaryContent profileImage1 = BinaryContent.builder()
-                .fileName("profile1.png")
-                .contentType("image/png")
-                .size(5L)
-                .build();
-
         user1 = User.builder()
                 .username("alice")
                 .email("alice@example.com")
                 .password("password")
                 .createdAt(Instant.now())
-                .profileImage(profileImage1)
                 .build();
 
         user2 = User.builder()
@@ -56,20 +48,14 @@ class UserRepositoryTest {
                 .createdAt(Instant.now())
                 .build();
 
-        UserStatus status1 = UserStatus.builder()
+        BinaryContent profileImage1 = BinaryContent.builder()
+                .fileName("profile1.png")
+                .contentType("image/png")
+                .size(5L)
                 .user(user1)
-                .lastActiveAt(Instant.now())
                 .build();
 
-        UserStatus status2 = UserStatus.builder()
-                .user(user2)
-                .lastActiveAt(Instant.now().minusSeconds(600))
-                .build();
-
-        // 양방향 연관관계 설정
-        user1.setUserStatus(status1);
-        user2.setUserStatus(status2);
-        profileImage1.setUser(user1);
+        user1.setProfileImage(profileImage1);
 
         userRepository.save(user1);
         userRepository.save(user2);
@@ -89,9 +75,7 @@ class UserRepositoryTest {
 
         User user = found.get();
         assertThat(user.getUsername()).isEqualTo("alice");
-        assertThat(user.getUserStatus()).isNotNull();
         assertThat(user.getProfileImage()).isNotNull();
-        assertThat(user.getUserStatus().isOnline()).isTrue();
     }
 
     @Test

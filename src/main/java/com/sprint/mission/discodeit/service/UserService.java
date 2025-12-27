@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.enums.Role;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -26,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,6 +63,7 @@ public class UserService {
                 .email(request.email())
                 .username(request.username())
                 .password(encodedPassword)
+                .role(Role.USER)
                 .build();
 
 //        UserStatus userStatus = UserStatus.builder()

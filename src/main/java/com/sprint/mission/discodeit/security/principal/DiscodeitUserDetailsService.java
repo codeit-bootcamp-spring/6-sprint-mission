@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DiscodeitUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
@@ -19,11 +21,12 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username)
+        log.info("로그인 시도 username: {}", username);
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다. 닉네임=" + username));
 
         UserResponseDto dto = userMapper.toDto(user);
-        return new DiscodeitUserDetails(dto, user.getPassword());
+        return new DiscodeitUserDetails(dto.id(), dto, user.getPassword());
     }
 
 }

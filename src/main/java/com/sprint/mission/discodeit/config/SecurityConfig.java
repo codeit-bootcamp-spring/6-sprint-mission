@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
+import com.sprint.mission.discodeit.security.filter.JsonUsernamePasswordAuthenticationFilter;
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestAttributeHandler;
+import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -15,15 +17,19 @@ import org.springframework.security.access.expression.method.DefaultMethodSecuri
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -34,9 +40,11 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final AuthenticationConfiguration authenticationConfiguration;
     private final LoginSuccessHandler loginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
     private final ObjectMapper objectMapper;
+    private final UserDetailsService userDetailsService;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -68,34 +76,30 @@ public class SecurityConfig {
         return handler;
     }
 
+    @Bean
+    public JsonUsernamePasswordAuthenticationFilter jsonLoginFilter() throws Exception {
+        JsonUsernamePasswordAuthenticationFilter filter =
+                new JsonUsernamePasswordAuthenticationFilter(authenticationConfiguration.getAuthenticationManager());
+
+        filter.setFilterProcessesUrl("/api/auth/login"); // 로그인 경로 설정
+        filter.setAuthenticationSuccessHandler(loginSuccessHandler); // 핸들러 연결
+        filter.setAuthenticationFailureHandler(loginFailureHandler);
+        return filter;
+    }
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
+                // 기본 설정
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestAttributeHandler())
                 )
-
-                // HTTP 기본 인증 사용 여부
                 .httpBasic(basic -> basic.disable())
 
-                .formLogin(login -> login
-                        .loginPage("/api/auth/login")
-                        .successHandler(loginSuccessHandler)
-                        .failureHandler(loginFailureHandler)
-                )
-
-                // 인가 정책
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers("/api/auth/csrf-token", "/api/auth/login", "/api/auth/logout").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-
+                // 세션, 동시성
                 .sessionManagement(management -> management
                         .sessionConcurrency(concurrency -> concurrency
                                 .sessionRegistry(sessionRegistry())
@@ -104,11 +108,38 @@ public class SecurityConfig {
                         )
                 )
 
+                // 인증
+                .addFilterAt(jsonLoginFilter(), UsernamePasswordAuthenticationFilter.class)
+                .formLogin(AbstractHttpConfigurer::disable)
+//                .formLogin(login -> login
+//                        .loginProcessingUrl("/api/auth/login")
+//                        .successHandler(loginSuccessHandler)
+//                        .failureHandler(loginFailureHandler)
+//                )
+                .rememberMe(rememberMe -> rememberMe
+                        .key("uniqueAndSecretKey") // 쿠키 암호화 키
+                        .tokenValiditySeconds(86400 * 30) // 30일 유지
+                        .userDetailsService(userDetailsService) // 재인증 시 유저 조회용
+                        .rememberMeParameter("remember-me") // 프론트에서 보낼 파라미터명
+                )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                         .invalidateHttpSession(true) // 세션 무효화
                 )
+
+                // 인가
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/index.html").permitAll()
+                        .requestMatchers("/static/**", "/favicon.ico", "/assets/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers("/api/auth/csrf-token", "/api/auth/login", "/api/auth/logout").permitAll()
+                        .anyRequest().authenticated()
+                )
+
+                // 예외 처리
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(unauthorizedEntryPoint())
                         .accessDeniedHandler(forbiddenHandler())
