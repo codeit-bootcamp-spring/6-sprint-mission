@@ -145,7 +145,7 @@ public class MessageService {
         log.info("메시지 삭제가 완료되었습니다. id=" + messageId);
     }
 
-    private boolean isAuthor(UUID messageId, UUID userId) {
+    public boolean isAuthor(UUID messageId, UUID userId) {
         return messageRepository.findById(messageId)
                 .map(m -> m.getAuthor().getId().equals(userId))
                 .orElse(false);

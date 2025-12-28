@@ -66,12 +66,6 @@ public class UserService {
                 .role(Role.USER)
                 .build();
 
-//        UserStatus userStatus = UserStatus.builder()
-//                .user(user)
-//                .lastActiveAt(Instant.now())
-//                .build();
-
-//        user.setUserStatus(userStatus);
         userRepository.save(user);
 
         if (profileImageRequest != null) {
