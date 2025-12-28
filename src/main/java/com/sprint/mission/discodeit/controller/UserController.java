@@ -61,14 +61,6 @@ public class UserController {
                 .body(user);
     }
 
-//    @PatchMapping("/{userId}/userStatus")
-//    public ResponseEntity<UserStatusResponseDto> updateUserStatusByUserId(
-//            @PathVariable UUID userId,
-//            @Valid @RequestBody UserStatusUpdateRequestDto dto
-//    ) {
-//        return ResponseEntity.ok(userStatusService.updateByUserId(userId, dto));
-//    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         userService.delete(id);

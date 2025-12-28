@@ -63,18 +63,18 @@ public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAu
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        // 1. 컨텍스트 설정
+        // 컨텍스트 설정
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authResult);
 
-        // 2. SecurityContextRepository를 통해 세션에 저장 (핵심!)
+        // SecurityContextRepository를 통해 세션에 저장
         SecurityContextRepository repo = new DelegatingSecurityContextRepository(
                 new RequestAttributeSecurityContextRepository(),
                 new HttpSessionSecurityContextRepository()
         );
         repo.saveContext(context, request, response);
 
-        // 3. 기존 핸들러 실행
+        // 기존 핸들러 실행
         getSuccessHandler().onAuthenticationSuccess(request, response, authResult);
     }
 }

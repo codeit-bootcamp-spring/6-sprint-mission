@@ -125,11 +125,12 @@ public class UserService {
 
     // 수정
     @Transactional
-    public UserResponseDto update(UUID id, UserUpdateRequestDto request,
+    @PreAuthorize("#userId == authentication.principal.id")
+    public UserResponseDto update(UUID userId, UserUpdateRequestDto request,
                                   BinaryContentCreateRequestDto profileImageRequest) {
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         String newEmail = request.newEmail();
         String newUsername = request.newUsername();
@@ -200,12 +201,13 @@ public class UserService {
 
     // 유저 삭제
     @Transactional
-    public void delete(UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+    @PreAuthorize("#userId == authentication.principal.id")
+    public void delete(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         userRepository.delete(user);
-        log.info("사용자 삭제가 완료되었습니다. id=" + id);
+        log.info("사용자 삭제가 완료되었습니다. id=" + userId);
     }
 
 }
