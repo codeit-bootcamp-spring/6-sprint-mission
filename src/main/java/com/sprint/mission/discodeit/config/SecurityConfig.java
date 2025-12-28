@@ -47,6 +47,62 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
     @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http
+                // 기본 설정
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestAttributeHandler())
+                )
+                .httpBasic(basic -> basic.disable())
+
+                // 세션, 동시성
+                .sessionManagement(management -> management
+                        .sessionConcurrency(concurrency -> concurrency
+                                .sessionRegistry(sessionRegistry())
+                                .maximumSessions(1)
+                                .expiredUrl("/api/auth/login")
+                        )
+                )
+
+                // 인증
+                .addFilterAt(jsonLoginFilter(), UsernamePasswordAuthenticationFilter.class)
+                .formLogin(AbstractHttpConfigurer::disable)
+
+                .rememberMe(rememberMe -> rememberMe
+                        .key("uniqueAndSecretKey") // 쿠키 암호화 키
+                        .tokenValiditySeconds(86400 * 30) // 30일 유지
+                        .userDetailsService(userDetailsService) // 재인증 시 유저 조회용
+                        .rememberMeParameter("remember-me") // 프론트에서 보낼 파라미터명
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+                        .invalidateHttpSession(true) // 세션 무효화
+                )
+
+                // 인가
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/index.html").permitAll()
+                        .requestMatchers("/static/**", "/favicon.ico", "/assets/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers("/api/auth/csrf-token", "/api/auth/login", "/api/auth/logout").permitAll()
+                        .anyRequest().authenticated()
+                )
+
+                // 예외 처리
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(unauthorizedEntryPoint())
+                        .accessDeniedHandler(forbiddenHandler())
+                );
+
+        return http.build();
+    }
+
+    @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -81,74 +137,13 @@ public class SecurityConfig {
         JsonUsernamePasswordAuthenticationFilter filter =
                 new JsonUsernamePasswordAuthenticationFilter(authenticationConfiguration.getAuthenticationManager());
 
-        filter.setFilterProcessesUrl("/api/auth/login"); // 로그인 경로 설정
-        filter.setAuthenticationSuccessHandler(loginSuccessHandler); // 핸들러 연결
+        filter.setFilterProcessesUrl("/api/auth/login");
+        filter.setAuthenticationSuccessHandler(loginSuccessHandler);
         filter.setAuthenticationFailureHandler(loginFailureHandler);
         return filter;
     }
 
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http
-                // 기본 설정
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestAttributeHandler())
-                )
-                .httpBasic(basic -> basic.disable())
-
-                // 세션, 동시성
-                .sessionManagement(management -> management
-                        .sessionConcurrency(concurrency -> concurrency
-                                .sessionRegistry(sessionRegistry())
-                                .maximumSessions(1)
-                                .expiredUrl("/api/auth/login")
-                        )
-                )
-
-                // 인증
-                .addFilterAt(jsonLoginFilter(), UsernamePasswordAuthenticationFilter.class)
-                .formLogin(AbstractHttpConfigurer::disable)
-//                .formLogin(login -> login
-//                        .loginProcessingUrl("/api/auth/login")
-//                        .successHandler(loginSuccessHandler)
-//                        .failureHandler(loginFailureHandler)
-//                )
-                .rememberMe(rememberMe -> rememberMe
-                        .key("uniqueAndSecretKey") // 쿠키 암호화 키
-                        .tokenValiditySeconds(86400 * 30) // 30일 유지
-                        .userDetailsService(userDetailsService) // 재인증 시 유저 조회용
-                        .rememberMeParameter("remember-me") // 프론트에서 보낼 파라미터명
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
-                        .invalidateHttpSession(true) // 세션 무효화
-                )
-
-                // 인가
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html").permitAll()
-                        .requestMatchers("/static/**", "/favicon.ico", "/assets/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers("/api/auth/csrf-token", "/api/auth/login", "/api/auth/logout").permitAll()
-                        .anyRequest().authenticated()
-                )
-
-                // 예외 처리
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(unauthorizedEntryPoint())
-                        .accessDeniedHandler(forbiddenHandler())
-                );
-
-        return http.build();
-    }
-
-    // 메서드로 분리하면 objectMapper 주입이 완료된 상태에서 실행됩니다.
     private AuthenticationEntryPoint unauthorizedEntryPoint() {
         return (request, response, authException) -> {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

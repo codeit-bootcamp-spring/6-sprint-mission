@@ -9,6 +9,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+/**
+ * 프로젝트 실행 시 users 테이블에 admin 유저가 한명도 없으면 새로 생성함. (미션9)
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
