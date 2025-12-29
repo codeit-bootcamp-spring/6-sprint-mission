@@ -4,9 +4,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Getter
@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 @Entity
 @Table(name = "tokens")
 @Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class TokenEntity extends BaseUpdatableEntity{
 
   private UUID userId;
@@ -28,6 +29,11 @@ public class TokenEntity extends BaseUpdatableEntity{
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .build();
+  }
+
+  public void updateTokens(String accessToken, String refreshToken) {
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
   }
 
 }

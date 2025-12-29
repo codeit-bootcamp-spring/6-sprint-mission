@@ -92,6 +92,16 @@ public class JwtTokenProvider {
     }
   }
 
+  public String getUsername(String token) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token);
+      return signedJWT.getJWTClaimsSet().getSubject();
+    } catch (ParseException e) {
+      log.error("JWT parse failed.", e);
+      throw new RuntimeException(e);
+    }
+  }
+
   public boolean validateAccessToken(String token) {
     try {
       SignedJWT signedJWT = SignedJWT.parse(token);
