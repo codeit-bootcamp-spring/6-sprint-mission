@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.JwtDTO;
+import com.sprint.mission.discodeit.entity.TokenEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.mapper.UserEntityMapper;
+import com.sprint.mission.discodeit.repository.TokenRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.provider.JwtTokenProvider;
 import jakarta.servlet.ServletException;
@@ -28,6 +30,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final UserRepository userRepository;
   private final UserEntityMapper userEntityMapper;
   private final JwtTokenProvider jwtTokenProvider;
+  private final TokenRepository tokenRepository;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
@@ -58,6 +61,13 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     cookie.setPath("/");
     cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
     response.addCookie(cookie);
+
+    // Store tokens in the database
+    tokenRepository.save(TokenEntity.of(
+        userEntity.getId(),
+        accessToken,
+        refreshToken
+    ));
 
   }
 }
