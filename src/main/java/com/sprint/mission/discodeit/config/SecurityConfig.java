@@ -51,14 +51,14 @@ public class SecurityConfig {
             .permitAll()
         )
         .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-            .sessionConcurrency(concurrency -> {
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            /*.sessionConcurrency(concurrency -> {
               concurrency
                   .maximumSessions(1)
                   .maxSessionsPreventsLogin(false)
                   .expiredUrl("/api/auth/login?expired")
                   .sessionRegistry(sessionRegistry());
-            })
+            })*/
         )
         .rememberMe(remember -> remember
             .key(rememberMeKey)
