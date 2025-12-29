@@ -31,3 +31,13 @@ logging:
 security:
   key:
     remember-me: test-remember-me-key
+
+jwt:
+  access-token:
+    secret: test_access_token_secret
+    expiration: 3600000
+    issuer: test_app_name
+  refresh-token:
+    secret: test_refresh_token_secret
+    expiration: 86400000
+    issuer: test_app_name
