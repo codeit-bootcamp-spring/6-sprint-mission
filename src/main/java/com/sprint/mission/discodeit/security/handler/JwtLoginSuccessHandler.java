@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.config.JwtProperties;
 import com.sprint.mission.discodeit.dto.JwtDTO;
 import com.sprint.mission.discodeit.entity.TokenEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
@@ -30,6 +31,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
   private final UserRepository userRepository;
   private final UserEntityMapper userEntityMapper;
+  private final JwtProperties jwtProperties;
   private final JwtTokenProvider jwtTokenProvider;
   private final TokenRepository tokenRepository;
   private final TokenUtil tokenUtil;
@@ -58,7 +60,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     response.getWriter().write(objectMapper.writeValueAsString(jwtDTO));
 
     //set refresh token in HttpOnly cookie
-    tokenUtil.setHttpOnlyCookie("refreshToken", refreshToken, response);
+    tokenUtil.setHttpOnlyCookie("refreshToken", refreshToken, response,
+        (int) jwtProperties.getRefreshExpiration());
 
     // Store tokens in the database
     tokenRepository.save(TokenEntity.of(
