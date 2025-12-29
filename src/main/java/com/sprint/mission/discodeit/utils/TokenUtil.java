@@ -17,4 +17,14 @@ public class TokenUtil {
 
   }
 
+  public void deleteCookie(String name, HttpServletResponse response) {
+
+    Cookie cookie = new Cookie(name, null);
+    cookie.setHttpOnly(true);
+    cookie.setPath("/");
+    cookie.setMaxAge(0);
+    response.addCookie(cookie);
+
+  }
+
 }

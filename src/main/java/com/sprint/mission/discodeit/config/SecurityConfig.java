@@ -22,6 +22,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -36,6 +37,7 @@ public class SecurityConfig {
   private final AuthenticationSuccessHandler loginSuccessHandler;
   private final AuthenticationFailureHandler loginFailureHandler;
   private final LogoutSuccessHandler logoutSuccessHandler;
+  private final LogoutHandler logoutHandler;
   private final UserDetailsService userDetailsService;
   private final DataSource dataSource;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -71,6 +73,7 @@ public class SecurityConfig {
             .tokenValiditySeconds(60 * 60 * 24 * 30))*/
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
+            .addLogoutHandler(logoutHandler)
             .logoutSuccessHandler(logoutSuccessHandler)
         )
         .authorizeHttpRequests(auth -> auth
