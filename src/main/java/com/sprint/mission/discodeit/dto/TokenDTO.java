@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.dto;
 
 import java.time.Instant;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
-import org.hibernate.validator.constraints.UUID;
+import lombok.Getter;
 
 @Builder
+@Getter
 public class TokenDTO {
 
   private UUID id;
