@@ -84,6 +84,7 @@ info:
 security:
   key:
     remember-me: ${SECURITY_KEY_REMEMBER_ME:dev-remember-me-key}
+  login: jwt
 
 jwt:
   access-token:

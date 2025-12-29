@@ -31,6 +31,7 @@ logging:
 security:
   key:
     remember-me: test-remember-me-key
+  login: jwt
 
 jwt:
   access-token:
