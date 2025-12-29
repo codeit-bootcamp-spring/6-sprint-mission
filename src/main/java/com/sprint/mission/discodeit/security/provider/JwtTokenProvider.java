@@ -5,7 +5,6 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.KeyLengthException;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -22,14 +21,18 @@ import org.springframework.stereotype.Component;
 public class JwtTokenProvider {
 
   private final JwtProperties jwtProperties;
-  private JWSSigner signer;
-  private JWSVerifier verifier;
+  private JWSSigner accessSigner;
+  private JWSSigner refreshSigner;
+  private JWSVerifier accessVerifier;
+  private JWSVerifier refreshVerifier;
 
   public void init() {
 
     try {
-      JWSSigner signer = new MACSigner(jwtProperties.getAccessSecret());
-      JWSVerifier verifier = new MACVerifier(jwtProperties.getAccessSecret());
+      this.accessSigner = new MACSigner(jwtProperties.getAccessSecret());
+      this.refreshSigner = new MACSigner(jwtProperties.getRefreshSecret());
+      this.accessVerifier = new MACVerifier(jwtProperties.getAccessSecret());
+      this.refreshVerifier = new MACVerifier(jwtProperties.getRefreshSecret());
     } catch (JOSEException e) {
       log.error("JWT init failed.", e);
       throw new RuntimeException(e);
@@ -37,7 +40,7 @@ public class JwtTokenProvider {
 
   }
 
-  public String generateToken(String username, String role) {
+  public String generateAccessToken(String username, String role) {
 
     //Generate JWT claim
     JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
@@ -49,7 +52,28 @@ public class JwtTokenProvider {
     // Generate JWT token
     SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
     try {
-      signedJWT.sign(signer);
+      signedJWT.sign(accessSigner);
+      return signedJWT.serialize();
+    } catch (JOSEException e) {
+      log.error("JWT sign failed.", e);
+      throw new RuntimeException(e);
+    }
+
+  }
+
+  public String generateRefreshToken(String username, String role) {
+
+    //Generate JWT claim
+    JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+        .issuer(jwtProperties.getIssuer())
+        .subject(username)
+        .claim("role", role)
+        .build();
+
+    // Generate JWT token
+    SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
+    try {
+      signedJWT.sign(refreshSigner);
       return signedJWT.serialize();
     } catch (JOSEException e) {
       log.error("JWT sign failed.", e);
@@ -68,22 +92,48 @@ public class JwtTokenProvider {
     }
   }
 
-  public boolean validateToken(String token) {
+  public boolean validateAccessToken(String token) {
     try {
       SignedJWT signedJWT = SignedJWT.parse(token);
-      return signedJWT.verify(verifier);
+      return signedJWT.verify(accessVerifier);
     } catch (ParseException | JOSEException e) {
       log.error("JWT validation failed.", e);
       return false;
     }
   }
 
-  public String renewToken(String token) {
+  public boolean validateRefreshToken(String token) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token);
+      return signedJWT.verify(refreshVerifier);
+    } catch (ParseException | JOSEException e) {
+      log.error("JWT validation failed.", e);
+      return false;
+    }
+  }
+
+  public String renewAccessToken(String token) {
     try {
       JWTClaimsSet claims = getClaims(token);
       String username = claims.getSubject();
       String role = claims.getClaim("role").toString();
-      return generateToken(username, role);
+
+      return generateAccessToken(username, role);
+
+    } catch (Exception e) {
+      log.error("JWT renewal failed.", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  public String renewRefreshToken(String token) {
+    try {
+      JWTClaimsSet claims = getClaims(token);
+      String username = claims.getSubject();
+      String role = claims.getClaim("role").toString();
+
+      return generateRefreshToken(username, role);
+
     } catch (Exception e) {
       log.error("JWT renewal failed.", e);
       throw new RuntimeException(e);
