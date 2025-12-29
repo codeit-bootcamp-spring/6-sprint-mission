@@ -59,13 +59,13 @@ public class SecurityConfig {
                   .sessionRegistry(sessionRegistry());
             })*/
         )
-        .rememberMe(remember -> remember
+        /*.rememberMe(remember -> remember
             .key(rememberMeKey)
             .rememberMeParameter("remember-me")
             .userDetailsService(userDetailsService)
             .tokenRepository(tokenRepository())
             .authenticationSuccessHandler(loginSuccessHandler)
-            .tokenValiditySeconds(60 * 60 * 24 * 30))
+            .tokenValiditySeconds(60 * 60 * 24 * 30))*/
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
             .logoutSuccessHandler(logoutSuccessHandler)
@@ -99,11 +99,11 @@ public class SecurityConfig {
     return new HttpSessionEventPublisher();
   }
 
-  @Bean
+  /*@Bean
   public PersistentTokenRepository tokenRepository() {
-    JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
-    repo.setDataSource(dataSource);
-    return repo;
-  }
+    JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+    tokenRepository.setDataSource(dataSource);
+    return tokenRepository;
+  }*/
 
 }
