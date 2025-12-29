@@ -71,6 +71,7 @@ create table tokens (
     refresh_token varchar(255) not null,
     created_at   timestamp with time zone      NOT NULL,
     updated_at   timestamp with time zone,
+    UNIQUE (user_id)
 );
 
 /*
