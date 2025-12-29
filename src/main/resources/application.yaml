@@ -59,6 +59,10 @@ discodeit:
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
   security:
     remember-me-secret: ${REMEMBER_ME_SECRET}
+  admin:
+    username: admin
+    password: admin
+    email: admin@codeit.com
 
 logging:
   level:
