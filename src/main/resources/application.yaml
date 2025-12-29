@@ -15,3 +15,8 @@ file:
       path: /Users/mac/myWs/uploadedFilesimg
 cookie:
   key: 2_]08iD^zr6]9AbverLgyhbBYu(VcIBN
+
+jwt:
+  secret: "e8f817f346d1d411cc59d5bdda64fab3763890e1f0f8f4c15805cf78874d68bf"
+  expiration: 36000
+  issuer: "discodeit"
