@@ -110,6 +110,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
+    @Transactional
     @PreAuthorize("hasPermission(#id, 'Message', 'UPDATE')")
     public MessageDto update(UUID id, String newContent) {
         log.info("메시지 업데이트 요청 수신:  messageId={}",id);
@@ -123,6 +124,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
+    @Transactional
     @PreAuthorize("hasPermission(#id, 'Message', 'DELETE')")
     public void delete(UUID id) {
         Message message = messageRepository

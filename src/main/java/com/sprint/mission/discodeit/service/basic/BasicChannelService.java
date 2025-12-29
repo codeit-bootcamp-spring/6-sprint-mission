@@ -98,8 +98,10 @@ public class BasicChannelService implements ChannelService {
 
         //타겟 유저가 포함된 모든 체널에 최근 메시지 시간 조회
         Map<UUID, Instant> lastMessageAt = messageRepository.findByChannelIdInOrderByCreatedAtDesc(channelIds).stream()
-                .collect(Collectors.toMap(message -> message.getChannel().getId(), Message::getCreatedAt));
-
+                .collect(Collectors.toMap(
+                        message -> message.getChannel().getId(), Message::getCreatedAt,
+                        (existing, replacement) -> existing
+                ));
 
         //엔티티 디티오로 변환
         List<ChannelDto> findChannelDTOS = channelMapper.toDtoList(channels, privateChannelDtoUser, lastMessageAt);

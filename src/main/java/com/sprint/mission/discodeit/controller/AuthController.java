@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
+import com.sprint.mission.discodeit.dto.Auth.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.User.UserDto;
 import com.sprint.mission.discodeit.dto.User.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController implements AuthApi {
 
-    private final UserService userService;
+    private final AuthService authService;
 
     @GetMapping("me")
     public ResponseEntity<UserDto> getMe(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
@@ -39,8 +40,8 @@ public class AuthController implements AuthApi {
     }
 
     @PutMapping("role")
-    public ResponseEntity<UserDto> updateRole(@RequestBody UserRoleUpdateRequest userUpdateRequest){
-        UserDto userDto = userService.roleUpdate(userUpdateRequest);
+    public ResponseEntity<UserDto> updateRole(@RequestBody RoleUpdateRequest request){
+        UserDto userDto = authService.updateRole(request);
         return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
 }

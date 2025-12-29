@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.security.*;
 import jakarta.validation.Valid;
 import jakarta.websocket.Session;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -41,20 +42,23 @@ import java.util.Map;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final LoginSuccessHandler loginSuccessHandler;
-    private final LoginFailureHandler loginFailureHandler;
-    private final LogoutSuccessHandler logoutSuccessHandler;
-    private final DataSource dataSource;
-    private final UserDetailsService userDetailsService;
+    @Autowired
+    private DataSource dataSource;
 
     @Value("${cookie.key}")
     private String COOKIE_KEY;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http,
+            LoginSuccessHandler loginSuccessHandler,
+            LoginFailureHandler loginFailureHandler,
+            LogoutSuccessHandler logoutSuccessHandler,
+            UserDetailsService userDetailsService,
+            SessionRegistry sessionRegistry
+    ) throws Exception {
 
 
         return http
