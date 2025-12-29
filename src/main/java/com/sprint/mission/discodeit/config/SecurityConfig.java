@@ -76,7 +76,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
             .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**",
-                "/swagger-ui.html", "/actuator/**").permitAll()
+                "/swagger-ui.html", "/actuator/**", "/api/auth/refresh").permitAll()
             .anyRequest().authenticated()
         )
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

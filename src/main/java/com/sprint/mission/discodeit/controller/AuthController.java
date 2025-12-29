@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.JwtDTO;
 import com.sprint.mission.discodeit.dto.UserDTO;
 import com.sprint.mission.discodeit.dto.api.request.UserRequestDTO;
 import com.sprint.mission.discodeit.dto.api.response.UserResponseDTO.FindUserResponse;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -105,6 +107,13 @@ public class AuthController {
     String tokenValue = csrfToken.getToken();
     log.debug("CSRF 토큰 요청: {}", tokenValue);
     return ResponseEntity.status(HttpStatusCode.valueOf(203)).build();
+  }
+
+  @PostMapping("/refresh")
+  public ResponseEntity<JwtDTO> refreshToken(
+      @AuthenticationPrincipal DiscodeitUserDetails principal
+  ) {
+    return null;
   }
 
   @GetMapping("/me")
