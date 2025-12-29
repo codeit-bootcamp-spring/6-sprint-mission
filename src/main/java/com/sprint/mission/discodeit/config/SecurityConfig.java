@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.filter.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestHandler;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -36,6 +38,7 @@ public class SecurityConfig {
   private final LogoutSuccessHandler logoutSuccessHandler;
   private final UserDetailsService userDetailsService;
   private final DataSource dataSource;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
   @Value("${security.key.remember-me}")
   private String rememberMeKey;
@@ -76,6 +79,7 @@ public class SecurityConfig {
                 "/swagger-ui.html", "/actuator/**").permitAll()
             .anyRequest().authenticated()
         )
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .csrf(csrf ->
             csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
