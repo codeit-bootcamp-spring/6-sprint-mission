@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.mapper.UserEntityMapper;
 import com.sprint.mission.discodeit.repository.TokenRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.provider.JwtTokenProvider;
+import com.sprint.mission.discodeit.utils.TokenUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +32,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final UserEntityMapper userEntityMapper;
   private final JwtTokenProvider jwtTokenProvider;
   private final TokenRepository tokenRepository;
+  private final TokenUtil tokenUtil;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
@@ -56,11 +58,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     response.getWriter().write(objectMapper.writeValueAsString(jwtDTO));
 
     //set refresh token in HttpOnly cookie
-    Cookie cookie = new Cookie("jwt", accessToken);
-    cookie.setHttpOnly(true);
-    cookie.setPath("/");
-    cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-    response.addCookie(cookie);
+    tokenUtil.setHttpOnlyCookie("refreshToken", refreshToken, response);
 
     // Store tokens in the database
     tokenRepository.save(TokenEntity.of(
