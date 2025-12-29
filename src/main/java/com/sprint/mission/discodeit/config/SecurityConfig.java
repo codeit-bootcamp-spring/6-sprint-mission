@@ -40,7 +40,6 @@ public class SecurityConfig {
   @Value("${security.key.remember-me}")
   private String rememberMeKey;
 
-
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
