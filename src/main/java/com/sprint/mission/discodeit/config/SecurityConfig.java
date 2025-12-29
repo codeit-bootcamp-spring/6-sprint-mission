@@ -9,9 +9,12 @@ import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +41,7 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -123,10 +127,23 @@ public class SecurityConfig {
         )
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
-            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
             .deleteCookies("remember-me", "JSESSIONID")
         );
     return http.build();
+  }
+
+  // 디버그용 필터 체인 출력
+  @Bean
+  public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
+    return args -> {
+      int filterSize = filterChain.getFilters().size();
+      List<String> filterNames = IntStream.range(0, filterSize)
+          .mapToObj(idx -> String.format("\t[%s/%s] %s", idx + 1, filterSize,
+              filterChain.getFilters().get(idx).getClass()))
+          .toList();
+      log.debug("Debug Filter Chain...\n{}", String.join(System.lineSeparator(), filterNames));
+    };
   }
 
   @Bean
