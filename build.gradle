@@ -6,8 +6,8 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '2.0-M9'
-description = '6sprint8'
+version = '2.1-M10'
+description = '6sprint10'
 
 java {
     toolchain {
