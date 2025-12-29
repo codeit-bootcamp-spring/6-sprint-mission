@@ -15,7 +15,8 @@ public enum ErrorCode {
   ALREADY_EXISTING_READ_STATUS("Read status already exists."),
   ALREADY_EXISTING_USER_STATUS("User status already exists."),
   PASSWORD_MISMATCH("Password mismatch."),
-  INVALID_CHANNEL_DATA("Invalid channel data.");
+  INVALID_CHANNEL_DATA("Invalid channel data."),
+  INVALID_JWT_TOKEN("Invalid JWT token.");
 
   private String message;
 
