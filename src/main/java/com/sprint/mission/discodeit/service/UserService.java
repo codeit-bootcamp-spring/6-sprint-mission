@@ -25,4 +25,5 @@ public interface UserService {
     void delete(UUID userId);
 
     UserDto updateRole(UUID userId, Role newRole);
+
 }
