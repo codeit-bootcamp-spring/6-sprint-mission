@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.*;
+import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import jakarta.validation.Valid;
 import jakarta.websocket.Session;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http,
-            LoginSuccessHandler loginSuccessHandler,
+            JwtLoginSuccessHandler jwtLoginSuccessHandler,
             LoginFailureHandler loginFailureHandler,
             LogoutSuccessHandler logoutSuccessHandler,
             UserDetailsService userDetailsService,
@@ -97,16 +98,11 @@ public class SecurityConfig {
                 )
                 .formLogin(loing -> loing
                         .loginProcessingUrl("/api/auth/login")
-                        .successHandler(loginSuccessHandler)
+                        .successHandler(jwtLoginSuccessHandler)
                         .failureHandler(loginFailureHandler)
                 )
                 .sessionManagement(management -> management
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .sessionConcurrency(concurrency -> concurrency
-                                .maximumSessions(1)
-                                .maxSessionsPreventsLogin(false)
-                                .sessionRegistry(sessionRegistry)
-                        )
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(((request, response, authException) -> {
