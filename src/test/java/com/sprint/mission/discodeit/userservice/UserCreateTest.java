@@ -9,14 +9,12 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
-import com.sprint.mission.discodeit.exception.readstatus.ReadStatusException;
 import com.sprint.mission.discodeit.exception.user.UserDuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.UserDuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.support.UserFixture;
@@ -41,8 +39,6 @@ public class UserCreateTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private UserStatusRepository userStatusRepository;
 
     @Mock
     private UserMapper userMapper;
@@ -117,7 +113,6 @@ public class UserCreateTest {
         verify(binaryContentStorage, times(1)).put(isNull(), any(byte[].class));
         verify(binaryContentRepository, times(1)).save(any(BinaryContent.class));
         verify(userRepository, times(1)).save(any(User.class));
-        verify(userStatusRepository, times(1)).save(any(UserStatus.class));
     }
 
     @Test

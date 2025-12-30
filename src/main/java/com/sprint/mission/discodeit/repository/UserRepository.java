@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
+    Optional<User>findByUsername(String username);
 
     @Query("SELECT DISTINCT u FROM User " +
-            "u LEFT JOIN FETCH u.profile " +
-            "LEFT JOIN FETCH u.status"
+            "u LEFT JOIN FETCH u.profile "
     )
     List<User> findAll();
 

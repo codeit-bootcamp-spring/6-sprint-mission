@@ -2,10 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.User.*;
-import com.sprint.mission.discodeit.dto.UserStatus.UserStatusDto;
-import com.sprint.mission.discodeit.dto.UserStatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,7 +25,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserController implements UserApi {
     private final UserService userService;
-    private final UserStatusService userStatusService;
 
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
@@ -60,12 +56,5 @@ public class UserController implements UserApi {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findAll());
     }
 
-    @PatchMapping("/{userId}/userStatus")
-    public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
-            @PathVariable UUID userId,
-            @RequestBody UserStatusUpdateRequest userStatusUpdateRequest) {
-        UserStatusDto userStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(userStatus);
-    }
 
 }

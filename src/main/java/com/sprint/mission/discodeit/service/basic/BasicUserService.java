@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.User.*;
 import com.sprint.mission.discodeit.entity.BaseEntity;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.file.FileInPutException;
 import com.sprint.mission.discodeit.exception.file.FileOutPutException;
 import com.sprint.mission.discodeit.exception.user.UserDuplicateEmailException;
@@ -15,11 +14,15 @@ import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundExcep
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.Role;
+import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,9 +37,11 @@ import java.util.*;
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
+    private final PasswordEncoder passwordEncoder;
+
+    private final AuthService authService;
 
     @Override
     public UserDto create(MultipartFile multipartFile, UserCreateRequest userCreateRequest) {
@@ -54,23 +59,21 @@ public class BasicUserService implements UserService {
             binaryContentStorage.put(profile.getId(), profileBinaryContent.data());
         }
 
+        String userPassword = passwordEncoder.encode(userCreateRequest.password());
+
         //유저 생성
         User user = new User(
                 userCreateRequest.username(),
                 userCreateRequest.email(),
-                userCreateRequest.password(),
-                profile
+                userPassword,
+                profile,
+                Role.USER
         );
-
-        //유저에 유저 상태 추가
-        UserStatus userStatus = new UserStatus(user);
-        user.update(UpdateUserDto.getStatus(userStatus));
 
         if (profile != null) {
             binaryContentRepository.save(profile);
         }
         userRepository.save(user);
-        userStatusRepository.save(userStatus);
         log.info("유저 생성 완료: userId={}", user.getId());
         return userMapper.toDto(user);
     }
@@ -79,10 +82,16 @@ public class BasicUserService implements UserService {
     public List<UserDto> findAll() {
         log.info("유저 목록 조회 요청 수신");
         List<User> users = userRepository.findAll();
-        return userMapper.toDtoList(users);
+
+        return users.stream()
+                .map(user ->
+                        userMapper.toDto(user, authService.isUserOnline(user.getUsername()))
+                )
+                .toList();
     }
 
     @Override
+    @PreAuthorize("hasPermission(#userId, 'User', 'UPDATE')")
     public UserDto update(MultipartFile multipartFile, UUID userId, UserUpdateRequest userUpdateRequest) {
         log.info("사용자 수정 요청 수신: userId={}", userId);
         //유저 중복 확인
@@ -112,20 +121,27 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
         log.info("사용자 수정 완료: userId={}", userId);
 
-        return userMapper.toDto(user);
+        return userMapper.toDto(user, authService.isUserOnline(user.getUsername()));
 }
 
     @Override
+    @PreAuthorize("hasPermission(#id, 'User', 'DELETE')")
     public void delete(UUID id) {
-        UserStatus userStatus = userStatusRepository.findByUserId(id)
-                .orElseThrow(UserStatusNotFoundException::new);
-
         User user = userRepository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
 
         binaryContentRepository.deleteById(user.getProfile().getId());
-        userStatusRepository.deleteById(userStatus.getId());
         userRepository.deleteById(id);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public UserDto roleUpdate(UserRoleUpdateRequest userUpdateRequest) {
+        User user = userRepository.findById(userUpdateRequest.userId())
+                .orElseThrow(UserNotFoundException::new);
+        user.updateRole(userUpdateRequest.newRole());
+        userRepository.save(user);
+        return userMapper.toDto(user, authService.isUserOnline(user.getUsername()));
     }
 
     public void isDuplicate(String name, String email) {
@@ -143,7 +159,7 @@ public class BasicUserService implements UserService {
 
     public BinaryContentSave getBinaryContent(MultipartFile multipartFile) {
         log.info("프로필 파일 저장 시작");
-        if (multipartFile.isEmpty()) {
+        if (multipartFile == null || multipartFile.isEmpty()) {
             log.info("메시지 첨부파일 없음");
             return null;
         } else {

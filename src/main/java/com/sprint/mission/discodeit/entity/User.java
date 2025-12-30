@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.dto.User.UpdateUserDto;
+import com.sprint.mission.discodeit.security.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 
 @Entity
@@ -28,24 +31,24 @@ public class User extends BaseUpdatableEntity {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private BinaryContent profile;
 
-    @OneToOne(mappedBy = "user")
-    private UserStatus status;
+    @Column(nullable = false)
+    Role role;
 
 
+    public User(String username, String email, String password, BinaryContent profile, Role role) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.profile = profile;
+        this.role = role;
+    }
+
+    @Builder
     public User(String username, String email, String password, BinaryContent profile) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.profile = profile;
-    }
-
-    @Builder
-    public User(String username, String email, String password, BinaryContent profile, UserStatus status) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.profile = profile;
-        this.status = status;
     }
 
 
@@ -78,13 +81,11 @@ public class User extends BaseUpdatableEntity {
             anyValueUpdated = true;
         }
 
-        if (updateUserDTO.status() != null) {
-            this.status = updateUserDTO.status();
-            anyValueUpdated = true;
-        }
-
         if (anyValueUpdated) {
             this.updatedAtNow();
         }
+    }
+    public void updateRole(Role role) {
+        this.role = role;
     }
 }

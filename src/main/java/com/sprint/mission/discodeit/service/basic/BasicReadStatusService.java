@@ -49,7 +49,7 @@ public class BasicReadStatusService implements ReadStatusService {
                         rs.getUser().getId().equals(user.getId())
                                 && rs.getChannel().getId().equals(channel.getId()));
         if (isDuplication) {
-            log.error("읽음 상태 중복 발생: userId={} readStatusId={}", user.getId(), user.getStatus().getId());
+            log.error("읽음 상태 중복 발생: userId={}", user.getId());
             throw new ReadStatusDuplicateException();
         }
 

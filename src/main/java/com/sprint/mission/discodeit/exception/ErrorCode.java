@@ -28,7 +28,10 @@ public enum ErrorCode {
 
     FILE_IN_PUT_FAIL(HttpStatus.BAD_REQUEST, "파일 읽어오기 실패"),
     FILE_OUT_PUT_FAIL(HttpStatus.BAD_REQUEST, "파일 저장 실패"),
-    FILE_DOWNLOAD_FAIL(HttpStatus.BAD_REQUEST, "파일 다운로드 실패");
+    FILE_DOWNLOAD_FAIL(HttpStatus.BAD_REQUEST, "파일 다운로드 실패"),
+
+    UNAUTHORIZED_USER(HttpStatus.FORBIDDEN,"해당 권한이 없음"),
+    UNAUTHENTICATED_USER(HttpStatus.UNAUTHORIZED,"인증되지 않은 사용자");
 
     private final HttpStatus status;
     private final String message;
