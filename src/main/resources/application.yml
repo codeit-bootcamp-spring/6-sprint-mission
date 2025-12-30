@@ -74,3 +74,9 @@ info:
 
   author:
     name: "Discodeit"
+
+
+jwt:
+  secret: "nimbus-jose-jwt-practice-secret-key-must-be-at-least-256-bits"
+  expiration: 3600000
+  issuer: "discodeit-server"

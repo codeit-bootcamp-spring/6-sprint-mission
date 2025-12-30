@@ -3,10 +3,9 @@ package com.sprint.mission.discodeit.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.filter.JsonUsernamePasswordAuthenticationFilter;
+import com.sprint.mission.discodeit.security.handler.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestAttributeHandler;
-import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +21,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -41,7 +41,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
-    private final LoginSuccessHandler loginSuccessHandler;
+    private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
     private final ObjectMapper objectMapper;
     private final UserDetailsService userDetailsService;
@@ -58,12 +58,8 @@ public class SecurityConfig {
                 .httpBasic(basic -> basic.disable())
 
                 // 세션, 동시성
-                .sessionManagement(management -> management
-                        .sessionConcurrency(concurrency -> concurrency
-                                .sessionRegistry(sessionRegistry())
-                                .maximumSessions(1)
-                                .expiredUrl("/api/auth/login")
-                        )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 // 인증
