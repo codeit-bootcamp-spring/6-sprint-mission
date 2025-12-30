@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.security.handler;
 
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
-import com.sprint.mission.discodeit.repository.TokenRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import com.sprint.mission.discodeit.utils.TokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class JwtLogoutHandler implements LogoutHandler {
 
   private final UserRepository userRepository;
-  private final TokenRepository tokenRepository;
+  private final JwtRegistry jwtRegistry;
   private final TokenUtil tokenUtil;
 
   @Transactional
@@ -34,7 +34,7 @@ public class JwtLogoutHandler implements LogoutHandler {
         .orElseThrow(NoSuchUserException::new)
         .getId();
 
-    tokenRepository.deleteByUserId(userId);
+    jwtRegistry.invalidateJwtInformationByUserId(userId);
     tokenUtil.deleteCookie("refreshToken", response);
 
   }
