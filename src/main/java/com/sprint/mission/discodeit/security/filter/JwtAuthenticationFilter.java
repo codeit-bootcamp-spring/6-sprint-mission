@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.security.filter;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.sprint.mission.discodeit.exception.user.InvalidJwtTokenException;
 import com.sprint.mission.discodeit.security.provider.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,6 +28,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+  private final JwtRegistry jwtRegistry;
   private final JwtTokenProvider jwtTokenProvider;
 
   @Override
@@ -36,9 +38,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String token = extractToken(request);
 
     if (token.isBlank() || !jwtTokenProvider.validateAccessToken(token)) {
-      log.error("Invalid access token.");
+      log.error("Invalid access token");
       throw new InvalidJwtTokenException();
     } else {
+
+      if (!jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
+        log.error("Access token is not active or has been invalidated");
+        throw new InvalidJwtTokenException();
+      }
 
       JWTClaimsSet claims = jwtTokenProvider.getClaims(token);
       String username = claims.getSubject();
