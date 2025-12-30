@@ -8,8 +8,8 @@ CREATE TABLE users
     username   varchar(50) UNIQUE       NOT NULL,
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
-    role       varchar(20)              NOT NULL,
-    profile_id uuid
+    profile_id uuid,
+    role       varchar(20)              NOT NULL
 );
 
 -- BinaryContent
@@ -22,6 +22,7 @@ CREATE TABLE binary_contents
     content_type varchar(100)             NOT NULL
 --     ,bytes        bytea        NOT NULL
 );
+
 
 -- Channel
 CREATE TABLE channels
@@ -63,6 +64,16 @@ CREATE TABLE read_statuses
     channel_id   uuid                     NOT NULL,
     last_read_at timestamp with time zone NOT NULL,
     UNIQUE (user_id, channel_id)
+);
+
+-- TokenInfo
+CREATE TABLE token_info
+(
+    id            bigserial PRIMARY KEY,
+    username      varchar(50) NOT NULL,
+    access_token  text,
+    refresh_token text,
+    UNIQUE (username)
 );
 
 

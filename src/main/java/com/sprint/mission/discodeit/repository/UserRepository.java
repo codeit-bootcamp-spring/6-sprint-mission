@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.Optional;
@@ -10,16 +9,13 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-    Optional<User> findByUsername(String username);
+  Optional<User> findByUsername(String username);
 
-    boolean existsByEmail(String email);
+  boolean existsByEmail(String email);
 
-    boolean existsByUsername(String username);
+  boolean existsByUsername(String username);
 
-    boolean existsByRole(Role role);
-
-    @Query("SELECT u FROM User u "
-        + "LEFT JOIN FETCH u.profile")
-    List<User> findAllWithProfile();
-
+  @Query("SELECT u FROM User u "
+      + "LEFT JOIN FETCH u.profile")
+  List<User> findAllWithProfile();
 }

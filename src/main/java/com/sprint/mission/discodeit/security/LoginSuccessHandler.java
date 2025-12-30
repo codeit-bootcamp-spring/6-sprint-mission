@@ -1,19 +1,19 @@
 package com.sprint.mission.discodeit.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.exception.ErrorResponse;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.stereotype.Component;
 
+@Component
 @RequiredArgsConstructor
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
@@ -22,27 +22,21 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
         Authentication authentication) throws IOException, ServletException {
-        DiscodeitUserDetails principal = (DiscodeitUserDetails) authentication.getPrincipal();
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        // 세션이 만들어진 뒤 세션 ID를 헤더로 내려준다
-        String sessionId = request.getSession(true).getId();
-        response.setHeader("JSESSIONID", sessionId);
+        if (authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            UserDto userDto = userDetails.getUserDto();
+            response.getWriter().write(objectMapper.writeValueAsString(userDto));
 
-        // CSRF 토큰을 Set-Cookie로 내려준다 (JS가 읽을 수 있도록 HttpOnly=false)
-        CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
-        if (csrfToken != null) {
-            ResponseCookie xsrfCookie = ResponseCookie.from("XSRF-TOKEN", csrfToken.getToken())
-                .httpOnly(false)
-                .path("/")
-                .build();
-            response.addHeader("Set-Cookie", xsrfCookie.toString());
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            ErrorResponse errorResponse = new ErrorResponse(
+                new RuntimeException("Authentication failed: Invalid user details"),
+                HttpServletResponse.SC_UNAUTHORIZED
+            );
+            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
         }
-
-        response.setStatus(HttpStatus.OK.value());
-        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.setContentType("application/json");
-        ServletOutputStream outputStream = response.getOutputStream();
-        objectMapper.writeValue(outputStream, principal.getUserDto());
-        outputStream.flush();
     }
 }

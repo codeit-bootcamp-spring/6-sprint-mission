@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -16,6 +17,7 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -31,6 +34,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(UserController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
   @Autowired
@@ -41,6 +45,7 @@ class UserControllerTest {
 
   @MockitoBean
   private UserService userService;
+
 
   @Test
   @DisplayName("사용자 생성 성공 테스트")
@@ -79,7 +84,8 @@ class UserControllerTest {
         "testuser",
         "test@example.com",
         profileDto,
-        false
+        false,
+        Role.USER
     );
 
     given(userService.create(any(UserCreateRequest.class), any(Optional.class)))
@@ -89,7 +95,8 @@ class UserControllerTest {
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
             .file(profilePart)
-            .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+            .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+            .with(csrf()))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(userId.toString()))
         .andExpect(jsonPath("$.username").value("testuser"))
@@ -118,7 +125,8 @@ class UserControllerTest {
     // When & Then
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
-            .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+            .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+            .with(csrf()))
         .andExpect(status().isBadRequest());
   }
 
@@ -134,7 +142,8 @@ class UserControllerTest {
         "user1",
         "user1@example.com",
         null,
-        true
+        true,
+        Role.USER
     );
 
     UserDto user2 = new UserDto(
@@ -142,7 +151,8 @@ class UserControllerTest {
         "user2",
         "user2@example.com",
         null,
-        false
+        false,
+        Role.USER
     );
 
     List<UserDto> users = List.of(user1, user2);
@@ -198,7 +208,8 @@ class UserControllerTest {
         "updateduser",
         "updated@example.com",
         profileDto,
-        true
+        true,
+        Role.USER
     );
 
     given(userService.update(eq(userId), any(UserUpdateRequest.class), any(Optional.class)))
@@ -212,7 +223,8 @@ class UserControllerTest {
             .with(request -> {
               request.setMethod("PATCH");
               return request;
-            }))
+            })
+            .with(csrf()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(userId.toString()))
         .andExpect(jsonPath("$.username").value("updateduser"))
@@ -258,7 +270,8 @@ class UserControllerTest {
             .with(request -> {
               request.setMethod("PATCH");
               return request;
-            }))
+            })
+            .with(csrf()))
         .andExpect(status().isNotFound());
   }
 
@@ -271,7 +284,8 @@ class UserControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/users/{userId}", userId)
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(csrf()))
         .andExpect(status().isNoContent());
   }
 
@@ -285,8 +299,8 @@ class UserControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/users/{userId}", nonExistentUserId)
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(csrf()))
         .andExpect(status().isNotFound());
   }
-
-}
+} 

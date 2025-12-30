@@ -16,7 +16,6 @@ import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,9 +36,8 @@ class BasicUserServiceTest {
 
   @Mock
   private UserMapper userMapper;
-
   @Mock
-  private SessionRegistry sessionRegistry;
+  private PasswordEncoder passwordEncoder;
 
   @InjectMocks
   private BasicUserService userService;
@@ -58,11 +56,9 @@ class BasicUserServiceTest {
     email = "test@example.com";
     password = "password123";
 
-    user = new User(username, email, password, null, Role.USER);
+    user = new User(username, email, password, null);
     ReflectionTestUtils.setField(user, "id", userId);
-    userDto = new UserDto(userId, username, email, null, false);
-
-    given(sessionRegistry.getAllPrincipals()).willReturn(List.of());
+    userDto = new UserDto(userId, username, email, null, true, Role.USER);
   }
 
   @Test
