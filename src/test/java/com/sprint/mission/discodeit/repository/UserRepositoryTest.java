@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.sprint.mission.discodeit.config.JpaConfig;
+import com.sprint.mission.discodeit.config.AppConfig;
 import com.sprint.mission.discodeit.entity.UserEntity;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({JpaConfig.class})
+@Import({AppConfig.class})
 @DisplayName("UserRepository 테스트")
 class UserRepositoryTest {
 
