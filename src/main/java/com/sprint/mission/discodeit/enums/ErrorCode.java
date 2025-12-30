@@ -2,9 +2,13 @@ package com.sprint.mission.discodeit.enums;
 
 public enum ErrorCode {
 
+    // Auth
+    INVALID_AUTH,
+    ACCESS_DENIED,
+
     USER_NOT_FOUND,
     DUPLICATE_USER,
-    FORBIDDEN,
+
 
     CHANNEL_NOT_FOUND,
     PRIVATE_CHANNEL_UPDATE,

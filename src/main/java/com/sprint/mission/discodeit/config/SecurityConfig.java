@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.security.filter.JsonUsernamePasswordAuthenti
 import com.sprint.mission.discodeit.security.handler.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestAttributeHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +43,7 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
+    private final JwtTokenProvider jwtTokenProvider;
     private final LoginFailureHandler loginFailureHandler;
     private final ObjectMapper objectMapper;
     private final UserDetailsService userDetailsService;
@@ -51,10 +53,7 @@ public class SecurityConfig {
 
         http
                 // 기본 설정
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestAttributeHandler())
-                )
+                .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(basic -> basic.disable())
 
                 // 세션, 동시성
@@ -66,12 +65,6 @@ public class SecurityConfig {
                 .addFilterAt(jsonLoginFilter(), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(AbstractHttpConfigurer::disable)
 
-                .rememberMe(rememberMe -> rememberMe
-                        .key("uniqueAndSecretKey") // 쿠키 암호화 키
-                        .tokenValiditySeconds(86400 * 30) // 30일 유지
-                        .userDetailsService(userDetailsService) // 재인증 시 유저 조회용
-                        .rememberMeParameter("remember-me") // 프론트에서 보낼 파라미터명
-                )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
@@ -134,7 +127,7 @@ public class SecurityConfig {
                 new JsonUsernamePasswordAuthenticationFilter(authenticationConfiguration.getAuthenticationManager());
 
         filter.setFilterProcessesUrl("/api/auth/login");
-        filter.setAuthenticationSuccessHandler(loginSuccessHandler);
+        filter.setAuthenticationSuccessHandler(jwtLoginSuccessHandler);
         filter.setAuthenticationFailureHandler(loginFailureHandler);
         return filter;
     }

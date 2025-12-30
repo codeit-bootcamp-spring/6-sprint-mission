@@ -78,5 +78,6 @@ info:
 
 jwt:
   secret: "nimbus-jose-jwt-practice-secret-key-must-be-at-least-256-bits"
-  expiration: 3600000
   issuer: "discodeit-server"
+  access-token-validity-in-ms: 1800000
+  refresh-token-validity-in-ms: 1209600000

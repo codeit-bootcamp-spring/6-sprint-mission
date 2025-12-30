@@ -1,10 +1,16 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.security.JwtDto;
 import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.security.jwt.JwtInformation;
+import com.sprint.mission.discodeit.security.jwt.TokenUtil;
 import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,6 +28,23 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
+    private final AuthService authService;
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken, HttpServletResponse response) {
+
+        JwtInformation newInfo = authService.refreshToken(refreshToken);
+
+        Cookie refreshCookie = TokenUtil.createRefreshTokenCookie(newInfo.getRefreshToken());
+        response.addCookie(refreshCookie);
+
+        return ResponseEntity.ok(
+                JwtDto.builder()
+                .accessToken(newInfo.getAccessToken())
+                .dto(newInfo.getDto())
+                .build()
+        );
+    }
 
     @GetMapping("/csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {

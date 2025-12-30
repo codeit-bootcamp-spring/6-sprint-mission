@@ -39,12 +39,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
             JWTClaimsSet claims = jwtTokenProvider.getClaims(token);
             String username = claims.getSubject();
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             String role = (String) claims.getClaim("role");
 
             List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             // TODO 토큰을 발행할 때 필요한 정보(ID, Role 등)를 클레임(Claim)에 모두 담아두면 DB 매번 조회 안해도됨.
-            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, token, authorities));
+
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
             log.debug("Authenticated user: {}", username);
         }
         filterChain.doFilter(request, response); // 다음 필터로 넘김

@@ -33,12 +33,19 @@ public class JwtTokenProvider {
             throw new RuntimeException("JWT Key Init Failed", e);
         }
     }
+    public String createAccessToken(String username, String role) {
+        return generateToken(username, role, jwtProperties.getAccessTokenValidityInMilliseconds());
+    }
+
+    public String createRefreshToken(String username, String role) {
+        return generateToken(username, role, jwtProperties.getRefreshTokenValidityInMilliseconds());
+    }
 
     // JWT 토큰 생성
-    public String generateToken(String username, String role) {
+    public String generateToken(String username, String role, long validityInMilliseconds) {
         try {
             Date now = new Date();
-            Date expirationTime = new Date(now.getTime() + jwtProperties.getExpiration());
+            Date expirationTime = new Date(now.getTime() + validityInMilliseconds);
 
             // Claims 구성
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
