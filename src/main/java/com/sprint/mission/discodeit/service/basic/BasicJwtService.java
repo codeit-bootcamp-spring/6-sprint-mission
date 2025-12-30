@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class BasicJwtservice implements JwtService {
+public class BasicJwtService implements JwtService {
 
   private final JwtProperties jwtProperties;
   private final TokenUtil tokenUtil;
