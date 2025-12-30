@@ -5,6 +5,9 @@ import com.sprint.mission.discodeit.dto.security.JwtDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtInformation;
+import com.sprint.mission.discodeit.security.jwt.JwtProperties;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
@@ -30,6 +33,8 @@ import java.nio.charset.StandardCharsets;
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtProperties jwtProperties;
+    private final JwtRegistry jwtRegistry;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final UserMapper userMapper;
@@ -39,12 +44,27 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
 
-        UserDetails userDetails = (DiscodeitUserDetails) authentication.getPrincipal();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User user =  userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
 
-        String accessToken = jwtTokenProvider.generateToken(user.getUsername(), user.getRole().name());
-        String refreshToken = jwtTokenProvider.generateToken(user.getUsername(), user.getRole().name());
+        String accessToken = jwtTokenProvider.generateToken(
+                user.getUsername(),
+                user.getRole().name(),
+                jwtProperties.getAccessTokenValidityInMilliseconds()
+        );
+        String refreshToken = jwtTokenProvider.generateToken(
+                user.getUsername(),
+                user.getRole().name(),
+                jwtProperties.getRefreshTokenValidityInMilliseconds()
+        );
+
+        JwtInformation jwtInformation = new JwtInformation(
+                userMapper.toDto(user),
+                accessToken,
+                refreshToken
+        );
+        jwtRegistry.registerJwtInformation(jwtInformation);
 
         Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);
         refreshCookie.setHttpOnly(true);

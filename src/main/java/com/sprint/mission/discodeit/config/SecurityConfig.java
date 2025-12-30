@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.filter.JsonUsernamePasswordAuthenticationFilter;
+import com.sprint.mission.discodeit.security.filter.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.handler.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.handler.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestAttributeHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
@@ -43,8 +45,9 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
+    private final JwtLogoutHandler jwtLogoutHandler;
     private final JwtTokenProvider jwtTokenProvider;
-    private final LoginFailureHandler loginFailureHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ObjectMapper objectMapper;
     private final UserDetailsService userDetailsService;
 
@@ -67,9 +70,9 @@ public class SecurityConfig {
 
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
-                        .invalidateHttpSession(true) // 세션 무효화
+                        .addLogoutHandler(jwtLogoutHandler)
                 )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // 인가
                 .authorizeHttpRequests(auth -> auth
@@ -128,7 +131,6 @@ public class SecurityConfig {
 
         filter.setFilterProcessesUrl("/api/auth/login");
         filter.setAuthenticationSuccessHandler(jwtLoginSuccessHandler);
-        filter.setAuthenticationFailureHandler(loginFailureHandler);
         return filter;
     }
 
