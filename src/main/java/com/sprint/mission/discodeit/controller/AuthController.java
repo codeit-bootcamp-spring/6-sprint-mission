@@ -46,27 +46,6 @@ public class AuthController {
         );
     }
 
-    @GetMapping("/csrf-token")
-    public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
-        String token = csrfToken.getToken();
-        log.debug("CSRF 토큰 요청: {}", token);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .header(csrfToken.getHeaderName(), token)
-                .build();
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<UserResponseDto> getCurrentUser(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-        UserResponseDto userDto = UserResponseDto.builder()
-                .username(userDetails.getUsername())
-                .email(userDetails.getUserResponseDto().email())
-                .profile(userDetails.getUserResponseDto().profile())
-                .online(userDetails.getUserResponseDto().online())
-                .build();
-
-        return ResponseEntity.ok(userDto);
-    }
-
     @PatchMapping("/role")
     public ResponseEntity<UserResponseDto> updateUserRole(@Validated @RequestBody UserRoleUpdateRequest request) {
         UserResponseDto response = userService.updateUserRole(request);
