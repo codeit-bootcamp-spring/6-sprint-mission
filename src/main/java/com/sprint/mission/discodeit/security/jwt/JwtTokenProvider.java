@@ -5,6 +5,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.sprint.mission.discodeit.entity.TokenInfo;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,10 +36,18 @@ public class JwtTokenProvider {
         }
     }
 
-    public String generateToken(String userName, String role){
+    public String createAccessToken(String username, String role) {
+        return generateToken(username,role,jwtProperties.getAccessTokenValidityInMs());
+    }
+
+    public String createRefreshToken(String username, String role) {
+        return generateToken(username,role,jwtProperties.getRefreshTokenValidityInMs());
+    }
+
+    public String generateToken(String userName, String role, long validityInMs){
         try{
            Date now = new Date();
-           Date expirationTime = new Date(now.getTime() + jwtProperties.getExpiration());
+           Date expirationTime = new Date(now.getTime()+validityInMs);
 
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                     .issuer(jwtProperties.getIssuer())
