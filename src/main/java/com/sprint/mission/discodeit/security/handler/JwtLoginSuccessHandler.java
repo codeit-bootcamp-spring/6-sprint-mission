@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.security.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.config.JwtProperties;
 import com.sprint.mission.discodeit.dto.JwtDTO;
+import com.sprint.mission.discodeit.entity.JwtInformation;
 import com.sprint.mission.discodeit.entity.TokenEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
@@ -10,6 +11,7 @@ import com.sprint.mission.discodeit.mapper.UserEntityMapper;
 import com.sprint.mission.discodeit.repository.TokenRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.provider.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import com.sprint.mission.discodeit.utils.TokenUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -29,11 +31,12 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "security", name = "login", havingValue = "jwt")
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
+  private final JwtRegistry jwtRegistry;
   private final UserRepository userRepository;
   private final UserEntityMapper userEntityMapper;
   private final JwtProperties jwtProperties;
   private final JwtTokenProvider jwtTokenProvider;
-  private final TokenRepository tokenRepository;
+  //private final TokenRepository tokenRepository;
   private final TokenUtil tokenUtil;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -55,20 +58,26 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     String accessToken = jwtTokenProvider.generateAccessToken(username, role);
     String refreshToken = jwtTokenProvider.generateRefreshToken(username, role);
 
-    JwtDTO jwtDTO = JwtDTO.of(userEntityMapper.toUser(userEntity), accessToken);
+    JwtInformation jwtInformation = JwtInformation.of(
+        userEntityMapper.toUser(userEntity),
+        accessToken,
+        refreshToken
+    );
 
-    response.getWriter().write(objectMapper.writeValueAsString(jwtDTO));
+    objectMapper.writeValue(response.getWriter(), jwtInformation);
 
     //set refresh token in HttpOnly cookie
     tokenUtil.setHttpOnlyCookie("refreshToken", refreshToken, response,
         (int) jwtProperties.getRefreshExpiration());
 
-    // Store tokens in the database
-    tokenRepository.save(TokenEntity.of(
-        userEntity.getId(),
-        accessToken,
-        refreshToken
-    ));
+    // Set tokens in the registry
+
+    // Invalidate existing tokens for the user
+    if (jwtRegistry.hasActiveJwtInformationByUserId(userEntity.getId())) {
+      jwtRegistry.invalidateJwtInformationByUserId(userEntity.getId());
+    }
+
+    jwtRegistry.registerJwtInformation(jwtInformation);
 
   }
 }
