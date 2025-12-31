@@ -11,9 +11,25 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  sql:
+    init:
+      mode: never
 
 logging:
   level:
     com.sprint.mission.discodeit: debug
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+    org.springframework.security: trace
+
+discodeit:
+  admin:
+    username: testadmin
+    email: testadmin@example.com
+    password: testpassword
+
+jwt:
+  secret: test_jwt_secret_key_for_tests_32chars
+  issuer: discodeit-test
+  access-token-validity-in-ms: 900000
+  refresh-token-validity-in-ms: 120960000

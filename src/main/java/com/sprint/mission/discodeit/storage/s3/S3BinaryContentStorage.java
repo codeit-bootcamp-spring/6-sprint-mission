@@ -2,179 +2,150 @@ package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import jakarta.annotation.PreDestroy;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.net.URI;
 import java.time.Duration;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.ResponseInputStream;
-import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
-/**
- * Binary content storage backed by AWS S3. Provides the same behaviour as the local storage but
- * streams data from S3 or hands back presigned download URLs when requested.
- */
 @Slf4j
-@Component
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
+@Component
 public class S3BinaryContentStorage implements BinaryContentStorage {
 
-  private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
-
+  private final String accessKey;
+  private final String secretKey;
+  private final String region;
   private final String bucket;
-  private final Duration presignedUrlExpiration;
-  private final S3Client s3Client;
-  private final S3Presigner s3Presigner;
+
+  @Value("${discodeit.storage.s3.presigned-url-expiration:600}") // 기본값 10분
+  private long presignedUrlExpirationSeconds;
 
   public S3BinaryContentStorage(
       @Value("${discodeit.storage.s3.access-key}") String accessKey,
       @Value("${discodeit.storage.s3.secret-key}") String secretKey,
       @Value("${discodeit.storage.s3.region}") String region,
-      @Value("${discodeit.storage.s3.bucket}") String bucket,
-      @Value("${discodeit.storage.s3.presigned-url-expiration}") long presignedUrlExpirationSeconds
+      @Value("${discodeit.storage.s3.bucket}") String bucket
   ) {
-    AwsBasicCredentials credentials = AwsBasicCredentials.create(
-        Objects.requireNonNull(accessKey, "AWS access key must not be null"),
-        Objects.requireNonNull(secretKey, "AWS secret key must not be null")
-    );
-    StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(credentials);
-    Region awsRegion = Region.of(Objects.requireNonNull(region, "AWS region must not be null"));
-    this.bucket = Objects.requireNonNull(bucket, "S3 bucket must not be null");
-    this.presignedUrlExpiration = Duration.ofSeconds(presignedUrlExpirationSeconds);
-    this.s3Client = S3Client.builder()
-        .region(awsRegion)
-        .credentialsProvider(credentialsProvider)
-        .build();
-    this.s3Presigner = S3Presigner.builder()
-        .region(awsRegion)
-        .credentialsProvider(credentialsProvider)
-        .build();
+    this.accessKey = accessKey;
+    this.secretKey = secretKey;
+    this.region = region;
+    this.bucket = bucket;
   }
 
   @Override
   public UUID put(UUID binaryContentId, byte[] bytes) {
-    Objects.requireNonNull(binaryContentId, "binaryContentId must not be null");
-    Objects.requireNonNull(bytes, "bytes must not be null");
-
-    PutObjectRequest request = PutObjectRequest.builder()
-        .bucket(bucket)
-        .key(binaryContentId.toString())
-        .contentType(DEFAULT_CONTENT_TYPE)
-        .contentLength((long) bytes.length)
-        .build();
+    String key = binaryContentId.toString();
     try {
+      S3Client s3Client = getS3Client();
+
+      PutObjectRequest request = PutObjectRequest.builder()
+          .bucket(bucket)
+          .key(key)
+          .build();
+
       s3Client.putObject(request, RequestBody.fromBytes(bytes));
+      log.info("S3에 파일 업로드 성공: {}", key);
+
       return binaryContentId;
-    } catch (SdkException e) {
-      throw new RuntimeException("Failed to upload object to S3: " + binaryContentId, e);
+    } catch (S3Exception e) {
+      log.error("S3에 파일 업로드 실패: {}", e.getMessage());
+      throw new RuntimeException("S3에 파일 업로드 실패: " + key, e);
     }
   }
 
   @Override
   public InputStream get(UUID binaryContentId) {
-    Objects.requireNonNull(binaryContentId, "binaryContentId must not be null");
-
-    GetObjectRequest request = GetObjectRequest.builder()
-        .bucket(bucket)
-        .key(binaryContentId.toString())
-        .build();
+    String key = binaryContentId.toString();
     try {
-      ResponseInputStream<GetObjectResponse> response = s3Client.getObject(request);
-      return response;
-    } catch (NoSuchKeyException e) {
-      throw new NoSuchElementException(
-          "File with key " + binaryContentId + " does not exist on S3");
-    } catch (SdkException e) {
-      throw new RuntimeException("Failed to download object from S3: " + binaryContentId, e);
+      S3Client s3Client = getS3Client();
+
+      GetObjectRequest request = GetObjectRequest.builder()
+          .bucket(bucket)
+          .key(key)
+          .build();
+
+      byte[] bytes = s3Client.getObjectAsBytes(request).asByteArray();
+      return new ByteArrayInputStream(bytes);
+    } catch (S3Exception e) {
+      log.error("S3에서 파일 다운로드 실패: {}", e.getMessage());
+      throw new NoSuchElementException("File with key " + key + " does not exist");
     }
+  }
+
+  private S3Client getS3Client() {
+    return S3Client.builder()
+        .region(Region.of(region))
+        .credentialsProvider(
+            StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(accessKey, secretKey)
+            )
+        )
+        .build();
   }
 
   @Override
-  public ResponseEntity<?> download(BinaryContentDto metaData) {
-    Objects.requireNonNull(metaData, "metaData must not be null");
+  public ResponseEntity<Void> download(BinaryContentDto metaData) {
+    try {
+      String key = metaData.id().toString();
+      String presignedUrl = generatePresignedUrl(key, metaData.contentType());
 
-    GetObjectRequest request = GetObjectRequest.builder()
-        .bucket(bucket)
-        .key(metaData.id().toString())
-        .responseContentType(resolveContentType(metaData.contentType()))
-        .responseContentDisposition(buildContentDisposition(metaData.fileName()))
-        .build();
+      log.info("생성된 Presigned URL: {}", presignedUrl);
 
-    String presignedUrl = presignGetObject(request);
-    URI redirectUri = URI.create(presignedUrl);
-    return ResponseEntity
-        .status(HttpStatus.FOUND)
-        .location(redirectUri)
-        .build();
-  }
-
-  /**
-   * Generates a presigned URL for a stored object using the configured expiration.
-   */
-  public String generatePresignedUrl(String key, String contentType) {
-    GetObjectRequest request = GetObjectRequest.builder()
-        .bucket(bucket)
-        .key(key)
-        .responseContentType(resolveContentType(contentType))
-        .build();
-    return presignGetObject(request);
-  }
-
-  private String presignGetObject(GetObjectRequest request) {
-    GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-        .signatureDuration(presignedUrlExpiration)
-        .getObjectRequest(request)
-        .build();
-    PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
-    return presignedRequest.url().toString();
-  }
-
-  private String resolveContentType(String contentType) {
-    if (contentType == null || contentType.isBlank()) {
-      return DEFAULT_CONTENT_TYPE;
-    }
-    return contentType;
-  }
-
-  private String buildContentDisposition(String fileName) {
-    if (fileName == null || fileName.isBlank()) {
-      return "attachment";
-    }
-    String sanitized = fileName.replace("\"", "");
-    return "attachment; filename=\"" + sanitized + "\"";
-  }
-
-  @PreDestroy
-  public void close() {
-    if (s3Client != null) {
-      s3Client.close();
-    }
-    if (s3Presigner != null) {
-      s3Presigner.close();
+      return ResponseEntity
+          .status(HttpStatus.FOUND)
+          .header(HttpHeaders.LOCATION, presignedUrl)
+          .build();
+    } catch (Exception e) {
+      log.error("Presigned URL 생성 실패: {}", e.getMessage());
+      throw new RuntimeException("Presigned URL 생성 실패", e);
     }
   }
 
-  public S3Client getS3Client() {
-    return s3Client;
+  private String generatePresignedUrl(String key, String contentType) {
+    try (S3Presigner presigner = getS3Presigner()) {
+      GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+          .bucket(bucket)
+          .key(key)
+          .responseContentType(contentType)
+          .build();
+
+      GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+          .signatureDuration(Duration.ofSeconds(presignedUrlExpirationSeconds))
+          .getObjectRequest(getObjectRequest)
+          .build();
+
+      PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(presignRequest);
+      return presignedRequest.url().toString();
+    }
   }
-}
+
+  private S3Presigner getS3Presigner() {
+    return S3Presigner.builder()
+        .region(Region.of(region))
+        .credentialsProvider(
+            StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(accessKey, secretKey)
+            )
+        )
+        .build();
+  }
+} 

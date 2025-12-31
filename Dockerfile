@@ -1,25 +1,40 @@
-FROM amazoncorretto:17
+# 빌드 스테이지
+FROM amazoncorretto:17 AS builder
 
-ENV PROJECT_NAME=discodeit \
-    PROJECT_VERSION=1.2-M8 \
-    JVM_OPTS=""\
-    SPRING_PROFILES_ACTIVE=prod
-
+# 작업 디렉토리 설정
 WORKDIR /app
 
-# Copy only files required for dependency resolution first to leverage Docker layer caching
-COPY gradlew settings.gradle build.gradle ./
+# Gradle Wrapper 파일 먼저 복사
 COPY gradle ./gradle
+COPY gradlew ./gradlew
 
-RUN chmod +x gradlew
+# Gradle 캐시를 위한 의존성 파일 복사
+COPY build.gradle settings.gradle ./
 
-# Copy the rest of the source code
+# 의존성 다운로드
+RUN ./gradlew dependencies
+
+# 소스 코드 복사 및 빌드
 COPY src ./src
-COPY api-docs*.json ./
-COPY HELP.md README.md ./
+RUN ./gradlew build -x test
 
-RUN ./gradlew bootJar --no-daemon
 
+# 런타임 스테이지
+FROM amazoncorretto:17-alpine3.21
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 프로젝트 정보를 ENV로 설정
+ENV PROJECT_NAME=discodeit \
+    PROJECT_VERSION=2.10M10 \
+    JVM_OPTS=""
+
+# 빌드 스테이지에서 jar 파일만 복사
+COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar ./
+
+# 80 포트 노출
 EXPOSE 80
 
-ENTRYPOINT ["sh", "-c", "java $JVM_OPTS -jar build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar"]
+# jar 파일 실행
+ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -jar ${PROJECT_NAME}-${PROJECT_VERSION}.jar"]
