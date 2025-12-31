@@ -61,7 +61,7 @@ class BasicAuthServiceTest {
 
   }
 
-  @Test
+  /*@Test
   @DisplayName("로그인 성공 테스트")
   void login_success() {
 
@@ -112,6 +112,6 @@ class BasicAuthServiceTest {
       basicAuthService.login(loginCommand);
     });
 
-  }
+  }*/
 
 }

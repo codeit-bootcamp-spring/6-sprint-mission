@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.controller.global;
+package com.sprint.mission.discodeit.exception.global;
 
 import com.sprint.mission.discodeit.dto.api.ErrorApiDTO;
 import com.sprint.mission.discodeit.exception.binarycontent.NoSuchBinaryContentException;
@@ -18,6 +18,7 @@ import java.time.Instant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -29,7 +30,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(IllegalArgumentException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> IllegalArgumentException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleIllegalArgumentException(
       IllegalArgumentException e) {
 
     log.error("IllegalArgumentException occurred", e);
@@ -45,7 +46,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(ValidationException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> ValidationException(ValidationException e) {
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleValidationException(ValidationException e) {
 
     log.error("ValidationException occurred", e);
 
@@ -61,7 +62,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> MethodArgumentNotValidException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleMethodArgumentNotValidException(
       MethodArgumentNotValidException e) {
 
     log.error("MethodArgumentNotValidException occurred", e);
@@ -78,7 +79,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> Exception(Exception e) {
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleException(Exception e) {
 
     log.error("Exception occurred", e);
 
@@ -94,7 +95,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NoSuchBinaryContentException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> NoSuchBinaryContentException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchBinaryContentException(
       NoSuchBinaryContentException e) {
 
     log.error("NoSuchBinaryContentException occurred", e);
@@ -113,7 +114,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(AllReadyExistChannelException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> AllReadyExistChannelException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAllReadyExistChannelException(
       AllReadyExistChannelException e) {
 
     log.error("AllReadyExistChannelException occurred", e);
@@ -132,7 +133,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(InvalidChannelDataException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> InvalidChannelDataException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleInvalidChannelDataException(
       InvalidChannelDataException e) {
 
     log.error("InvalidChannelDataException occurred", e);
@@ -151,7 +152,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NoSuchChannelException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> NoSuchChannelException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchChannelException(
       NoSuchChannelException e) {
 
     log.error("NoSuchChannelException occurred", e);
@@ -170,7 +171,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NoSuchMessageException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> NoSuchMessageException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchMessageException(
       NoSuchMessageException e) {
 
     log.error("NoSuchMessageException occurred", e);
@@ -189,7 +190,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(AllReadyExistReadStatusException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> AllReadyExistReadStatusException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAllReadyExistReadStatusException(
       AllReadyExistReadStatusException e) {
 
     log.error("AllReadyExistReadStatusException occurred", e);
@@ -208,7 +209,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NoSuchReadStatusException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> NoSuchReadStatusException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchReadStatusException(
       NoSuchReadStatusException e) {
 
     log.error("NoSuchReadStatusException occurred", e);
@@ -227,7 +228,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(AllReadyExistUserException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> AllReadyExistUserException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAllReadyExistUserException(
       AllReadyExistUserException e) {
 
     log.error("AllReadyExistUserException occurred", e);
@@ -246,7 +247,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NoSuchUserException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> NoSuchUserException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchUserException(
       NoSuchUserException e) {
 
     log.error("NoSuchUserException occurred", e);
@@ -265,7 +266,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(PasswordMismatchException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> PasswordMismatchException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handlePasswordMismatchException(
       PasswordMismatchException e) {
 
     log.error("PasswordMismatchException occurred", e);
@@ -284,7 +285,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(AllReadyExistUserStatusException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> AllReadyExistUserStatusException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAllReadyExistUserStatusException(
       AllReadyExistUserStatusException e) {
 
     log.error("AllReadyExistUserStatusException occurred", e);
@@ -302,7 +303,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NoSuchUserStatusException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> NoSuchUserStatusException(
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchUserStatusException(
       NoSuchUserStatusException e) {
 
     log.error("NoSuchUserStatusException occurred", e);
@@ -317,6 +318,21 @@ public class GlobalExceptionHandler {
             .status(HttpStatus.NOT_FOUND.value())
             .build());
 
+  }
+
+  @ExceptionHandler(AuthorizationDeniedException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAuthorizationDeniedException(
+      AuthorizationDeniedException e) {
+    log.error("AuthorizationDeniedException occurred", e);
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(ErrorApiDTO.ErrorApiResponse.builder()
+            .timestamp(Instant.now())
+            .code(String.valueOf(HttpStatus.FORBIDDEN.value()))
+            .message("Authorization Denied: " + e.getMessage())
+            .exceptionType(String.valueOf(HttpStatus.FORBIDDEN.value()))
+            .status(HttpStatus.FORBIDDEN.value())
+            .build());
   }
 
 }

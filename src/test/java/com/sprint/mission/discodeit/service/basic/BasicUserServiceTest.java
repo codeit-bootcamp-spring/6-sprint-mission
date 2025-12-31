@@ -10,14 +10,13 @@ import static org.mockito.Mockito.when;
 import com.sprint.mission.discodeit.dto.UserDTO;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
-import com.sprint.mission.discodeit.entity.UserStatusEntity;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.exception.user.AllReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
 import com.sprint.mission.discodeit.mapper.UserEntityMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.utils.SecurityUtil;
 import java.util.Optional;
@@ -37,8 +36,6 @@ class BasicUserServiceTest {
   @Mock
   private UserRepository userRepository;
   @Mock
-  private UserStatusRepository userStatusRepository;
-  @Mock
   private BinaryContentRepository binaryContentRepository;
   @Mock
   private BinaryContentStorage binaryContentStorage;
@@ -56,7 +53,6 @@ class BasicUserServiceTest {
   private final String testPassword = "Testpass123@";
   private final String testHashedPassword = "hashedPassword123@";
   private UserEntity testUserEntity;
-  private UserStatusEntity testUserStatusEntity;
   private UserDTO.User testUserDto;
 
   @BeforeEach
@@ -68,11 +64,6 @@ class BasicUserServiceTest {
         .password(testHashedPassword)
         .build();
 
-    testUserStatusEntity = UserStatusEntity.builder()
-        .user(testUserEntity)
-        .lastActiveAt(java.time.Instant.now())
-        .build();
-
     testUserDto = UserDTO.User.builder()
         .id(testUserId)
         .username(testUsername)
@@ -80,8 +71,6 @@ class BasicUserServiceTest {
         .password(testHashedPassword)
         .isOnline(true)
         .build();
-
-    testUserEntity.updateUserStatus(testUserStatusEntity);
 
   }
 
@@ -202,6 +191,29 @@ class BasicUserServiceTest {
   }
 
   @Test
+  @DisplayName("사용자 ROLE 업데이트 성공 테스트")
+  void updateUserRole_Success() {
+
+    // given
+    UserDTO.UpdateUserRoleCommand command = new UserDTO.UpdateUserRoleCommand(
+        testUserId,
+        Role.ADMIN
+    );
+
+    when(userRepository.findById(testUserId))
+        .thenReturn(Optional.of(testUserEntity));
+    when(userEntityMapper.toUser(testUserEntity))
+        .thenReturn(testUserDto);
+
+    // when
+    UserDTO.User result = basicUserService.updateUserRole(command);
+
+    // then
+    assertNotNull(result);
+
+  }
+
+  @Test
   @DisplayName("사용자 삭제 성공 테스트")
   void deleteUserById_Success() {
 
@@ -239,7 +251,6 @@ class BasicUserServiceTest {
 
     // given
     when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUserEntity));
-    when(userStatusRepository.findByUserId(testUserId)).thenReturn(Optional.of(testUserStatusEntity));
     when(userEntityMapper.toUser(testUserEntity)).thenReturn(testUserDto);
 
     // when

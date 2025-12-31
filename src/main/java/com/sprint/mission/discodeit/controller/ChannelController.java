@@ -8,7 +8,7 @@ import com.sprint.mission.discodeit.dto.api.request.ChannelRequestDTO.PrivateCha
 import com.sprint.mission.discodeit.dto.api.request.ChannelRequestDTO.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.api.response.ChannelResponseDTO;
 import com.sprint.mission.discodeit.dto.api.response.ChannelResponseDTO.FindChannelResponse;
-import com.sprint.mission.discodeit.enums.ChannelType;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.mapper.api.ChannelApiMapper;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.Operation;

@@ -17,7 +17,6 @@ import com.sprint.mission.discodeit.exception.userstatus.NoSuchUserStatusExcepti
 import com.sprint.mission.discodeit.mapper.api.UserApiMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -41,8 +40,6 @@ class UserControllerTest {
   private AuthService authService;
   @MockitoBean
   private UserService userService;
-  @MockitoBean
-  private UserStatusService userStatusService;
   @MockitoBean
   private UserApiMapper userApiMapper;
 
@@ -218,10 +215,6 @@ class UserControllerTest {
             .isOnline(true)
             .build();
 
-    when(userStatusService.findUserStatusByUserId(testUserId))
-        .thenReturn(userStatus);
-    when(userStatusService.updateUserStatus(any(UserStatusDTO.UpdateUserStatusCommand.class)))
-        .thenReturn(userStatus);
     when(userApiMapper.userStatusToCheckUserOnlineResponse(any(UserStatusDTO.UserStatus.class)))
         .thenReturn(response);
 
@@ -252,8 +245,6 @@ class UserControllerTest {
         .isOnline(true)
         .build();
 
-    when(userStatusService.findUserStatusByUserId(testUserId))
-        .thenReturn(userStatus);
     when(userApiMapper.userStatusToCheckUserOnlineResponse(any(UserStatusDTO.UserStatus.class)))
         .thenReturn(response);
 
@@ -272,8 +263,6 @@ class UserControllerTest {
   void checkUserOnlineStatus_Fail_UserNotFound() throws Exception {
 
     //given
-    when(userStatusService.findUserStatusByUserId(testUserId))
-        .thenThrow(new NoSuchUserStatusException());
 
     //when & then
     mockMvc.perform(MockMvcRequestBuilders

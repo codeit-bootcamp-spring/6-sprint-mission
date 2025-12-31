@@ -24,6 +24,8 @@ public interface UserService {
 
   UserDTO.User updateUser(UserDTO.UpdateUserCommand request);
 
+  UserDTO.User updateUserRole(UserDTO.UpdateUserRoleCommand request);
+
   void deleteUserById(UUID id);
 
 }

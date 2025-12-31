@@ -20,7 +20,7 @@ public enum ErrorCode {
   private String message;
 
   ErrorCode(String message) {
-        this.message = message;
+    this.message = message;
   }
 
 }

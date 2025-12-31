@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +42,7 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentStorage binaryContentStorage;
   private final MessageEntityMapper messageEntityMapper;
 
+  @PreAuthorize("hasRole('USER')")
   @Transactional
   @Override
   public MessageDTO.Message createMessage(MessageDTO.CreateMessageCommand request) {
@@ -106,14 +108,16 @@ public class BasicMessageService implements MessageService {
 
   @Transactional(readOnly = true)
   @Override
-  public OffsetPage<MessageDTO.Message> findMessagesByAuthorId(UUID authorId, PagingDTO.OffsetRequest pageable) {
+  public OffsetPage<MessageDTO.Message> findMessagesByAuthorId(UUID authorId,
+      PagingDTO.OffsetRequest pageable) {
 
     if (!userRepository.existsById(authorId)) {
       log.warn("User with id {} does not exist", authorId);
       throw new NoSuchUserException();
     }
 
-    Page<MessageEntity> paging = messageRepository.findByAuthorId(authorId, PageRequest.of(pageable.getPage(), pageable.getSize()));
+    Page<MessageEntity> paging = messageRepository.findByAuthorId(authorId,
+        PageRequest.of(pageable.getPage(), pageable.getSize()));
 
     return OffsetPage.<MessageDTO.Message>builder()
         .content(paging.getContent().stream()
@@ -129,17 +133,20 @@ public class BasicMessageService implements MessageService {
 
   @Transactional(readOnly = true)
   @Override
-  public PagingDTO.OffsetPage<MessageDTO.Message> findMessagesByChannelId(UUID channelId, PagingDTO.OffsetRequest pageable) {
+  public PagingDTO.OffsetPage<MessageDTO.Message> findMessagesByChannelId(UUID channelId,
+      PagingDTO.OffsetRequest pageable) {
 
     if (!channelRepository.existsById(channelId)) {
       log.warn("Channel with id {} does not exist", channelId);
       throw new NoSuchChannelException();
     }
 
-    Sort.Direction direction = pageable.getSort().split(",")[1].equalsIgnoreCase("DESC") ? Direction.DESC : Direction.ASC;
+    Sort.Direction direction =
+        pageable.getSort().split(",")[1].equalsIgnoreCase("DESC") ? Direction.DESC : Direction.ASC;
 
     Page<MessageEntity> paging = messageRepository.findByChannelId(channelId,
-        PageRequest.of(pageable.getPage(), pageable.getSize(), direction, pageable.getSort().split(",")[0]));
+        PageRequest.of(pageable.getPage(), pageable.getSize(), direction,
+            pageable.getSort().split(",")[0]));
 
     return PagingDTO.OffsetPage.<MessageDTO.Message>builder()
         .content(paging.getContent().stream()
@@ -155,20 +162,23 @@ public class BasicMessageService implements MessageService {
 
   @Transactional(readOnly = true)
   @Override
-  public PagingDTO.CursorPage<Message> findMessagesByChannelIdAndCreatedAt(UUID channelId, String createdAt, PagingDTO.CursorRequest pageable) {
+  public PagingDTO.CursorPage<Message> findMessagesByChannelIdAndCreatedAt(UUID channelId,
+      String createdAt, PagingDTO.CursorRequest pageable) {
 
     if (!channelRepository.existsById(channelId)) {
       log.warn("Channel with id {} does not exist", channelId);
       throw new NoSuchChannelException();
     }
 
-    Slice<MessageEntity> slice = messageRepository.findByChannelIdAndCreatedAt(channelId, Instant.parse(createdAt), pageable.getSize());
+    Slice<MessageEntity> slice = messageRepository.findByChannelIdAndCreatedAt(channelId,
+        Instant.parse(createdAt), pageable.getSize());
 
     return PagingDTO.CursorPage.<Message>builder()
         .content(slice.getContent().stream()
             .map(messageEntityMapper::toMessage)
             .toList())
-        .nextCursor(slice.hasNext() ? messageEntityMapper.toMessage(slice.getContent().get(slice.getContent().size() - 1)) : null)
+        .nextCursor(slice.hasNext() ? messageEntityMapper.toMessage(
+            slice.getContent().get(slice.getContent().size() - 1)) : null)
         .size(slice.getSize())
         .hasNext(slice.hasNext())
         .build();
@@ -178,7 +188,8 @@ public class BasicMessageService implements MessageService {
   @Override
   public OffsetPage<Message> findAllMessages(PagingDTO.OffsetRequest pageable) {
 
-    Page<MessageEntity> paging = messageRepository.findAll(PageRequest.of(pageable.getPage(), pageable.getSize()));
+    Page<MessageEntity> paging = messageRepository.findAll(
+        PageRequest.of(pageable.getPage(), pageable.getSize()));
 
     return OffsetPage.<MessageDTO.Message>builder()
         .content(paging.getContent().stream()
@@ -192,6 +203,7 @@ public class BasicMessageService implements MessageService {
 
   }
 
+  @PreAuthorize("hasPermission(#request.id(), 'MESSAGE', 'UPDATE')")
   @Transactional
   @Override
   public MessageDTO.Message updateMessage(MessageDTO.UpdateMessageCommand request) {
@@ -211,6 +223,7 @@ public class BasicMessageService implements MessageService {
 
   }
 
+  @PreAuthorize("hasPermission(#request.id(), 'MESSAGE', 'DELETE')")
   @Transactional
   @Override
   public void deleteMessageById(UUID id) {

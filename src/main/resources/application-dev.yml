@@ -22,7 +22,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
   boot:
     #admin:
@@ -80,6 +80,10 @@ info:
       multipart:
         max-file-size: 10MB
         max-request-size: 10MB
+
+security:
+  key:
+    remember-me: ${SECURITY_KEY_REMEMBER_ME:dev-remember-me-key}
 
 
 

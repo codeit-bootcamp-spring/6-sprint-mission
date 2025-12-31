@@ -22,7 +22,7 @@ public class AuthApiMapper {
                 .contentType(user.getProfileId().getContentType())
                 .build() :
             null)
-        .isOnline(user.getIsOnline())
+        .role(user.getRole())
         .build();
 
   }

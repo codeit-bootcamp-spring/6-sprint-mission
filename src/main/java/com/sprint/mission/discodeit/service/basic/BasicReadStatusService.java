@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ChannelRepository channelRepository;
   private final ReadStatusEntityMapper readStatusEntityMapper;
 
+  @PreAuthorize("hasRole('USER')")
   @Transactional
   @Override
   public ReadStatusDTO.ReadStatus createReadStatus(ReadStatusDTO.CreateReadStatusCommand request) {
@@ -130,6 +132,7 @@ public class BasicReadStatusService implements ReadStatusService {
         .toList();
   }
 
+  @PreAuthorize("hasRole('USER')")
   @Transactional
   @Override
   public ReadStatusDTO.ReadStatus updateReadStatus(ReadStatusDTO.UpdateReadStatusCommand request) {

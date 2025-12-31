@@ -19,13 +19,13 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
 
   boolean existsByEmailOrUsername(String email, String username);
 
-  @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.profileId LEFT JOIN FETCH u.userStatus WHERE u.id = :id")
+  @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.profileId WHERE u.id = :id")
   Optional<UserEntity> findById(@Param("id") UUID id);
 
-  @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.profileId LEFT JOIN FETCH u.userStatus WHERE u.email = :email")
+  @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.profileId WHERE u.email = :email")
   Optional<UserEntity> findByEmail(@Param("email") String email);
 
-  @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.profileId LEFT JOIN FETCH u.userStatus WHERE u.username = :username")
+  @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.profileId WHERE u.username = :username")
   Optional<UserEntity> findByUsername(@Param("username") String username);
 
   void deleteById(UUID id);

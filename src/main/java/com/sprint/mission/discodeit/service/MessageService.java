@@ -13,11 +13,14 @@ public interface MessageService {
 
   MessageDTO.Message findMessageById(UUID id);
 
-  PagingDTO.OffsetPage<MessageDTO.Message> findMessagesByAuthorId(UUID authorId, PagingDTO.OffsetRequest pageable);
+  PagingDTO.OffsetPage<MessageDTO.Message> findMessagesByAuthorId(UUID authorId,
+      PagingDTO.OffsetRequest pageable);
 
-  PagingDTO.OffsetPage<MessageDTO.Message> findMessagesByChannelId(UUID channelId, PagingDTO.OffsetRequest pageable);
+  PagingDTO.OffsetPage<MessageDTO.Message> findMessagesByChannelId(UUID channelId,
+      PagingDTO.OffsetRequest pageable);
 
-  PagingDTO.CursorPage<MessageDTO.Message> findMessagesByChannelIdAndCreatedAt(UUID channelId, String createdAt, PagingDTO.CursorRequest pageable);
+  PagingDTO.CursorPage<MessageDTO.Message> findMessagesByChannelIdAndCreatedAt(UUID channelId,
+      String createdAt, PagingDTO.CursorRequest pageable);
 
   PagingDTO.OffsetPage<Message> findAllMessages(PagingDTO.OffsetRequest pageable);
 

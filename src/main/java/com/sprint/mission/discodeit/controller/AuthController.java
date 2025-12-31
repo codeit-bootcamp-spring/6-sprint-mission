@@ -1,24 +1,23 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.UserDTO;
-import com.sprint.mission.discodeit.dto.api.ErrorApiDTO;
-import com.sprint.mission.discodeit.dto.api.request.AuthRequestDTO;
-import com.sprint.mission.discodeit.dto.api.request.AuthRequestDTO.LoginRequest;
+import com.sprint.mission.discodeit.dto.api.request.UserRequestDTO;
 import com.sprint.mission.discodeit.dto.api.response.UserResponseDTO.FindUserResponse;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.mapper.api.AuthApiMapper;
+import com.sprint.mission.discodeit.mapper.api.UserApiMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,14 +34,15 @@ public class AuthController {
   private final AuthService authService;
   private final UserService userService;
   private final AuthApiMapper authApiMapper;
+  private final UserApiMapper userApiMapper;
 
   /**
    * 사용자 로그인
    *
-   * @param loginRequest 로그인 요청 정보
-   * @return 로그인된 사용자 정보
+   * //@param loginRequest 로그인 요청 정보
+   * //@return 로그인된 사용자 정보
    */
-  @Operation(
+  /*@Operation(
       summary = "사용자 로그인",
       description = "사용자 인증을 수행하고 JWT 토큰을 발급합니다.",
       responses = {
@@ -81,6 +81,35 @@ public class AuthController {
 
     return ResponseEntity.ok(authApiMapper.toFindUserResponse(user));
 
+  }*/
+
+  @PutMapping("/role")
+  public ResponseEntity<FindUserResponse> changeUserRole(
+      @Valid UserRequestDTO.UserRoleUpdateRequest request
+  ) {
+
+    log.info("Role change attempt for user ID: {}", request.userId());
+
+    UserDTO.User updatedUser = userService.updateUserRole(
+        UserDTO.UpdateUserRoleCommand.builder()
+            .userId(request.userId())
+            .newRole(request.newRole())
+            .build()
+    );
+
+    return ResponseEntity.ok(userApiMapper.toFindUserResponse(updatedUser));
+  }
+
+  @GetMapping("/csrf-token")
+  public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
+    String tokenValue = csrfToken.getToken();
+    log.debug("CSRF 토큰 요청: {}", tokenValue);
+    return ResponseEntity.status(HttpStatusCode.valueOf(203)).build();
+  }
+
+  @GetMapping("/me")
+  public ResponseEntity<FindUserResponse> getCurrentUser(@AuthenticationPrincipal DiscodeitUserDetails principal) {
+    return ResponseEntity.ok(authApiMapper.toFindUserResponse(principal.getUser()));
   }
 
 }

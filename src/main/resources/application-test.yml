@@ -20,10 +20,14 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 code:
   repository:
     type: file
 logging:
   level:
-    root: DEBUG
+    root: INFO
+security:
+  key:
+    remember-me: test-remember-me-key

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
-import com.sprint.mission.discodeit.enums.ChannelType;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +49,8 @@ public class ChannelDTO {
   }
 
   @Builder
-  public record CreatePrivateChannelCommand(ChannelType type, List<UUID> participants, String description) {
+  public record CreatePrivateChannelCommand(ChannelType type, List<UUID> participants,
+                                            String description) {
 
   }
 

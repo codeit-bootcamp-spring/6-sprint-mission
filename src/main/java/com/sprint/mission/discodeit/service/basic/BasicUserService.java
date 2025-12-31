@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.UserDTO;
+import com.sprint.mission.discodeit.dto.UserDTO.UpdateUserRoleCommand;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
-import com.sprint.mission.discodeit.entity.UserStatusEntity;
 import com.sprint.mission.discodeit.exception.user.AllReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.exception.userstatus.NoSuchUserStatusExcepti
 import com.sprint.mission.discodeit.mapper.UserEntityMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.utils.SecurityUtil;
@@ -21,6 +20,10 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,11 +33,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final UserEntityMapper userEntityMapper;
   private final SecurityUtil securityUtil;
+  private final SessionRegistry sessionRegistry;
+  private final PasswordEncoder passwordEncoder;
 
   @Transactional
   @Override
@@ -47,14 +51,9 @@ public class BasicUserService implements UserService {
 
     UserEntity userEntity = UserEntity.builder()
         .email(request.email())
-        .password(securityUtil.hashPassword(request.password()))
+        .password(passwordEncoder.encode(request.password()))
         .username(request.username())
         .build();
-
-    userEntity.updateUserStatus(UserStatusEntity.builder()
-        .user(userEntity)
-        .lastActiveAt(Instant.now())
-        .build());
 
     if (request.profileImage() != null) {
 
@@ -105,14 +104,7 @@ public class BasicUserService implements UserService {
           throw new NoSuchUserException();
         });
 
-    UserStatusEntity userStatusEntity = userStatusRepository.findByUserId(id)
-        .orElseThrow(() -> {
-          log.warn("User status with user id {} not found", id);
-          throw new NoSuchUserStatusException();
-        });
-
     UserDTO.User user = userEntityMapper.toUser(userEntity);
-    user.updateStatus(userStatusEntity.isOnline());
 
     return user;
 
@@ -127,14 +119,7 @@ public class BasicUserService implements UserService {
           throw new NoSuchUserException();
         });
 
-    UserStatusEntity userStatusEntity = userStatusRepository.findByUserId(userEntity.getId())
-        .orElseThrow(() -> {
-          log.warn("User status with user id {} not found", userEntity.getId());
-          throw new NoSuchUserStatusException();
-        });
-
     UserDTO.User user = userEntityMapper.toUser(userEntity);
-    user.updateStatus(userStatusEntity.isOnline());
 
     return user;
 
@@ -149,14 +134,7 @@ public class BasicUserService implements UserService {
           throw new NoSuchUserException();
         });
 
-    UserStatusEntity userStatusEntity = userStatusRepository.findByUserId(userEntity.getId())
-        .orElseThrow(() -> {
-          log.warn("User status with user id {} not found", userEntity.getId());
-          throw new NoSuchUserStatusException();
-        });
-
     UserDTO.User user = userEntityMapper.toUser(userEntity);
-    user.updateStatus(userStatusEntity.isOnline());
 
     return user;
 
@@ -168,18 +146,11 @@ public class BasicUserService implements UserService {
 
     return userRepository.findAll().stream()
         .map(userEntityMapper::toUser)
-        .peek(user -> {
-          UserStatusEntity userStatusEntity = userStatusRepository.findByUserId(user.getId())
-              .orElseThrow(() -> {
-                log.warn("User status with user id {} not found", user.getId());
-                throw new NoSuchUserStatusException();
-              });
-          user.updateStatus(userStatusEntity.isOnline());
-        })
         .toList();
   }
 
   @Transactional
+  @PreAuthorize("hasPermission(#request.id(), 'USER', 'UPDATE')")
   @Override
   public UserDTO.User updateUser(UserDTO.UpdateUserCommand request) {
 
@@ -191,8 +162,10 @@ public class BasicUserService implements UserService {
 
     if (userRepository.existsByEmailOrUsername(request.email(), request.username()) &&
         !updatedUserEntity.getId().equals(request.id())) {
-      log.warn("User with email {} or username {} already exists", request.email(), request.username());
-      throw new AllReadyExistUserException(Map.of("email", request.email(), "username", request.username()));
+      log.warn("User with email {} or username {} already exists", request.email(),
+          request.username());
+      throw new AllReadyExistUserException(
+          Map.of("email", request.email(), "username", request.username()));
     }
 
     if (!securityUtil.hashPassword(request.currentPassword())
@@ -228,6 +201,32 @@ public class BasicUserService implements UserService {
 
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
+  @Transactional
+  @Override
+  public UserDTO.User updateUserRole(UpdateUserRoleCommand request) {
+
+    UserEntity updatedUserEntity = userRepository.findById(request.userId())
+        .orElseThrow(() -> {
+          log.warn("User with id {} not found", request.userId());
+          throw new NoSuchUserException();
+        });
+
+    updatedUserEntity.updateRole(request.newRole());
+
+    List<SessionInformation> sessions = sessionRegistry.getAllSessions(
+        updatedUserEntity.getUsername(), false);
+    for (SessionInformation session : sessions) {
+      session.expireNow();
+    }
+
+    log.debug("User role with id {} updated successfully", request.userId());
+
+    return userEntityMapper.toUser(updatedUserEntity);
+
+  }
+
+  @PreAuthorize("hasPermission(#id, 'USER', 'DELETE')")
   @Override
   public void deleteUserById(UUID id) {
 
@@ -238,7 +237,6 @@ public class BasicUserService implements UserService {
         });
 
     binaryContentRepository.deleteById(userEntity.getProfileId().getId());
-    userStatusRepository.deleteByUserId(userEntity.getId());
     userRepository.deleteById(id);
 
     log.debug("User with id {} deleted successfully", id);

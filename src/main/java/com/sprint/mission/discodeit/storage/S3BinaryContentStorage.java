@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -24,7 +23,7 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "discodeit.storage", name = "type", havingValue = "s3")
 @Component
-public class S3BinaryContentStorage implements BinaryContentStorage{
+public class S3BinaryContentStorage implements BinaryContentStorage {
 
   private final S3Client s3Client;
   private final S3Presigner s3Presigner;
@@ -132,7 +131,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage{
     } catch (Exception e) {
 
       log.error("Failed to get object from S3 with id: {}", key, e);
-      return  null;
+      return null;
 
     }
 

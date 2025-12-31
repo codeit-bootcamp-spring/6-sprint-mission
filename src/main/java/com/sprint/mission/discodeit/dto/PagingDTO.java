@@ -10,43 +10,45 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PagingDTO {
 
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class OffsetRequest {
-        private int page;
-        private int size;
-        private String sort;
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class OffsetRequest {
 
-        public static OffsetRequest of(int page, int size) {
-            return new OffsetRequest(page, size, null);
-        }
+    private int page;
+    private int size;
+    private String sort;
 
-        public static OffsetRequest of(int page, int size, String sort) {
-            return new OffsetRequest(page, size, sort);
-        }
+    public static OffsetRequest of(int page, int size) {
+      return new OffsetRequest(page, size, null);
     }
 
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class OffsetPage<T> {
-
-        private List<T> content;
-        private int number;
-        private int size;
-        private boolean hasNext;
-        private Long totalElement;
-
+    public static OffsetRequest of(int page, int size, String sort) {
+      return new OffsetRequest(page, size, sort);
     }
+  }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class OffsetPage<T> {
+
+    private List<T> content;
+    private int number;
+    private int size;
+    private boolean hasNext;
+    private Long totalElement;
+
+  }
 
   @Getter
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
   public static class CursorRequest {
+
     private int size;
     private String sort;
 

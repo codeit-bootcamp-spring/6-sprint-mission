@@ -1,75 +1,75 @@
 ## 요구사항
 
 ### 기본 요구사항
-- [x] Dockerfile 작성
-  - [x] 작업 디렉토리를 설정하세요. (/app)
-  - [x] 프로젝트 파일을 컨테이너로 복사하세요. 단, 불필요한 파일은 .dockerignore를 활용해 제외하세요.
-  - [x] Gradle Wrapper를 사용하여 애플리케이션을 빌드하세요.
-  - [x] 80 포트를 노출하도록 설정하세요.
-  - [x] 프로젝트 정보를 환경 변수로 설정하세요. 
-  - [x] JVM 옵션을 환경 변수로 설정하세요. 
-  - [x] 애플리케이션 실행 명령어를 설정하세요. 이때 환경변수로 정의한 프로젝트 정보를 활용하세요.
-- [x] 이미지 빌드 및 실행 테스트
-  - [x] Docker 이미지를 빌드하고 태그(local)를 지정하세요.
-  - [x] 빌드된 이미지를 활용해서 컨테이너를 실행하고 애플리케이션을 테스트하세요. 
-- [x] Docker Compose 구성
-  - [x] 개발 환경용 docker-compose.yml 파일을 작성합니다.
-  - [x] 애플리케이션과 PostgreSQL 서비스를 포함하세요.
-  - [x] 각 서비스에 필요한 모든 환경 변수를 설정하세요. 
-  - [x] 애플리케이션 서비스를 로컬 Dockerfile에서 빌드하도록 구성하세요.
-  - [x] 애플리케이션 볼륨을 구성하여 컨테이너가 재시작되어도 BinaryContentStorage 데이터가 유지되도록 하세요.
-  - [x] PostgreSQL 볼륨을 구성하여 컨테이너가 재시작되어도 데이터가 유지되도록 하세요.
-  - [x] PostgreSQL 서비스 실행 후 schema.sql이 자동으로 실행되도록 구성하세요.
-  - [x] 서비스 간 의존성을 설정하세요(depends_on).
-  - [x] 필요한 포트 매핑을 구성하세요.
-  - [x] Docker Compose를 사용하여 서비스를 시작하고 테스트하세요. 
-- [x] AWS S3 버킷 구성
-  - [x] AWS S3 버킷을 생성하세요. 
-- [x] AWS S3 접근을 위한 IAM 구성
-  - [x] S3 버킷에 접근하기 위한 IAM 사용자(discodeit)를 생성하세요.
-  - [x] AmazonS3FullAccess 권한을 할당하고, 사용자 생성을 완료하세요.
-  - [x] 생성된 사용자에 엑세스 키를 생성하세요.
-  - [x] 발급받은 키를 포함해서 AWS 관련 정보는 .env 파일에 추가합니다.
-- [x] AWS S3 테스트
-  - [x] AWS S3 SDK 의존성을 추가하세요.
-  - [x] S3 API를 간단하게 테스트하세요.
-    - [x] 패키지명: com.sprint.mission.discodeit.stoarge.s3
-    - [x] 클래스명: AWSS3Test
-- [x] AWS S3를 활용한 BinaryContentStroage 고도화
-  - [x] 앞서 작성한 테스트 메소드를 참고해 S3BinaryContentStorage를 구현하세요.
-  - [x] discodeit.storage.type 값이 s3인 경우에만 Bean으로 등록되어야 합니다.
-  - [x] S3BinaryContentStorageTest를 함께 작성하면서 구현하세요.
-  - [x] BinaryContentStorage 설정을 유연하게 제어할 수 있도록 application.yaml을 수정하세요.
-  - [x] download 메소드는 PresignedUrl을 활용해 리다이렉트하는 방식으로 구현하세요.
-- [x] AWS RDS 구성
-  - [x] AWS RDS PostgreSQL 인스턴스를 생성하세요.
-  - [x] SSH 터널링을 통해 개발 환경에서 접근할 수 있도록 EC2를 구성하세요.
-  - [x] 보안 그룹에서 인바운드 규칙을 편집하세요.
-  - [x] DataGrip을 통해 연결 후 데이터베이스와 사용자, 테이블을 초기화하세요.
-  - [x] 구성이 완료되면 rds-ssh 인스턴스는 완전히 삭제하여 과금에 유의하세요.
-- [x] AWS ECR 구성
-  - [x] 이미지를 배포할 퍼블릭 레포지토리(discodeit)를 생성하세요.
-  - [x] AWS CLI를 설치하세요.
-  - [x] aws configure 실행 후 앞서 생성한 discodeit IAM 사용자 정보를 입력하세요.
-  - [x] discodeit IAM 사용자가 ECR에 접근할 수 있도록 다음 권한을 부여하세요.
-  - [x] Docker 클라이언트를 배포할 레지스트리에 대해 인증합니다.
-  - [x] 멀티플랫폼을 지원하도록 애플리케이션 이미지를 빌드하고, discodeit 레포지토리에 push 하세요.
-  - [x] AWS 콘솔에서 푸시된 이미지를 확인하세요.
-- [x] 배포 환경에서 컨테이너 실행 간 사용할 환경 변수를 정의하고, S3에 업로드하세요.
-  - [x] discodeit.env 파일을 만들어 다음의 내용을 작성하세요.
-  - [x] 이 파일을 S3에 업로드하세요.
-  - [x] 이 파일은 형상관리되지 않도록 주의하세요.
-- [x] AWS ECS 콘솔에서 클러스터를 생성하세요.
-- [x] 태스크를 정의하세요.
-- [x] discodeit 클러스터 상세 화면에서 서비스를 생성하세요.
-- [x] 태스크의 EC2 보안 그룹의 인바운드 규칙을 설정하여 어디서든 접근할 수 있도록 하세요.
-- [x] 태스크 실행이 완료되면 해당 EC2의 퍼블릭 IP에 접속해보세요.
+1. Spring Security 환경설정
+
+- [x] 프로젝트에 Spring Security 의존성을 추가하세요.
+- [x] Security 설정 클래스를 생성하세요.
+- [x] SecurityFilterChain Bean을 선언하세요.
+- [x] 개발 환경에서 Spring Security 모듈의 로깅 레벨을 trace로 설정하세요.
+
+2. CSRF 보호 설정하기
+
+- [x] CsrfTokenRepository 구현체를 CookieCsrfTokenRepository로 설정하세요.
+- [x] CsrfTokenRequestHandler 컴포넌트를 대체하세요.
+- [x] CSRF 토큰을 발급하는 API를 구현하세요.
+
+3. 회원가입
+
+- [x] 회원가입 API 스펙은 유지합니다. 
+- [x] 회원가입 시 비밀번호는 PasswordEncoder를 통해 해시로 저장하세요. 
+
+4. 인증 - 로그인
+
+- [x] formLogin 을 기본값으로 활성화하고, 추가된 필터를 확인해보세요.
+- [x] 로그인을 처리할 url을  /api/auth/login로 설정하세요.
+- [x] UserDetailsService 컴포넌트를 대체하세요.
+- [x] UserDetails 컴포넌트를 대체하세요.
+- [x] AuthenticationSuccessHandler 컴포넌트를 대체하세요.
+- [x] AuthenticiationFailureHandler 컴포넌트를 대체하세요.
+- [x] 이제 로그인 처리는 SecurityFilterChain에서 모두 처리되기 때문에 기존에 구현했던 로그인 관련 코드는 제거하세요.
+
+5. 인증 - 세션을 활용한 현재 사용자 정보 조회
+
+- [x] 세션ID를 통해 사용자의 기본 정보(UserDto)를 가져올 수 있도록 API를 정의하세요. 
+
+6. 인증 - 로그아웃
+
+- [x] Spring Security의 logout 흐름은 그대로 유지하면서 필요한 부분만 대체합니다.
+- [x] 이번 미션에서는 2가지 요소를 대체합니다.
+- [x] 로그아웃을 처리할 url을  /api/auth/logout로 설정하세요.
+- [x] LogoutSuccessHandler 컴포넌트를 대체하세요.
+
+7. 인가 - 권한 정의
+
+- [x] 다음과 같이 권한을 정의하세요.
+- [x] 데이터베이스 스키마를 변경하세요.
+- [x] 회원 가입 시 모든 사용자는 USER 권한을 기본 권한으로 설정하세요.
+- [x] 사용자 권한을 수정하는 API를 구현하세요.
+- [x] 애플리케이션 실행 시 ADMIN 권한을 가진 어드민 계정이 초기화되도록 구현하세요.
+- [x] DiscodietUserDetails.getAuthorities를 수정하세요.
+
+8. 인가 - 권한 적용
+
+- [x] authorizeHttpRequests를 활성화하고, 모든 요청을 인증하도록 설정하세요.
+- [x] 다음의 요청은 인증하지 않도록 설정하세요.
+- [x] Method Security를 활성화하세요.
+- [x] Service의 메소드 별로 아래의 조건에 맞게 권한을 수정하세요.
+- [x] 적절한 권한이 없는 경우 403 응답을 반환하세요.
+- [x] RoleHierarchy를 활용해 권한의 계층 구조를 정의하세요.
 
 ### 심화 요구사항
 
-- [x] 이미지 최적화하기
-  - [x] 멀티 스테이지(빌드, 런타임) 빌드를 활용해 이미지의 크기를 줄여보세요. 
-  - [x] 이미지 레이어 캐시를 고려해 Dockerfile을 수정해보세요.
-- [x] GitHub Actions를 활용한 CI/CD 파이프라인 구축
-  - [x] CI(지속적 통합)를 위한 워크플로우를 설정하세요.
-  - [x] CD(지속적 배포)를 위한 워크플로우를 설정하세요.
+1. 세션 관리 고도화
+
+- [x] 동일한 계정으로 동시 로그인할 수 없도록 설정하세요.
+- [x] 권한이 변경된 사용자가 로그인 상태라면 세션을 무효화하세요.
+- [ ] UserStatus 엔티티 대신 SessionRegistry를 활용해 사용자의 로그인 여부를 판단하도록 리팩토링하세요.
+
+2. 로그인 고도화 - RememberMe
+
+- [x] 로그인 요청 파라미터(remember-me)가 true인 경우 세션이 무효화되어도 자동으로 다시 로그인되도록 하세요.
+
+3. 권한 적용 고도화
+
+- [x] SpEL을 활용해 Method Security 기반 리소스 보호 정책을 강화해보세요. 

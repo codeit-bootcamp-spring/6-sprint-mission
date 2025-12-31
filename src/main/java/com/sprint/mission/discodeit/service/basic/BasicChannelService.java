@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.ChannelDTO;
 import com.sprint.mission.discodeit.entity.ChannelEntity;
 import com.sprint.mission.discodeit.entity.ReadStatusEntity;
-import com.sprint.mission.discodeit.enums.ChannelType;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.exception.channel.InvalidChannelDataException;
 import com.sprint.mission.discodeit.exception.channel.NoSuchChannelException;
 import com.sprint.mission.discodeit.mapper.ChannelEntityMapper;
@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,7 @@ public class BasicChannelService implements ChannelService {
   private final UserEntityMapper userEntityMapper;
   private final BasicChannelService.ChannelWithParticipants channelWithParticipants;
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
   public ChannelDTO.Channel createChannel(ChannelDTO.CreatePublicChannelCommand request) {
@@ -48,12 +50,14 @@ public class BasicChannelService implements ChannelService {
         .description(request.description())
         .build();
 
-    log.debug("Creating channel with name {}, description {}", channelEntity.getName(), channelEntity.getDescription());
+    log.debug("Creating channel with name {}, description {}", channelEntity.getName(),
+        channelEntity.getDescription());
 
     return channelEntityMapper.toChannel(channelRepository.save(channelEntity));
 
   }
 
+  @PreAuthorize("hasRole('USER')")
   @Transactional
   @Override
   public ChannelDTO.Channel createPrivateChannel(ChannelDTO.CreatePrivateChannelCommand request) {
@@ -63,7 +67,8 @@ public class BasicChannelService implements ChannelService {
         .description(request.description())
         .build();
 
-    ChannelDTO.Channel channel = channelEntityMapper.toChannel(channelRepository.save(channelEntity));
+    ChannelDTO.Channel channel = channelEntityMapper.toChannel(
+        channelRepository.save(channelEntity));
 
     List<ReadStatusEntity> readStatusEntityList = request.participants().stream()
         .map(userId -> ReadStatusEntity.builder()
@@ -111,11 +116,11 @@ public class BasicChannelService implements ChannelService {
   @Override
   public List<ChannelDTO.Channel> findChannelsByUserId(UUID userId) {
 
-
-    List<ChannelDTO.Channel> channelList = new ArrayList<>(readStatusRepository.findByUserId(userId).stream()
-        .map(ReadStatusEntity::getChannel)
-        .map(channelWithParticipants::addParticipantsToChannel)
-        .toList());
+    List<ChannelDTO.Channel> channelList = new ArrayList<>(
+        readStatusRepository.findByUserId(userId).stream()
+            .map(ReadStatusEntity::getChannel)
+            .map(channelWithParticipants::addParticipantsToChannel)
+            .toList());
 
     channelList.addAll(channelRepository.findByType(ChannelType.PUBLIC).stream()
         .map(channelEntityMapper::toChannel)
@@ -132,6 +137,7 @@ public class BasicChannelService implements ChannelService {
         .toList();
   }
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
   public ChannelDTO.Channel updateChannel(ChannelDTO.UpdateChannelCommand request) {
@@ -161,12 +167,14 @@ public class BasicChannelService implements ChannelService {
     updatedChannelEntity.update(request.name(), request.description());
 
     log.debug("Updating channel with id {}, name {}, description {}",
-        updatedChannelEntity.getId(), updatedChannelEntity.getName(), updatedChannelEntity.getDescription());
+        updatedChannelEntity.getId(), updatedChannelEntity.getName(),
+        updatedChannelEntity.getDescription());
 
     return channelEntityMapper.toChannel(channelRepository.save(updatedChannelEntity));
 
   }
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
   public void deleteChannelById(UUID id) {
@@ -199,7 +207,8 @@ public class BasicChannelService implements ChannelService {
         return channel;
       }
 
-      List<ReadStatusEntity> readStatusEntityList = readStatusRepository.findByChannelId(channelEntity.getId());
+      List<ReadStatusEntity> readStatusEntityList = readStatusRepository.findByChannelId(
+          channelEntity.getId());
 
       channel.addParticipants(readStatusEntityList.stream()
           .map(ReadStatusEntity::getUser)
@@ -212,7 +221,6 @@ public class BasicChannelService implements ChannelService {
     }
 
   }
-
 
 
 }

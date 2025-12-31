@@ -24,11 +24,13 @@ public class UserApiMapper {
                 .contentType(user.getProfileId().getContentType())
                 .build() :
             null)
+        .role(user.getRole())
         .isOnline(user.getIsOnline())
         .build();
   }
 
-  public CheckUserOnlineResponse userStatusToCheckUserOnlineResponse(UserStatusDTO.UserStatus userStatus) {
+  public CheckUserOnlineResponse userStatusToCheckUserOnlineResponse(
+      UserStatusDTO.UserStatus userStatus) {
     return UserResponseDTO.CheckUserOnlineResponse.builder()
         .id(userStatus.getId())
         .userId(userStatus.getUserId())

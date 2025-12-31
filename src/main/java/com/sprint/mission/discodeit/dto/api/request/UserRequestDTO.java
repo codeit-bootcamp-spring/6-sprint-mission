@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.dto.api.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -50,4 +53,15 @@ public class UserRequestDTO {
   public record UserStatusUpdateRequest(Instant newLastActiveAt) {
 
   }
+
+  @Builder
+  public record UserRoleUpdateRequest(
+      @NotBlank(message = "사용자 ID를 입력하세요.")
+      UUID userId,
+      @NotNull(message = "새로운 역할을 입력하세요.")
+      Role newRole
+  ) {
+
+  }
+
 }

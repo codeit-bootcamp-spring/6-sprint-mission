@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.dto;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDTO.BinaryContentCreateCommand;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -14,6 +15,7 @@ public class UserDTO {
 
   //login request DTO
   public record LoginCommand(String username, String password) {
+
   }
 
   public static LoginCommand toLoginCommand(String username, String password) {
@@ -33,6 +35,7 @@ public class UserDTO {
     private String email;
     private String password;
     private BinaryContentDTO.BinaryContent profileId;
+    private Role role;
     private Boolean isOnline;
 
     public void updateStatus(boolean online) {
@@ -49,22 +52,16 @@ public class UserDTO {
       String description,
       BinaryContentCreateCommand profileImage) {
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
-    private static final Pattern PASSWORD_PATTERN = Pattern.compile(
-          "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,}$");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
 
     public boolean isEmailValid(String email) {
       return EMAIL_PATTERN.matcher(email).matches();
     }
 
-    public boolean isPasswordValid(String password) {
-      //길이는 8자리 이상, 영어 대소문자, 숫자, 특수문자 포함
-      return PASSWORD_PATTERN.matcher(password).matches();
-    }
-
     public CreateUserCommand {
 
-      if (!isPasswordValid(password) || !isEmailValid(email) || username.isBlank()) {
+      if (!isEmailValid(email) || username.isBlank()) {
         throw new IllegalArgumentException("Invalid user data.");
       }
 
@@ -80,6 +77,7 @@ public class UserDTO {
       String email,
       String description,
       UUID profileImageId,
+      Role role,
       boolean isOnline,
       Long createdAt,
       Long updatedAt
@@ -117,6 +115,14 @@ public class UserDTO {
       }
 
     }
+
+  }
+
+  @Builder
+  public record UpdateUserRoleCommand(
+      UUID userId,
+      Role newRole
+  ) {
 
   }
 
