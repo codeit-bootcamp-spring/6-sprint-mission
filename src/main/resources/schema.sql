@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users
     username   VARCHAR(50) UNIQUE       NOT NULL,
     email      VARCHAR(100) UNIQUE      NOT NULL,
     password   VARCHAR(60)              NOT NULL,
+    role       VARCHAR(20)              NOT NULL,
     profile_id UUID,
     CONSTRAINT fk_users_binary_contents
         FOREIGN KEY (profile_id)
@@ -95,4 +96,12 @@ CREATE TABLE IF NOT EXISTS read_statuses
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
             ON DELETE CASCADE
+);
+
+create table if not exists persistent_logins
+(
+    username  varchar(64) not null,
+    series    varchar(64) primary key,
+    token     varchar(64) not null,
+    last_used timestamp   not null
 );

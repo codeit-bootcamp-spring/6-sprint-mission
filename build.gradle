@@ -1,15 +1,12 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.5'
+    id 'org.springframework.boot' version '3.5.8'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'jacoco'
 }
-ext {
-    springBootAdminVersion = "3.5.5"
-}
 
 group = 'com.sprint.mission'
-version = '1.2-M8'
+version = '2.0-M9'
 description = '6sprint8'
 
 java {
@@ -40,20 +37,30 @@ jacocoTestReport {
     }
 }
 
+dependencyManagement {
+    imports {
+        mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:3.4.2"
+    }
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    testImplementation 'org.springframework.security:spring-security-test'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     // AWS S3
-    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.1'
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
 
     implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
     runtimeOnly 'org.postgresql:postgresql'
@@ -61,11 +68,6 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-dependencyManagement {
-    imports {
-        mavenBom "de.codecentric:spring-boot-admin-dependencies:$springBootAdminVersion"
-    }
 }
 
 tasks.named('test') {

@@ -1,24 +1,25 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.user.CreateUserRequest;
-import com.sprint.mission.discodeit.dto.user.UpdateUserRequest;
+import com.sprint.mission.discodeit.common.SecurityUtil;
+import com.sprint.mission.discodeit.dto.request.CreateUserRequest;
+import com.sprint.mission.discodeit.dto.request.UpdateUserRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.common.Role;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,9 +31,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage storage;
+  private final PasswordEncoder passwordEncoder;
+  private final PersistentTokenRepository persistentTokenRepository;
+  private final SecurityUtil securityUtil;
 
   @Override
   public User create(CreateUserRequest request, Optional<MultipartFile> profile) {
@@ -61,13 +64,12 @@ public class BasicUserService implements UserService {
           }
         }
     );
-    user = new User(
-        request.username(),
-        request.email(),
-        request.password()
-    );
-    UserStatus userStatus = new UserStatus(user, Instant.now());
-    user.setUserStatus(userStatus);
+    user = User.builder()
+        .username(request.username())
+        .email(request.email())
+        .password(passwordEncoder.encode(request.password()))
+        .role(Role.USER)
+        .build();
     user.setProfile(binaryContentOptional.orElse(null));
 
     User saved = userRepository.save(user);
@@ -96,13 +98,6 @@ public class BasicUserService implements UserService {
   public List<User> findAll() {
     List<User> userList = userRepository.findAll();
 
-    userList.forEach(user -> {
-          userStatusRepository.findByUser_Id(user.getId())
-              .ifPresent(userStatus -> user.update(userStatus.isOnline()));
-          userRepository.save(user);
-        }
-    );
-
     return userList;
   }
 
@@ -115,8 +110,16 @@ public class BasicUserService implements UserService {
           log.warn("User not found. userId: {}", userId);
           return new UserNotFoundException(Map.of("유저 고유 아이디", userId));
         });
-    user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(),
-        updateUserRequest.newPassword());
+
+    String rawNewPassword = updateUserRequest.newPassword();
+    String encodedNewPassword = null;
+
+    if (rawNewPassword != null && !passwordEncoder.matches(rawNewPassword, user.getPassword())) {
+      encodedNewPassword = passwordEncoder.encode(rawNewPassword);
+    }
+
+    boolean isUpdated = user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(),
+        encodedNewPassword);
 
     Optional<BinaryContent> binaryContent = profile.map(
         file -> {
@@ -141,21 +144,21 @@ public class BasicUserService implements UserService {
     );
     user.update(binaryContent.orElse(null));
 
-    UserStatus userStatus = userStatusRepository.findByUser_Id(userId)
-        .orElseThrow(() -> {
-          log.warn("UserStatus not found. userId: {}", userId);
-          return new UserNotFoundException(Map.of("유저 고유 아이디", userId));
-        });
-    userStatus.update(Instant.now());
-    userStatusRepository.save(userStatus);
-
     User updated = userRepository.save(user);
+
+    securityUtil.refreshAuthentication(user);
 
     log.info("유저 정보 업데이트: id={}", updated.getId());
     if (updated.getProfile() != null) {
       log.info("프로필 사진 업로드: {}", updated.getProfile().getId());
     }
     log.debug("이름: {}, 이메일: {}", updated.getUsername(), updated.getEmail());
+
+    if (isUpdated) {
+      persistentTokenRepository.removeUserTokens(updated.getUsername());
+      log.debug("유저 정보 변경으로 인해 rememberMe 토큰 삭제: username={}", updated.getUsername());
+    }
+
     return updated;
   }
 
@@ -172,12 +175,8 @@ public class BasicUserService implements UserService {
           return new UserNotFoundException(Map.of("유저 고유 아이디", userId));
         });
     binaryContentRepository.deleteById(user.getProfile().getId());
-    // 유저 상태들 삭제
-    UserStatus userStatus = user.getUserStatus();
-    userStatusRepository.deleteById(userStatus.getId());
     // 유저 id로 삭제
     userRepository.deleteById(userId);
-
     log.info("유저 삭제: id={}", userId);
   }
 }

@@ -1,51 +1,67 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.auth.AuthRequest;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.Map;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
 
+  private final SessionRegistry sessionRegistry;
+  private final MessageRepository messageRepository;
   private final UserRepository userRepository;
-  private final HttpServletRequest request;
 
-  public static String getClientIpAddr(HttpServletRequest request) {
-    String ip = request.getHeader("X-Forwarded-For");
-
-    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-      ip = request.getHeader("Proxy-Client-IP");
+  public boolean isOwner(UUID id, Object principal) {
+    if (!(principal instanceof DiscodeitUserDetails userDetails)) {
+      return false;
     }
-    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-      ip = request.getHeader("WL-Proxy-Client-IP");
-    }
-    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-      ip = request.getHeader("HTTP_CLIENT_IP");
-    }
-    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-      ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-    }
-    if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-      ip = request.getRemoteAddr();
-    }
-    return ip;
+    return userDetails.getUserDto().id().equals(id);
   }
 
-  public User login(AuthRequest authRequest) {
-    User user = userRepository.findByUsername(authRequest.username()).orElse(null);
-    if (user != null && user.getPassword().equals(authRequest.password())) {
-      return user;
+  public boolean isMessageAuthor(UUID messageId, Object principal) {
+    if (!(principal instanceof DiscodeitUserDetails userDetails)) {
+      return false;
     }
-    log.info("Login failed. ipAddress: {}", getClientIpAddr(request));
-    throw new UserNotFoundException(Map.of("로그인 시도 ip ", "[" + getClientIpAddr(request) + "]"));
+    Message message = messageRepository.findById(messageId)
+        .orElseThrow(MessageNotFoundException::new);
+    UUID authorId = message.getAuthor().getId();
+    return userDetails.getUserDto().id().equals(authorId);
+  }
+
+  @Transactional
+  public User updateRole(RoleUpdateRequest updateRequest) {
+    User user = userRepository.findById(updateRequest.userId())
+        .orElseThrow(UserNotFoundException::new);
+    user.updateRole(updateRequest.newRole());
+
+    expireUserSessions(updateRequest);
+
+    return user;
+  }
+
+  private void expireUserSessions(RoleUpdateRequest updateRequest) {
+
+    // 역할 업데이트 시 세션 만료 처리
+    sessionRegistry.getAllPrincipals().stream()
+        .filter(DiscodeitUserDetails.class::isInstance)
+        .map(p -> (DiscodeitUserDetails) p)
+        .filter(u -> u.getUserDto().id().equals(updateRequest.userId()))
+        .forEach(targetPrincipal ->
+            sessionRegistry.getAllSessions(targetPrincipal, false)
+                .forEach(SessionInformation::expireNow)
+        );
   }
 }

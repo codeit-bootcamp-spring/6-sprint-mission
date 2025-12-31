@@ -4,6 +4,8 @@ import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -32,10 +34,14 @@ public class GlobalExceptionHandler {
   }
 
 
-  // 이외 예외 처리
+  // AccessDeniedException, AuthenticationException는 SecurityConfig에서 처리하도록 던짐
+  // 이외 모든 Exception 처리
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+  public ResponseEntity<ErrorResponse> handleException(Exception ex) throws Exception {
+    if (ex instanceof AccessDeniedException || ex instanceof AuthenticationException) {
+      throw ex;
+    }
     ErrorCode errorcode = ErrorCode.INTERNAL_SERVER_ERROR;
     log.error("예상하지 못한 에러", ex);
     return ResponseEntity
