@@ -1,77 +1,52 @@
 version: '3.8'
 
 services:
-  # 1. PostgreSQL 데이터베이스 서비스
-  db-service:
-    image: postgres:17.6-alpine
-    container_name: discodeit-db
-    restart: always
-    # .env 파일 사용
-    env_file:
-      - .env
-    environment:
-      # IntelliJ 접속을 위해 모든 IP의 접속을 허용하도록 PostgreSQL 설정 변경
-      - POSTGRES_INITDB_ARGS=-c listen_addresses='*'
-
-    volumes:
-      # PostgreSQL 볼륨 구성: 데이터 영구 저장
-      - discodeit_db_data:/var/lib/postgresql/data
-      # schema.sql 자동 실행 구성: DB 초기화 시 테이블 생성
-      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-
-    ports:
-      # 로컬 5432 포트를 컨테이너 5432 포트에 매핑 (IntelliJ 접속용)
-      - "5432:5432"
-
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  # 2. Spring Boot 애플리케이션 서비스
-  app-service:
-    # 로컬 Dockerfile에서 빌드하도록 구성
+  app:
+    image: discodeit:local
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: discodeit-app
-    restart: always
-    # .env 파일 활용
-    env_file:
-      - .env
-
-    # .env에서 로드된 환경 변수들을 명시적으로 사용 (IntelliJ 경고 방지 목적)
-    environment:
-      - SPRING_PROFILES_ACTIVE
-      - SPRING_DATASOURCE_URL
-      - SPRING_DATASOURCE_USERNAME
-      - SPRING_DATASOURCE_PASSWORD
-      - SPRING_JPA_HIBERNATE_DDL_AUTO
-      - STORAGE_ROOT_PATH
-      # --- AWS S3 환경 변수 추가: 형상관리 없이 .env 값 주입 ---
-      - AWS_S3_ACCESS_KEY
-      - AWS_S3_SECRET_KEY
-      - AWS_S3_REGION
-      - AWS_S3_BUCKET
-      - AWS_S3_PRESIGNED_URL_EXPIRATION
-
-    volumes:
-      # 애플리케이션 볼륨 구성: BinaryContentStorage 데이터 영구 저장
-      - discodeit_app_storage:/app/storage
-
+    container_name: discodeit
     ports:
-      # 필요한 포트 매핑: 로컬 8081 포트를 컨테이너 80 포트에 매핑
       - "8081:80"
-
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/discodeit
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - STORAGE_TYPE=s3
+      - STORAGE_LOCAL_ROOT_PATH=.discodeit/storage
+      - AWS_S3_ACCESS_KEY=${AWS_S3_ACCESS_KEY}
+      - AWS_S3_SECRET_KEY=${AWS_S3_SECRET_KEY}
+      - AWS_S3_REGION=${AWS_S3_REGION}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AWS_S3_PRESIGNED_URL_EXPIRATION=600
     depends_on:
-      # 서비스 간 의존성 설정: DB 서비스가 healthy 상태가 될 때까지 기다림
-      db-service:
-        condition: service_healthy
+      - db
+    volumes:
+      - binary-content-storage:/app/.discodeit/storage
+    networks:
+      - discodeit-network
 
-# 볼륨 정의
+  db:
+    image: postgres:16-alpine
+    container_name: discodeit-db
+    environment:
+      - POSTGRES_DB=discodeit
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - discodeit-network
+
 volumes:
-  discodeit_db_data:
-    driver: local
-  discodeit_app_storage:
-    driver: local
+  postgres-data:
+  binary-content-storage:
+
+networks:
+  discodeit-network:
+    driver: bridge 

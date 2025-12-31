@@ -42,9 +42,8 @@ bin/
 .discodeit
 
 ### 숨김 파일 ###
-.*
 !.gitignore
-!.dockerignore
-.env
-.env.template
-discodeit.env
+
+
+### Github Actions ###
+!.github/

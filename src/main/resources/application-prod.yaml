@@ -3,20 +3,18 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://${RDS_ENDPOINT}/discodeit
+    url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     properties:
       hibernate:
-        ddl-auto: update
         format_sql: false
 
 logging:
   level:
     com.sprint.mission.discodeit: info
-    org.hibernate.SQL: warn
-    org.hibernate.orm.jdbc.bind: warn
+    org.hibernate.SQL: info
 
 management:
   endpoint:
