@@ -4,6 +4,7 @@ CREATE TABLE users (
                        email VARCHAR(100) NOT NULL UNIQUE,
                        username VARCHAR(50) NOT NULL UNIQUE,
                        password VARCHAR(60) NOT NULL,
+                       role VARCHAR(20) NOT NULL,
                        created_at TIMESTAMP NOT NULL,
                        updated_at TIMESTAMP
 );
@@ -12,7 +13,7 @@ CREATE TABLE users (
 CREATE TABLE channels (
                           id UUID PRIMARY KEY,
                           type VARCHAR(50) NOT NULL,
-                          name VARCHAR(255) NOT NULL,
+                          name VARCHAR(255),
                           description VARCHAR(255),
                           created_at TIMESTAMP NOT NULL,
                           updated_at TIMESTAMP
@@ -57,9 +58,8 @@ CREATE TABLE binary_contents (
                                  id UUID PRIMARY KEY,
                                  message_id UUID,
                                  user_id UUID,
-                                 type VARCHAR(50) NOT NULL,
+                                 content_type VARCHAR(50) NOT NULL,
                                  file_name VARCHAR(255) NOT NULL,
-                                 extension VARCHAR(20) NOT NULL,
                                  size BIGINT NOT NULL,
                                  created_at TIMESTAMP NOT NULL,
                                  CONSTRAINT fk_binary_message FOREIGN KEY (message_id) REFERENCES messages(id),

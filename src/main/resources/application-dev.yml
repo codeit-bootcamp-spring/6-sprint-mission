@@ -10,7 +10,7 @@ logging:
     root: info
     org.hibernate.SQL: info
     org.hibernate.orm.jdbc.bind: trace
-
+    org.springframework.security: trace
 
 server:
   port: 8080

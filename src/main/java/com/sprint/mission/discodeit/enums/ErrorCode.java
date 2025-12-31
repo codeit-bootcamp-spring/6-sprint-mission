@@ -1,13 +1,14 @@
-package com.sprint.mission.discodeit.exception;
+package com.sprint.mission.discodeit.enums;
 
 public enum ErrorCode {
 
     USER_NOT_FOUND,
     DUPLICATE_USER,
+    FORBIDDEN,
 
     CHANNEL_NOT_FOUND,
     PRIVATE_CHANNEL_UPDATE,
-    CHANNEL_ALREADY_EXISTS,
+    DUPLICATE_CHANNEL,
 
     MESSAGE_NOT_FOUND,
 

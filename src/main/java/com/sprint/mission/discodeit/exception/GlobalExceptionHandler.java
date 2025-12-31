@@ -1,11 +1,10 @@
 package com.sprint.mission.discodeit.exception;
 
+import com.sprint.mission.discodeit.enums.ErrorCode;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentAlreadyExistsException;
-import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentListNotFoundException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
-import com.sprint.mission.discodeit.exception.message.MessageListNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
@@ -20,6 +19,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,16 +29,13 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 존재하지 않는 리소스 예외처리
+    // 존재하지 않는 리소스
     @ExceptionHandler({
             UserNotFoundException.class,
             ChannelNotFoundException.class,
             MessageNotFoundException.class,
-            MessageListNotFoundException.class,
-            UserStatusNotFoundException.class,
             ReadStatusNotFoundException.class,
             BinaryContentNotFoundException.class,
-            BinaryContentListNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> handleNotFound(DiscodeitException e) {
         log.error(e.getMessage());
@@ -52,7 +49,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    // 비공개 채널 수정 시도 예외처리
+    // 비공개 채널 수정 시도
     @ExceptionHandler(PrivateChannelUpdateException.class)
     public ResponseEntity<ErrorResponse> handlePrivateChannelUpdate(PrivateChannelUpdateException e) {
         log.error(e.getMessage());
@@ -70,7 +67,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             UserAlreadyExistsException.class,
             BinaryContentAlreadyExistsException.class,
-            UserStatusAlreadyExistsException.class,
             ReadStatusAlreadyExistsException.class,
     })
     public ResponseEntity<ErrorResponse> handleAlreadyExists(DiscodeitException e) {
@@ -90,7 +86,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException e) {
         log.error(e.getMessage());
 
-        // 이 블록은 AI가 생성
         Map<String, Object> details = e.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -110,6 +105,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
+    // 접근 권한 없음
+    @ExceptionHandler(AccessDeniedException.class)
+    public  ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e) {
+        log.error(e.getMessage());
+
+        ErrorResponse error = ErrorResponse.of(
+                ErrorCode.FORBIDDEN.toString(),
+                e.getMessage(),
+                null,
+                e.getClass().getSimpleName(),
+                HttpStatus.FORBIDDEN.value()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
     // 위에서 처리하지 않은 모든 예외 처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
@@ -123,7 +133,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.of(
                 HttpStatus.INTERNAL_SERVER_ERROR.toString(),
                 "서버 내부 오류가 발생했습니다.",
-                null, // TODO 개선?
+                null,
                 e.getClass().getSimpleName(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value()
                 );

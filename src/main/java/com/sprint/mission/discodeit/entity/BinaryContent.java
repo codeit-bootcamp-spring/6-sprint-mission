@@ -8,10 +8,11 @@ import org.springframework.data.annotation.CreatedDate;
 import java.time.Instant;
 import java.util.UUID;
 
-// 프사 또는 첨부파일
-
+/**
+프사 또는 첨부파일
+ */
 @Entity
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -43,5 +44,7 @@ public class BinaryContent extends BaseEntity {
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private Instant createdAt = Instant.now();
+
+
 }
 

@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.entity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import com.sprint.mission.discodeit.enums.ChannelType;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id", callSuper = false)
@@ -47,4 +46,13 @@ public class Channel extends BaseUpdatableEntity {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    public void updatePublicChannel(String newName, String newDescription) {
+        if (newName != null){
+            this.name = newName;
+        }
+        if (newDescription != null){
+            this.description = newDescription;
+        }
+    }
 }

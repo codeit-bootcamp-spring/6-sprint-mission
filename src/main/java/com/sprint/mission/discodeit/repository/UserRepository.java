@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +14,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("""
             SELECT u FROM User u
-            LEFT JOIN FETCH u.userStatus
             LEFT JOIN FETCH u.profileImage
             WHERE u.username = :username
     """)
@@ -23,12 +23,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
+    boolean existsByRole(Role role);
 
     Optional<User> findByEmail(String email);
 
     @Query("""
         SELECT u FROM User u
-        LEFT JOIN FETCH u.userStatus
         LEFT JOIN FETCH u.profileImage
     """)
     List<User> findAllWithStatusAndProfile();

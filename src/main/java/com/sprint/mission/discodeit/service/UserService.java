@@ -4,27 +4,30 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.enums.Role;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.io.InputStream;
-import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -35,10 +38,11 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentService binaryContentService;
     private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentMapper binaryContentMapper;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final SessionRegistry sessionRegistry;
 
     // 유저 생성
     @Transactional
@@ -53,18 +57,15 @@ public class UserService {
             throw new UserAlreadyExistsException(request.email());
         }
 
+        String encodedPassword = passwordEncoder.encode(request.password());
+
         User user = User.builder()
                 .email(request.email())
                 .username(request.username())
-                .password(request.password())
+                .password(encodedPassword)
+                .role(Role.USER)
                 .build();
 
-        UserStatus userStatus = UserStatus.builder()
-                .user(user)
-                .lastActiveAt(Instant.now())
-                .build();
-
-        user.setUserStatus(userStatus);
         userRepository.save(user);
 
         if (profileImageRequest != null) {
@@ -111,40 +112,40 @@ public class UserService {
                 .map(user -> {
                     BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
 
-                    return userMapper.toDto(user/*, user.getUserStatus(), profileImage*/);
+                    return userMapper.toDto(user);
                 })
                 .toList();
     }
 
     // 수정
     @Transactional
-    public UserResponseDto update(UUID id, UserUpdateRequestDto request,
+    @PreAuthorize("#userId == authentication.principal.id")
+    public UserResponseDto update(UUID userId, UserUpdateRequestDto request,
                                   BinaryContentCreateRequestDto profileImageRequest) {
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
-        if (request.newUsername() != null){
+        String newEmail = request.newEmail();
+        String newUsername = request.newUsername();
+
+        if (newEmail != null) {
+            userRepository.findByEmail(newEmail)
+                    .filter(existingUser -> !existingUser.getEmail().equals(user.getEmail()))
+                    .ifPresent(existingUser -> {
+                        throw new UserAlreadyExistsException(newEmail);
+                    });
+        }
+
+        if (newUsername != null){
             userRepository.findByUsername(request.newUsername())
                     .filter(existingUser -> !existingUser.getId().equals(user.getId()))
                     .ifPresent(existingUser -> {
-                        throw UserAlreadyExistsException.byUsername(request.newUsername());
+                        throw UserAlreadyExistsException.byUsername(newUsername);
                     });
-            user.setUsername(request.newUsername());
         }
 
-        if (request.newEmail() != null) {
-            userRepository.findByEmail(request.newEmail())
-                    .filter(existingUser -> !existingUser.getEmail().equals(user.getEmail()))
-                    .ifPresent(existingUser -> {
-                        throw new UserAlreadyExistsException(request.newEmail());
-                    });
-            user.setEmail(request.newEmail());
-        }
-
-        if (request.newPassword() != null) {
-            user.setPassword(request.newPassword());
-        }
+        user.update(newEmail, newUsername, request.newPassword());
 
         if (profileImageRequest != null) {
             byte[] bytes = profileImageRequest.bytes();
@@ -163,17 +164,44 @@ public class UserService {
         log.info("사용자 수정이 완료되었습니다. id=" + user.getId());
 
         BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
-        return userMapper.toDto(user/*, user.getUserStatus(), profileImage*/);
+        return userMapper.toDto(user);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponseDto updateUserRole(UserRoleUpdateRequest request) {
+
+        UUID userId = request.userId();
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new UserNotFoundException(request.userId()));
+        user.updateRole(request.newRole());
+        userRepository.save(user);
+
+        List<Object> allPrincipals = sessionRegistry.getAllPrincipals();
+
+        for (Object principal : allPrincipals) {
+            if (principal instanceof DiscodeitUserDetails userDetails) {
+                if (userDetails.getUserId().equals(userId)) {
+                    List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal, false);
+                    for (SessionInformation session : sessions) {
+                        session.expireNow();
+                    }
+                }
+            }
+        }
+
+        return userMapper.toDto(user);
     }
 
     // 유저 삭제
     @Transactional
-    public void delete(UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+    @PreAuthorize("#userId == authentication.principal.id")
+    public void delete(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         userRepository.delete(user);
-        log.info("사용자 삭제가 완료되었습니다. id=" + id);
+        log.info("사용자 삭제가 완료되었습니다. id=" + userId);
     }
 
 }

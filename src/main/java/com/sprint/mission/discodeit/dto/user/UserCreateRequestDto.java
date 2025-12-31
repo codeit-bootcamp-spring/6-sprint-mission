@@ -17,7 +17,7 @@ public record UserCreateRequestDto(
         @NotBlank(message = "닉네임을 입력해 주세요.")
         String username,
 
-        @Size(max = 50, message = "비밀번호는 50자까지 입력 가능합니다.")
+        @Size(min = 8, max = 20, message = "비밀번호는 8자~20자 사이여야 합니다.")
         @NotBlank(message = "비밀번호를 입력해 주세요.")
         String password
 ) {}

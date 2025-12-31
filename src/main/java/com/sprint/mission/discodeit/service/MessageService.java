@@ -17,13 +17,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
 
-@Service
+@Service("messageService")
 @Slf4j
 @RequiredArgsConstructor
 public class MessageService {
@@ -53,7 +54,6 @@ public class MessageService {
                 .author(user)
                 .channel(channel)
                 .content(request.content())
-                // attachments(new ArrayList<>(attachments.keySet()))
                 .build();
         messageRepository.save(message);
 
@@ -67,7 +67,6 @@ public class MessageService {
                     .fileName(fileName)
                     .size((long) bytes.length)
                     .contentType(contentType)
-                    // .user(user)
                     .message(message)
                     .build();
             binaryContentRepository.save(binaryContent);
@@ -80,7 +79,6 @@ public class MessageService {
             BinaryContent binaryContent = entry.getKey();
 
             binaryContentStorage.put(binaryContent.getId(), entry.getValue());
-            // binaryContent.setMessage(message);
         }
 
         log.info("메시지 생성이 완료되었습니다. id=" + message.getId());
@@ -117,12 +115,12 @@ public class MessageService {
 
     // 내용 수정
     @Transactional
-    public MessageResponseDto update(UUID id, MessageUpdateRequestDto dto) {
-        // validateWriter(user, message);
-        Message message = messageRepository.findById(id)
-                .orElseThrow(() -> new MessageNotFoundException(id));
+    @PreAuthorize("@messageService.isAuthor(#messageId, authentication.principal.id)")
+    public MessageResponseDto update(UUID messageId, MessageUpdateRequestDto dto) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new MessageNotFoundException(messageId));
 
-        message.setContent(dto.newContent());
+        message.update(dto.newContent());
         messageRepository.save(message);
         log.info("메시지 수정이 완료되었습니다. id=" + message.getId());
 
@@ -131,19 +129,25 @@ public class MessageService {
 
     // 삭제
     @Transactional
-    public void delete(UUID id) {
-        // validateWriter(user, message);
-        Message message = messageRepository.findById(id)
-                .orElseThrow(() -> new MessageNotFoundException(id));
+    @PreAuthorize("@messageService.isAuthor(#messageId, authentication.principal.id)")
+    public void delete(UUID messageId) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new MessageNotFoundException(messageId));
 
         List<UUID> binaryContentIds = message.getAttachments().stream().map(BinaryContent::getId).toList();
         if (message.getAttachments() != null) {
             for (UUID binaryContentId : binaryContentIds) {
-                binaryContentRepository.deleteById(id);
+                binaryContentRepository.deleteById(messageId);
             }
         }
 
         messageRepository.delete(message);
-        log.info("메시지 삭제가 완료되었습니다. id=" + id);
+        log.info("메시지 삭제가 완료되었습니다. id=" + messageId);
+    }
+
+    public boolean isAuthor(UUID messageId, UUID userId) {
+        return messageRepository.findById(messageId)
+                .map(m -> m.getAuthor().getId().equals(userId))
+                .orElse(false);
     }
 }

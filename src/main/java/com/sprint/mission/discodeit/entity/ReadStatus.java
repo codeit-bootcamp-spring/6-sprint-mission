@@ -13,7 +13,7 @@ import java.util.UUID;
 
 // user:channel(N:M)의 연결 테이블 역할도 수행.
 @Entity
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -42,4 +42,8 @@ public class ReadStatus extends BaseUpdatableEntity {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    public void updateLastReadAt(Instant lastReadAt) {
+        this.lastReadAt = lastReadAt;
+    }
 }

@@ -33,7 +33,6 @@ public class ReadStatusService {
     private final ChannelRepository channelRepository;
     private final ReadStatusMapper readStatusMapper;
 
-
     @Transactional
     public ReadStatusResponseDto create(ReadStatusCreateRequestDto dto){
 
@@ -80,7 +79,7 @@ public class ReadStatusService {
     public ReadStatusResponseDto update(UUID id, ReadStatusUpdateRequestDto dto){
         ReadStatus readStatus = readStatusRepository.findById(id)
                 .orElseThrow(() -> new ReadStatusNotFoundException(id));
-        readStatus.setLastReadAt(dto.newLastReadAt());
+        readStatus.updateLastReadAt(dto.newLastReadAt());
         readStatusRepository.save(readStatus);
         return readStatusMapper.toDto(readStatus);
     }
@@ -92,10 +91,5 @@ public class ReadStatusService {
         readStatusRepository.deleteById(id);
         log.info("ReadStatus 삭제 완료: " + id);
     }
-
-//    @Transactional
-//    public void clear(){
-//        readStatusRepository.clear();
-//    }
 
 }
