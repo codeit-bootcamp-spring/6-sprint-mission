@@ -75,3 +75,15 @@ server:
       cookie:
         max-age: 5m
       tracking-modes: cookie
+
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: ${JWT_ISSUER}
+  access-token-validity-seconds: ${ACCESS_TOKEN_VALIDITY_SECONDS}
+  refresh-token-validity-seconds: ${REFRESH_TOKEN_VALIDITY_SECONDS}
+  refresh-token-cookie:
+    name: ${REFRESH_TOKEN_COOKIE_NAME}
+    max-age: ${REFRESH_TOKEN_COOKIE_MAX_AGE}
+    path: ${REFRESH_TOKEN_COOKIE_PATH}
+    http-only: ${REFRESH_TOKEN_COOKIE_HTTP_ONLY}
+    secure: ${REFRESH_TOKEN_COOKIE_SECURE}

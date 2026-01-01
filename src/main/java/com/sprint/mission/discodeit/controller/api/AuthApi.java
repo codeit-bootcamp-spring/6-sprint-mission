@@ -30,15 +30,7 @@ public interface AuthApi {
       @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = UserDto.class))),
       @ApiResponse(responseCode = "401", description = "올바르지 않은 세션")
   })
-  ResponseEntity<UserDto> me(@Parameter(hidden = true) DiscodeitUserDetails userDetails);
 
-  @Operation(summary = "사용자 권한 수정")
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200", description = "권한 변경 성공",
-          content = @Content(schema = @Schema(implementation = UserDto.class))
-      )
-  })
   ResponseEntity<UserDto> updateRole(
       @Parameter(description = "권한 수정 요청 정보") RoleUpdateRequest request);
 } 
