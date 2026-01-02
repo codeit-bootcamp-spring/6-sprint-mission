@@ -7,11 +7,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class TokenUtil {
 
-  public Cookie generateCookie(String name, String value) {
+  public Cookie generateCookie(String name, String value, int maxAge) {
 
     Cookie cookie = new Cookie(name, value);
     cookie.setHttpOnly(true);
     cookie.setPath("/");
+    cookie.setMaxAge(maxAge);
     return cookie;
 
   }

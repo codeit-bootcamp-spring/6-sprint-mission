@@ -5,17 +5,14 @@ import com.sprint.mission.discodeit.dto.TokenDTO;
 import com.sprint.mission.discodeit.dto.UserDTO;
 import com.sprint.mission.discodeit.dto.api.request.UserRequestDTO;
 import com.sprint.mission.discodeit.dto.api.response.UserResponseDTO.FindUserResponse;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.mapper.api.AuthApiMapper;
 import com.sprint.mission.discodeit.mapper.api.UserApiMapper;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
-import com.sprint.mission.discodeit.service.JwtService;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
@@ -41,7 +38,6 @@ public class AuthController {
 
   private final AuthService authService;
   private final UserService userService;
-  private final JwtService jwtService;
   private final AuthApiMapper authApiMapper;
   private final UserApiMapper userApiMapper;
 
@@ -122,8 +118,6 @@ public class AuthController {
   ) {
 
     TokenDTO token = authService.renewAccessToken(refreshToken);
-
-    jwtService.setRefreshTokenCookie(response, token.getRefreshToken());
 
     return ResponseEntity.ok(
         JwtDTO.of(userService.findUserById(token.getUserId()), token.getAccessToken())

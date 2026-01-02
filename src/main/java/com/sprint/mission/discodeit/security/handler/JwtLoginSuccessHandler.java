@@ -61,7 +61,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     );
 
     //set refresh token in HttpOnly cookie
-    response.addCookie(tokenUtil.generateCookie("REFRESH_TOKEN", refreshToken));
+    response.addCookie(tokenUtil.generateCookie("REFRESH_TOKEN", refreshToken,
+        (int) jwtProperties.getRefreshExpiration()));
 
     // Set tokens in the registry
     // Invalidate existing tokens for the user
