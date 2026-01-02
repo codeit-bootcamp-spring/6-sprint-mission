@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.utils.SecurityUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -33,7 +32,6 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final UserEntityMapper userEntityMapper;
-  private final SecurityUtil securityUtil;
   private final JwtRegistry jwtRegistry;
   private final PasswordEncoder passwordEncoder;
 
@@ -165,14 +163,14 @@ public class BasicUserService implements UserService {
           Map.of("email", request.email(), "username", request.username()));
     }
 
-    if (!securityUtil.hashPassword(request.currentPassword())
+    if (!passwordEncoder.encode(request.currentPassword())
         .equals(updatedUserEntity.getPassword())) {
       log.warn("Invalid password for user id {}", request.id());
       throw new PasswordMismatchException();
     }
 
     updatedUserEntity.update(request.username(), request.email(),
-        securityUtil.hashPassword(request.currentPassword()));
+        passwordEncoder.encode(request.currentPassword()));
 
     if (request.isProfileImageUpdated()) {
 
