@@ -8,7 +8,7 @@ import com.sprint.mission.discodeit.exception.channel.NoSuchChannelException;
 import com.sprint.mission.discodeit.exception.message.NoSuchMessageException;
 import com.sprint.mission.discodeit.exception.readstatus.AllReadyExistReadStatusException;
 import com.sprint.mission.discodeit.exception.readstatus.NoSuchReadStatusException;
-import com.sprint.mission.discodeit.exception.user.AllReadyExistUserException;
+import com.sprint.mission.discodeit.exception.user.AlReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.InvalidJwtTokenException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
@@ -227,10 +227,10 @@ public class GlobalExceptionHandler {
 
   }
 
-  @ExceptionHandler(AllReadyExistUserException.class)
+  @ExceptionHandler(AlReadyExistUserException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
   public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAllReadyExistUserException(
-      AllReadyExistUserException e) {
+      AlReadyExistUserException e) {
 
     log.error("AllReadyExistUserException occurred", e);
 

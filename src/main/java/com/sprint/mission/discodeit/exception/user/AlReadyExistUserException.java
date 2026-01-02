@@ -4,9 +4,9 @@ import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.UserException;
 import java.util.Map;
 
-public class AllReadyExistUserException extends UserException {
+public class AlReadyExistUserException extends UserException {
 
-  public AllReadyExistUserException(Map<String, Object> details) {
+  public AlReadyExistUserException(Map<String, Object> details) {
     super(ErrorCode.ALREADY_EXISTING_USER, details);
   }
 }

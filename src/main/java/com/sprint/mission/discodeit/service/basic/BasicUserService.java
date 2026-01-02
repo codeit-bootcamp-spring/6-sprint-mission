@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.dto.UserDTO;
 import com.sprint.mission.discodeit.dto.UserDTO.UpdateUserRoleCommand;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
-import com.sprint.mission.discodeit.exception.user.AllReadyExistUserException;
+import com.sprint.mission.discodeit.exception.user.AlReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
 import com.sprint.mission.discodeit.mapper.UserEntityMapper;
@@ -41,7 +41,7 @@ public class BasicUserService implements UserService {
 
     if (userRepository.existsByEmailOrUsername(request.email(), request.username())) {
       log.warn("User with email {} already exists", request.email());
-      throw new AllReadyExistUserException(Map.of("email", request.email()));
+      throw new AlReadyExistUserException(Map.of("email", request.email()));
     }
 
     UserEntity userEntity = UserEntity.builder()
@@ -159,7 +159,7 @@ public class BasicUserService implements UserService {
         !updatedUserEntity.getId().equals(request.id())) {
       log.warn("User with email {} or username {} already exists", request.email(),
           request.username());
-      throw new AllReadyExistUserException(
+      throw new AlReadyExistUserException(
           Map.of("email", request.email(), "username", request.username()));
     }
 
