@@ -37,7 +37,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     String token = extractToken(request);
 
-    if (token.isBlank() || !jwtTokenProvider.validateAccessToken(token)) {
+    if (token == null) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
+    if (!jwtTokenProvider.validateAccessToken(token)) {
       log.error("Invalid access token");
       throw new InvalidJwtTokenException();
     } else {
@@ -65,7 +70,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   private String extractToken(HttpServletRequest request) {
-    return request.getHeader("Authorization").replaceFirst("Bearer ", "");
+
+    String bearerToken = request.getHeader("Authorization");
+
+    if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+      return bearerToken.substring(7);
+    }
+
+    return null;
+
   }
 
 }
