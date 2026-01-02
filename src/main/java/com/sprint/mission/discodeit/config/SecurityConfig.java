@@ -78,9 +78,19 @@ public class SecurityConfig {
         )
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-            .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**",
-                "/swagger-ui.html", "/actuator/**", "/api/auth/refresh", "/assets/**",
-                "/css/**", "/images/**", "/js/**", "/favicon.ico")
+            .requestMatchers(
+                "/",
+                "/index.html"
+            ).permitAll()
+            .requestMatchers("/index.html",
+                "/assets/**",
+                "favicon.ico",
+                "/api/auth/login",
+                "/api/auth/csrf-token",
+                "/api/auth/logout",
+                "/actuator/health",
+                "/actuator/info",
+                "/api/auth/refresh")
             .permitAll()
             .anyRequest().authenticated()
         )

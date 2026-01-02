@@ -25,7 +25,7 @@ public class UserApiMapper {
                 .build() :
             null)
         .role(user.getRole())
-        .isOnline(user.getIsOnline())
+        .isOnline(user.getIsOnline() != null ? user.getIsOnline() : false)
         .build();
   }
 
