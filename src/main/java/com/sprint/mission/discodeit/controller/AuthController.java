@@ -124,9 +124,12 @@ public class AuthController {
     );
   }
 
-  /*@GetMapping("/me")
+  @GetMapping("/me")
   public ResponseEntity<FindUserResponse> getCurrentUser(@AuthenticationPrincipal DiscodeitUserDetails principal) {
-    return ResponseEntity.ok(authApiMapper.toFindUserResponse(principal.getUser()));
-  }*/
+
+    UserDTO.User userDTO = userService.findUserById(principal.getUser().getId());
+    
+    return ResponseEntity.ok(authApiMapper.toFindUserResponse(userDTO));
+  }
 
 }
