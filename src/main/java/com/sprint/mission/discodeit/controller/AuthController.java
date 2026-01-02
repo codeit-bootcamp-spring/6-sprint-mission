@@ -124,9 +124,9 @@ public class AuthController {
     );
   }
 
-  @GetMapping("/me")
+  /*@GetMapping("/me")
   public ResponseEntity<FindUserResponse> getCurrentUser(@AuthenticationPrincipal DiscodeitUserDetails principal) {
     return ResponseEntity.ok(authApiMapper.toFindUserResponse(principal.getUser()));
-  }
+  }*/
 
 }
