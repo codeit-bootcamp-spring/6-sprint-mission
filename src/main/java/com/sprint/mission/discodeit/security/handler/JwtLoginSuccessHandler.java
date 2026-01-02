@@ -2,19 +2,15 @@ package com.sprint.mission.discodeit.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.config.JwtProperties;
-import com.sprint.mission.discodeit.dto.JwtDTO;
 import com.sprint.mission.discodeit.entity.JwtInformation;
-import com.sprint.mission.discodeit.entity.TokenEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.mapper.UserEntityMapper;
-import com.sprint.mission.discodeit.repository.TokenRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.provider.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import com.sprint.mission.discodeit.utils.TokenUtil;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -64,20 +60,18 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         refreshToken
     );
 
-    objectMapper.writeValue(response.getWriter(), jwtInformation);
-
     //set refresh token in HttpOnly cookie
-    tokenUtil.setHttpOnlyCookie("refreshToken", refreshToken, response,
-        (int) jwtProperties.getRefreshExpiration());
+    response.addCookie(tokenUtil.generateCookie("REFRESH_TOKEN", refreshToken));
 
     // Set tokens in the registry
-
     // Invalidate existing tokens for the user
     if (jwtRegistry.hasActiveJwtInformationByUserId(userEntity.getId())) {
       jwtRegistry.invalidateJwtInformationByUserId(userEntity.getId());
     }
 
     jwtRegistry.registerJwtInformation(jwtInformation);
+
+    response.getWriter().write(objectMapper.writeValueAsString(jwtInformation));
 
   }
 }

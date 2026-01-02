@@ -17,8 +17,7 @@ public class BasicJwtService implements JwtService {
   @Override
   public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
 
-    tokenUtil.setHttpOnlyCookie("refreshToken", refreshToken, response,
-        (int) jwtProperties.getRefreshExpiration());
+    response.addCookie(tokenUtil.generateCookie("REFRESH_TOKEN", refreshToken));
 
   }
 }

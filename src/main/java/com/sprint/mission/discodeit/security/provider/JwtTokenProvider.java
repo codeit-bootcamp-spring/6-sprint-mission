@@ -10,6 +10,7 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.sprint.mission.discodeit.config.JwtProperties;
+import jakarta.annotation.PostConstruct;
 import java.text.ParseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ public class JwtTokenProvider {
   private JWSVerifier accessVerifier;
   private JWSVerifier refreshVerifier;
 
+  @PostConstruct
   public void init() {
 
     try {
