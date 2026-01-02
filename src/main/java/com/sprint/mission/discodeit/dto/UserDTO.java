@@ -29,8 +29,6 @@ public class UserDTO {
   public static class User {
 
     private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
     private String username;
     private String email;
     private String password;

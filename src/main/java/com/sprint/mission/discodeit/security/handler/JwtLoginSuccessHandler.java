@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.config.JwtProperties;
+import com.sprint.mission.discodeit.dto.JwtDTO;
 import com.sprint.mission.discodeit.entity.JwtInformation;
 import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
@@ -60,6 +61,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         refreshToken
     );
 
+    JwtDTO jwtDTO = JwtDTO.of(userEntityMapper.toUser(userEntity), accessToken);
+
     //set refresh token in HttpOnly cookie
     response.addCookie(tokenUtil.generateCookie("REFRESH_TOKEN", refreshToken,
         (int) jwtProperties.getRefreshExpiration()));
@@ -72,7 +75,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     jwtRegistry.registerJwtInformation(jwtInformation);
 
-    response.getWriter().write(objectMapper.writeValueAsString(jwtInformation));
+    response.getWriter().write(objectMapper.writeValueAsString(jwtDTO));
 
   }
 }
