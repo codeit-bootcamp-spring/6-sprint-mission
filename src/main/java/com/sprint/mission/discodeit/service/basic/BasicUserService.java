@@ -115,7 +115,7 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
         log.info("사용자 수정 완료: userId={}", userId);
 
-        return userMapper.toDto(user);
+        return userMapper.toDto(user, authService.isUserOnline(user.getUsername()));
 }
 
     @Override
