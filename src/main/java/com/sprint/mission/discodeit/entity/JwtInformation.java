@@ -4,11 +4,9 @@ import com.sprint.mission.discodeit.dto.UserDTO;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Builder(access =  AccessLevel.PROTECTED)
 @Getter
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class JwtInformation {
 
   private UserDTO.User user;
