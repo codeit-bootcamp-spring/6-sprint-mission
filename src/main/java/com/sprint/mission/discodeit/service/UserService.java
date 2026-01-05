@@ -128,6 +128,7 @@ public class UserService {
 
         String newEmail = request.newEmail();
         String newUsername = request.newUsername();
+        String newPassword = request.newPassword();
 
         if (newEmail != null) {
             userRepository.findByEmail(newEmail)
@@ -137,7 +138,7 @@ public class UserService {
                     });
         }
 
-        if (newUsername != null){
+        if (newUsername != null) {
             userRepository.findByUsername(request.newUsername())
                     .filter(existingUser -> !existingUser.getId().equals(user.getId()))
                     .ifPresent(existingUser -> {
@@ -145,7 +146,11 @@ public class UserService {
                     });
         }
 
-        user.update(newEmail, newUsername, request.newPassword());
+        if (newPassword != null) {
+            newPassword = passwordEncoder.encode(newPassword);
+        }
+
+        user.update(newEmail, newUsername, newPassword);
 
         if (profileImageRequest != null) {
             byte[] bytes = profileImageRequest.bytes();

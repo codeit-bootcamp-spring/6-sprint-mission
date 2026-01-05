@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.enums.Role;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -20,14 +21,23 @@ public class AdminInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${discodeit.setup.admin.email}")
+    private String defaultAdminEmail;
+
+    @Value("${discodeit.setup.admin.username}")
+    private String defaultAdminUsername;
+
+    @Value("${discodeit.setup.admin.password}")
+    private String defaultAdminPassword;
+
     @Override
     public void run(String... args) {
 
         if (!userRepository.existsByRole(Role.ADMIN)) {
             User admin = User.builder()
-                    .email("admin@discodeit.com")
-                    .password(passwordEncoder.encode("admin1234"))
-                    .username("admin")
+                    .email(defaultAdminEmail)
+                    .username(defaultAdminUsername)
+                    .password(passwordEncoder.encode(defaultAdminPassword))
                     .role(Role.ADMIN)
                     .build();
 

@@ -49,11 +49,12 @@ public class Message extends BaseUpdatableEntity {
     @LastModifiedDate
     private Instant updatedAt;
 
-    public void setBinaryContents(List<BinaryContent> attachments) {
+    // TODO 필요없는 메서드일수 있음. 연관관계 검토 필요
+    public void updateBinaryContents(List<BinaryContent> attachments) {
         this.attachments = (attachments != null ? attachments : new ArrayList<>());
     }
 
-    public void update(String content) {
+    public void updateContent(String content) {
         if (content != null) {
             this.content = content;
         }
