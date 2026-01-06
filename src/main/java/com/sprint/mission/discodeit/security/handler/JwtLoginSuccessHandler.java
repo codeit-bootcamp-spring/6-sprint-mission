@@ -32,22 +32,24 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider; // 토큰 생성
     private final JwtProperties jwtProperties;
-    private final JwtRegistry jwtRegistry;
+    private final JwtRegistry jwtRegistry; // 중복 로그인 체크
     private final UserRepository userRepository;
-    private final ObjectMapper objectMapper;
-    private final UserMapper userMapper;
+    private final ObjectMapper objectMapper; // JSON 변환
+    private final UserMapper userMapper; // 객체 변환
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
 
+        // 사용자 정보 추출
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User user =  userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
 
+        // 토큰 발행, 레지스트리 등록
         String accessToken = jwtTokenProvider.generateToken(
                 user.getUsername(),
                 user.getRole().name(),
@@ -64,8 +66,9 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 accessToken,
                 refreshToken
         );
-        jwtRegistry.registerJwtInformation(jwtInformation);
+        jwtRegistry.registerJwtInformation(jwtInformation); // 동시 로그인 제한 처리도 수행됨.
 
+        // 토큰 전달 - 엑세스 토큰은 JSON 바디로, 리프레시 토큰은 쿠키로.
         Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/");

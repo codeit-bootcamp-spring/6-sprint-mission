@@ -24,7 +24,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         registry.compute(userId, (key, existingQueue) -> {
             Queue<JwtInformation> queue = (existingQueue != null) ? existingQueue : new LinkedList<>();
 
-            // 동시 로그인 제한 로직 (기존 세션 무효화)
+            // 동시 로그인 제한
             while (queue.size() >= maxActiveJwtCount) {
                 queue.poll();
             }
