@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.security.jwt;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -20,7 +21,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     public void registerJwtInformation(JwtInformation jwtInformation) {
         UUID userId = jwtInformation.getDto().id();
 
-        // compute: 원자적 연산을 통해 동시성 보장하며 데이터 갱신
+        // compute: 원자적 연산으로 동시성을 보장하면서 데이터 갱신
         registry.compute(userId, (key, existingQueue) -> {
             Queue<JwtInformation> queue = (existingQueue != null) ? existingQueue : new LinkedList<>();
 
@@ -72,6 +73,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     }
 
     @Override
+    @Scheduled(fixedDelay = 1000 * 60 * 5)
     public void clearExpiredJwtInformation() {
         registry.forEach((userId, queue) -> {
             queue.removeIf(info -> !jwtTokenProvider.validateToken(info.getRefreshToken()));

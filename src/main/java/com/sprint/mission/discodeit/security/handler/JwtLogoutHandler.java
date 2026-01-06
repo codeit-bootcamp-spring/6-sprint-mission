@@ -41,11 +41,13 @@ public class JwtLogoutHandler implements LogoutHandler {
 
         if (refreshToken != null) {
             try {
-                // 토큰에서 username 추출 -> Member 조회 -> DB 삭제
+                // 토큰 무효화 - 토큰에서 username 추출 -> User 조회 -> DB 삭제
                 String username = jwtTokenProvider.getClaims(refreshToken).getSubject();
                 userRepository.findByUsername(username)
-                        .ifPresent(member -> jwtRegistry.invalidateJwtInformationByUserId(member.getId()));
-            } catch (Exception e) { /* 무시 */ }
+                        .ifPresent(user -> jwtRegistry.invalidateJwtInformationByUserId(user.getId()));
+            } catch (Exception e) {
+                // 무시
+            }
         }
 
         response.addCookie(TokenUtil.emptyRefreshTokenCookie());

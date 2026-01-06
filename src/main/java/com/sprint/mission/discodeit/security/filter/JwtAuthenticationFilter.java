@@ -72,11 +72,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // 토큰 상태 검증
     private boolean isTokenValidInRegistry(String token) {
-        if (!jwtRegistry.hasActiveJwtInformationByRefreshToken(token)) { // 서비스 로직에 맞는 메서드 호출
+        if (jwtRegistry.hasActiveJwtInformationByRefreshToken(token)) { // 서비스 로직에 맞는 메서드 호출
+            return true;
+        } else {
             log.warn("유효하지 않은 토큰입니다.");
             return false;
         }
-        return true;
     }
 
     // 헤더 형식 검증 - 요청 헤더에 Bearer 토큰이 포함된 경우에만 인증을 시도
