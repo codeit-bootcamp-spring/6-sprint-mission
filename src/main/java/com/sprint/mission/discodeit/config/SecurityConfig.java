@@ -29,6 +29,8 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -51,14 +53,9 @@ public class SecurityConfig {
   private final LoginSuccessHandler loginSuccessHandler;
   private final LoginFailureHandler loginFailureHandler;
   private final ObjectMapper objectMapper;
-  private final UserDetailsService userDetailsService;
-  private final DataSource dataSource;
-
-  @Value("${remember.me.key}")
-  private String rememberMeKey;
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
@@ -93,33 +90,8 @@ public class SecurityConfig {
             )
         )
         .sessionManagement(session -> session
-            .sessionConcurrency(concurrency -> concurrency
-                .maximumSessions(1)
-                .maxSessionsPreventsLogin(false)
-                .sessionRegistry(sessionRegistry)
-                .expiredSessionStrategy(event -> {
-                  HttpServletResponse response = event.getResponse();
-                  response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                  response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
-                  objectMapper.writeValue(response.getWriter(), Map.of("message", "다른 곳에서 로그인되어 세션이 만료되었습니다."));
-                })
-            )
-            .invalidSessionUrl("/index.html")
-        )
-        .rememberMe(rememberMe -> rememberMe
-            .key(rememberMeKey)
-            // 10일 동안 유효
-            .tokenValiditySeconds(60 * 60 * 24 * 10)
-            .rememberMeParameter("remember-me")
-            .userDetailsService(userDetailsService)
-            // Persistent Token 방식 설정
-            .tokenRepository(tokenRepository())
-        )
-        .csrf(csrf -> csrf
-            // Double Submit Cookie Pattern
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-        )
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .csrf(AbstractHttpConfigurer::disable)
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
             .successHandler(loginSuccessHandler)
@@ -146,13 +118,6 @@ public class SecurityConfig {
     };
   }
 
-  @Bean
-  public PersistentTokenRepository tokenRepository() {
-    JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
-    tokenRepository.setDataSource(dataSource);
-    return tokenRepository;
-  }
-
   // 역할 계층 정의
   @Bean
   public RoleHierarchy roleHierarchy() {
@@ -168,16 +133,6 @@ public class SecurityConfig {
     DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
     handler.setRoleHierarchy(roleHierarchy);
     return handler;
-  }
-
-  @Bean
-  public SessionRegistry sessionRegistry() {
-    return new SessionRegistryImpl();
-  }
-
-  @Bean
-  public HttpSessionEventPublisher httpSessionEventPublisher() {
-    return new HttpSessionEventPublisher();
   }
 
   @Bean

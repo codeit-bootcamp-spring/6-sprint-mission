@@ -72,6 +72,8 @@ discodeit:
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
 
-remember:
-  me:
-    key: ${REMEMBER_ME_KEY:discodeit-remember-me-key}
+jwt:
+  secret: "nimbus-jose-jwt-practice-secret-key-must-be-at-least-256-bits"
+  expiration: 3600000
+  # 토큰 발급자 명시 (Registered Claim: iss)
+  issuer: "discodeit-server"
