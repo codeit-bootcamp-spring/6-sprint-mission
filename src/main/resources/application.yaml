@@ -60,9 +60,17 @@ discodeit:
   security:
     remember-me-secret: ${REMEMBER_ME_SECRET}
   admin:
-    username: admin
-    password: admin
-    email: admin@codeit.com
+    username: ${ADMIN_USERNAME}
+    password: ${ADMIN_PASSWORD}
+    email: ${ADMIN_EMAIL}
+  jwt:
+#    issuer: ${JWT_ISSUER}
+    access-token:
+      secret: ${JWT_ACCESS_TOKEN_SECRET}
+      expiration-ms: ${ACCESS_TOKEN_EXPIRATION_MS}
+    refresh-token:
+      secret: ${JWT_REFRESH_TOKEN_SECRET}
+      expiration-ms: ${REFRESH_TOKEN_EXPIRATION_MS}
 
 logging:
   level:
@@ -76,14 +84,4 @@ server:
         max-age: 5m
       tracking-modes: cookie
 
-jwt:
-  secret: ${JWT_SECRET}
-  issuer: ${JWT_ISSUER}
-  access-token-validity-seconds: ${ACCESS_TOKEN_VALIDITY_SECONDS}
-  refresh-token-validity-seconds: ${REFRESH_TOKEN_VALIDITY_SECONDS}
-  refresh-token-cookie:
-    name: ${REFRESH_TOKEN_COOKIE_NAME}
-    max-age: ${REFRESH_TOKEN_COOKIE_MAX_AGE}
-    path: ${REFRESH_TOKEN_COOKIE_PATH}
-    http-only: ${REFRESH_TOKEN_COOKIE_HTTP_ONLY}
-    secure: ${REFRESH_TOKEN_COOKIE_SECURE}
+
