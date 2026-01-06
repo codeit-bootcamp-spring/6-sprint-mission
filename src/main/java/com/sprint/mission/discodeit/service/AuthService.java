@@ -21,24 +21,25 @@ public class AuthService {
     private final UserMapper userMapper;
 
     public JwtInformation refreshToken(String refreshToken) {
-        // 1. 검증: 서명 유효성 확인 AND DB 존재 여부 확인
+
+        // 서명 유효성, DB 존재 여부 확인
         if (refreshToken == null
                 || !jwtTokenProvider.validateToken(refreshToken)
                 || !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)
         ) {
-            throw new InvalidRefreshTokenException();
+            throw new InvalidRefreshTokenException(); // TODO 전역 예외처리?
         }
 
-        // 2. 정보 조회
+        // 정보 조회
         String username = jwtTokenProvider.getClaims(refreshToken).getSubject();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
 
-        // 3. 새 토큰 생성 - 토큰 재발급 시에는 Access, Refresh 모두 새로 발급
+        // 새 토큰 생성 - Access, Refresh 모두 새로 발급
         String newAccess = jwtTokenProvider.createAccessToken(username, user.getRole().name());
         String newRefresh = jwtTokenProvider.createRefreshToken(username, user.getRole().name());
 
-        // 4. DB Rotation
+        // DB Rotation
         JwtInformation newInfo = new JwtInformation(
                 userMapper.toDto(user),
                 newAccess,
