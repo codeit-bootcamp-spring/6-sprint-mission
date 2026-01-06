@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.UserDTO;
 import com.sprint.mission.discodeit.dto.UserDTO.UpdateUserRoleCommand;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
+import com.sprint.mission.discodeit.event.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.user.AlReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
@@ -12,12 +13,12 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,10 +31,10 @@ public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
   private final UserEntityMapper userEntityMapper;
   private final JwtRegistry jwtRegistry;
   private final PasswordEncoder passwordEncoder;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   @Override
@@ -65,7 +66,9 @@ public class BasicUserService implements UserService {
     UserDTO.User user = userEntityMapper.toUser(userRepository.save(userEntity));
 
     if (request.profileImage() != null) {
-      binaryContentStorage.put(user.getProfileId().getId(), request.profileImage().data());
+      eventPublisher.publishEvent(
+          BinaryContentCreatedEvent.of(user.getProfileId().getId(), request.profileImage().data())
+      );
     }
 
     log.debug("User with id {} created successfully", user.getId());
@@ -185,8 +188,12 @@ public class BasicUserService implements UserService {
       }
 
       updatedUserEntity.updateProfile(binaryContentEntity);
-      binaryContentStorage.put(binaryContentRepository.save(binaryContentEntity).getId(),
-          request.profileImage().data());
+
+      eventPublisher.publishEvent(
+          BinaryContentCreatedEvent.of(binaryContentRepository.save(
+              binaryContentEntity).getId(), request.profileImage().data()
+          )
+      );
 
     }
 

@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.PagingDTO;
 import com.sprint.mission.discodeit.dto.PagingDTO.OffsetPage;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.MessageEntity;
+import com.sprint.mission.discodeit.event.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.NoSuchChannelException;
 import com.sprint.mission.discodeit.exception.message.NoSuchMessageException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
@@ -15,12 +16,12 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -39,7 +40,7 @@ public class BasicMessageService implements MessageService {
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
   private final MessageEntityMapper messageEntityMapper;
 
   @PreAuthorize("hasRole('USER')")
@@ -77,8 +78,12 @@ public class BasicMessageService implements MessageService {
               .toList());
 
       for (int i = 0; i < binaryContentList.size(); i++) {
-        binaryContentStorage.put(binaryContentList.get(i).getId(),
-            request.binaryContentList().get(i).data());
+        eventPublisher.publishEvent(
+            BinaryContentCreatedEvent.of(
+                binaryContentList.get(i).getId(),
+                request.binaryContentList().get(i).data()
+            )
+        );
       }
 
     }

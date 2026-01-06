@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.BinaryContentDTO.BinaryContentCreateCommand;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
+import com.sprint.mission.discodeit.event.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.NoSuchBinaryContentException;
 import com.sprint.mission.discodeit.mapper.BinaryContentEntityMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
+  private final ApplicationEventPublisher eventPublisher;
   private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentEntityMapper binaryContentEntityMapper;
 
@@ -37,7 +40,9 @@ public class BasicBinaryContentService implements BinaryContentService {
         .build();
 
     binaryContentEntity = binaryContentRepository.save(binaryContentEntity);
-    binaryContentStorage.put(binaryContentEntity.getId(), request.data());
+    eventPublisher.publishEvent(
+        BinaryContentCreatedEvent.of(binaryContentEntity.getId(), request.data())
+    );
 
     log.debug("Creating binary content with id {}", binaryContentEntity.getId());
 
