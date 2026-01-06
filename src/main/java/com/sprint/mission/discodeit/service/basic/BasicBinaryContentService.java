@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.BinaryContentDTO.BinaryContentCreateCommand;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.NoSuchBinaryContentException;
 import com.sprint.mission.discodeit.mapper.BinaryContentEntityMapper;
@@ -122,6 +123,21 @@ public class BasicBinaryContentService implements BinaryContentService {
           }
         })
         .toList();
+  }
+
+  @Override
+  public void updateBinaryContentStatus(UUID id, BinaryContentStatus status) {
+
+    BinaryContentEntity binaryContentEntity = binaryContentRepository.findById(id)
+        .orElseThrow(() -> {
+          log.warn("Could not find binary content with id {}", id);
+          throw new NoSuchBinaryContentException();
+        });
+
+    binaryContentEntity.updateStatus(status);
+
+    log.info("Updated binary content status with id {} to {}", id, status);
+
   }
 
   @Transactional
