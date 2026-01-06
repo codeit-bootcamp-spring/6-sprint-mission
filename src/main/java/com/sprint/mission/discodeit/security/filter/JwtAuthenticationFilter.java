@@ -10,7 +10,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -25,7 +29,6 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserDetailsService userDetailsService;
     private final JwtRegistry jwtRegistry;
     private static final String HEADER_AUTHORIZATION = "Authorization";
     private static final String TOKEN_PREFIX = "Bearer ";
@@ -39,10 +42,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
             JWTClaimsSet claims = jwtTokenProvider.getClaims(token);
             String username = claims.getSubject();
+            String role = (String) claims.getClaim("role");
 
             if (isTokenValidInRegistry(token)){
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                // TODO 토큰을 발행할 때 필요한 정보(ID, Role 등)를 클레임(Claim)에 모두 담아두면 DB 매번 조회 안해도됨.
+
+                List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
+
+                UserDetails userDetails = User.builder()
+                        .username(username)
+                        .password("")
+                        .authorities(authorities)
+                        .build();
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
@@ -55,8 +65,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } else {
                 log.warn("Invalid token");
             }
-//            String role = (String) claims.getClaim("role");
-//            List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
 
         }
         filterChain.doFilter(request, response); // 다음 필터로 넘김
@@ -71,10 +79,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return true;
     }
 
+    // 헤더 형식 검증 - 요청 헤더에 Bearer 토큰이 포함된 경우에만 인증을 시도
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(HEADER_AUTHORIZATION);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(TOKEN_PREFIX)) {
-            return bearerToken.substring(TOKEN_PREFIX.length());
+            return bearerToken.substring(TOKEN_PREFIX.length()); // 접두사 "Bearer "를 떼내고 JWT 문자열만 추출
         }
         return null;
     }
