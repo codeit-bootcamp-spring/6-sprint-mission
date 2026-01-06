@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.enums.ContentType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "binary_contents")
-public class BinaryContentEntity extends BaseEntity {
+public class BinaryContentEntity extends BaseUpdatableEntity {
 
   @Column(nullable = false)
   private String fileName;
@@ -26,6 +27,10 @@ public class BinaryContentEntity extends BaseEntity {
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private ContentType contentType;
+
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private BinaryContentStatus status = BinaryContentStatus.PROCESSING;
 
   @Builder
   public BinaryContentEntity(String fileName, Long size, ContentType contentType) {
