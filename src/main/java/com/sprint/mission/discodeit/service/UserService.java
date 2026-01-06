@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +43,7 @@ public class UserService {
     private final BinaryContentMapper binaryContentMapper;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    private final SessionRegistry sessionRegistry;
+    private final JwtRegistry jwtRegistry;
 
     // 유저 생성
     @Transactional
@@ -177,24 +178,11 @@ public class UserService {
     public UserResponseDto updateUserRole(UserRoleUpdateRequest request) {
 
         UUID userId = request.userId();
-        User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new UserNotFoundException(request.userId()));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
         user.updateRole(request.newRole());
-        userRepository.save(user);
-
-        List<Object> allPrincipals = sessionRegistry.getAllPrincipals();
-
-        for (Object principal : allPrincipals) {
-            if (principal instanceof DiscodeitUserDetails userDetails) {
-                if (userDetails.getUserId().equals(userId)) {
-                    List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal, false);
-                    for (SessionInformation session : sessions) {
-                        session.expireNow();
-                    }
-                }
-            }
-        }
-
+        jwtRegistry.invalidateJwtInformationByUserId(userId);
         return userMapper.toDto(user);
     }
 
