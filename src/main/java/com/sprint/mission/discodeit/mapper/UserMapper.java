@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.User.UserDto;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.security.SessionManager;
 import com.sprint.mission.discodeit.service.AuthService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -15,12 +16,13 @@ import java.util.List;
         uses = {BinaryContentMapper.class},
         imports = {Instant.class}
 )
-public interface UserMapper {
+public abstract class UserMapper {
 
-    @Mapping(target = "online", source = "online")
-    UserDto toDto(User user,boolean online);
+    @Autowired
+    protected SessionManager sessionManager;
 
-    UserDto toDto(User user);
+    @Mapping(target = "online", expression = "java(sessionManager.hasActiveSessions(user.getId()))")
+    public abstract UserDto toDto(User user);
 
-    List<UserDto> toDtoList(List<User> users);
+    public abstract List<UserDto> toDtoList(List<User> users);
 }

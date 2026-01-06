@@ -41,8 +41,6 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
 
-    private final AuthService authService;
-
     @Override
     public UserDto create(MultipartFile multipartFile, UserCreateRequest userCreateRequest) {
 
@@ -83,11 +81,7 @@ public class BasicUserService implements UserService {
         log.info("유저 목록 조회 요청 수신");
         List<User> users = userRepository.findAll();
 
-        return users.stream()
-                .map(user ->
-                        userMapper.toDto(user, authService.isUserOnline(user.getUsername()))
-                )
-                .toList();
+        return userMapper.toDtoList(users);
     }
 
     @Override
@@ -135,13 +129,13 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDto roleUpdate(UserRoleUpdateRequest userUpdateRequest) {
         User user = userRepository.findById(userUpdateRequest.userId())
                 .orElseThrow(UserNotFoundException::new);
         user.updateRole(userUpdateRequest.newRole());
         userRepository.save(user);
-        return userMapper.toDto(user, authService.isUserOnline(user.getUsername()));
+        return userMapper.toDto(user);
     }
 
     public void isDuplicate(String name, String email) {
