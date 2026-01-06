@@ -11,7 +11,7 @@ import com.sprint.mission.discodeit.dto.UserDTO;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.entity.enums.Role;
-import com.sprint.mission.discodeit.exception.user.AllReadyExistUserException;
+import com.sprint.mission.discodeit.exception.user.AlReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
 import com.sprint.mission.discodeit.mapper.UserEntityMapper;
@@ -120,7 +120,7 @@ class BasicUserServiceTest {
     when(userRepository.existsByEmailOrUsername(testEmail, testUsername)).thenReturn(true);
 
     // when & then
-    assertThrows(AllReadyExistUserException.class, () -> {
+    assertThrows(AlReadyExistUserException.class, () -> {
       basicUserService.createUser(command);
     });
 

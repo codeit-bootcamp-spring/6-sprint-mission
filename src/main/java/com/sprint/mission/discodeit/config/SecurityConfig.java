@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.filter.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestHandler;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -34,12 +37,13 @@ public class SecurityConfig {
   private final AuthenticationSuccessHandler loginSuccessHandler;
   private final AuthenticationFailureHandler loginFailureHandler;
   private final LogoutSuccessHandler logoutSuccessHandler;
+  private final LogoutHandler logoutHandler;
   private final UserDetailsService userDetailsService;
   private final DataSource dataSource;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
   @Value("${security.key.remember-me}")
   private String rememberMeKey;
-
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -51,32 +55,46 @@ public class SecurityConfig {
             .permitAll()
         )
         .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-            .sessionConcurrency(concurrency -> {
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            /*.sessionConcurrency(concurrency -> {
               concurrency
                   .maximumSessions(1)
                   .maxSessionsPreventsLogin(false)
                   .expiredUrl("/api/auth/login?expired")
                   .sessionRegistry(sessionRegistry());
-            })
+            })*/
         )
-        .rememberMe(remember -> remember
+        /*.rememberMe(remember -> remember
             .key(rememberMeKey)
             .rememberMeParameter("remember-me")
             .userDetailsService(userDetailsService)
             .tokenRepository(tokenRepository())
             .authenticationSuccessHandler(loginSuccessHandler)
-            .tokenValiditySeconds(60 * 60 * 24 * 30))
+            .tokenValiditySeconds(60 * 60 * 24 * 30))*/
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
+            .addLogoutHandler(logoutHandler)
             .logoutSuccessHandler(logoutSuccessHandler)
         )
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-            .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**",
-                "/swagger-ui.html", "/actuator/**").permitAll()
+            .requestMatchers(
+                "/",
+                "/index.html"
+            ).permitAll()
+            .requestMatchers("/index.html",
+                "/assets/**",
+                "favicon.ico",
+                "/api/auth/login",
+                "/api/auth/csrf-token",
+                "/api/auth/logout",
+                "/actuator/health",
+                "/actuator/info",
+                "/api/auth/refresh")
+            .permitAll()
             .anyRequest().authenticated()
         )
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .csrf(csrf ->
             csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
@@ -100,11 +118,11 @@ public class SecurityConfig {
     return new HttpSessionEventPublisher();
   }
 
-  @Bean
+  /*@Bean
   public PersistentTokenRepository tokenRepository() {
-    JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
-    repo.setDataSource(dataSource);
-    return repo;
-  }
+    JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+    tokenRepository.setDataSource(dataSource);
+    return tokenRepository;
+  }*/
 
 }

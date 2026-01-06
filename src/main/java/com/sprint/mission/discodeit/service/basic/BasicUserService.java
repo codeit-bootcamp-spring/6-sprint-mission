@@ -4,25 +4,21 @@ import com.sprint.mission.discodeit.dto.UserDTO;
 import com.sprint.mission.discodeit.dto.UserDTO.UpdateUserRoleCommand;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
-import com.sprint.mission.discodeit.exception.user.AllReadyExistUserException;
+import com.sprint.mission.discodeit.exception.user.AlReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
-import com.sprint.mission.discodeit.exception.userstatus.NoSuchUserStatusException;
 import com.sprint.mission.discodeit.mapper.UserEntityMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.utils.SecurityUtil;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,8 +32,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final UserEntityMapper userEntityMapper;
-  private final SecurityUtil securityUtil;
-  private final SessionRegistry sessionRegistry;
+  private final JwtRegistry jwtRegistry;
   private final PasswordEncoder passwordEncoder;
 
   @Transactional
@@ -46,7 +41,7 @@ public class BasicUserService implements UserService {
 
     if (userRepository.existsByEmailOrUsername(request.email(), request.username())) {
       log.warn("User with email {} already exists", request.email());
-      throw new AllReadyExistUserException(Map.of("email", request.email()));
+      throw new AlReadyExistUserException(Map.of("email", request.email()));
     }
 
     UserEntity userEntity = UserEntity.builder()
@@ -164,18 +159,18 @@ public class BasicUserService implements UserService {
         !updatedUserEntity.getId().equals(request.id())) {
       log.warn("User with email {} or username {} already exists", request.email(),
           request.username());
-      throw new AllReadyExistUserException(
+      throw new AlReadyExistUserException(
           Map.of("email", request.email(), "username", request.username()));
     }
 
-    if (!securityUtil.hashPassword(request.currentPassword())
+    if (!passwordEncoder.encode(request.currentPassword())
         .equals(updatedUserEntity.getPassword())) {
       log.warn("Invalid password for user id {}", request.id());
       throw new PasswordMismatchException();
     }
 
     updatedUserEntity.update(request.username(), request.email(),
-        securityUtil.hashPassword(request.currentPassword()));
+        passwordEncoder.encode(request.currentPassword()));
 
     if (request.isProfileImageUpdated()) {
 
@@ -214,10 +209,8 @@ public class BasicUserService implements UserService {
 
     updatedUserEntity.updateRole(request.newRole());
 
-    List<SessionInformation> sessions = sessionRegistry.getAllSessions(
-        updatedUserEntity.getUsername(), false);
-    for (SessionInformation session : sessions) {
-      session.expireNow();
+    if (jwtRegistry.hasActiveJwtInformationByUserId(updatedUserEntity.getId())) {
+      jwtRegistry.invalidateJwtInformationByUserId(updatedUserEntity.getId());
     }
 
     log.debug("User role with id {} updated successfully", request.userId());

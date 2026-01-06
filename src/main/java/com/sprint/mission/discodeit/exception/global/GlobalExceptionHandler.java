@@ -8,7 +8,8 @@ import com.sprint.mission.discodeit.exception.channel.NoSuchChannelException;
 import com.sprint.mission.discodeit.exception.message.NoSuchMessageException;
 import com.sprint.mission.discodeit.exception.readstatus.AllReadyExistReadStatusException;
 import com.sprint.mission.discodeit.exception.readstatus.NoSuchReadStatusException;
-import com.sprint.mission.discodeit.exception.user.AllReadyExistUserException;
+import com.sprint.mission.discodeit.exception.user.AlReadyExistUserException;
+import com.sprint.mission.discodeit.exception.user.InvalidJwtTokenException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
 import com.sprint.mission.discodeit.exception.userstatus.AllReadyExistUserStatusException;
@@ -226,10 +227,10 @@ public class GlobalExceptionHandler {
 
   }
 
-  @ExceptionHandler(AllReadyExistUserException.class)
+  @ExceptionHandler(AlReadyExistUserException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
   public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAllReadyExistUserException(
-      AllReadyExistUserException e) {
+      AlReadyExistUserException e) {
 
     log.error("AllReadyExistUserException occurred", e);
 
@@ -333,6 +334,25 @@ public class GlobalExceptionHandler {
             .exceptionType(String.valueOf(HttpStatus.FORBIDDEN.value()))
             .status(HttpStatus.FORBIDDEN.value())
             .build());
+  }
+
+  @ExceptionHandler(InvalidJwtTokenException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleInvalidJwtTokenException(
+      InvalidJwtTokenException e) {
+
+    log.error("InvalidJwtTokenException occurred", e);
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ErrorApiDTO.ErrorApiResponse.builder()
+            .timestamp(e.getTimestamp())
+            .code(e.getErrorCode().name())
+            .message(e.getMessage())
+            .details(e.getDetails())
+            .exceptionType(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+            .status(HttpStatus.BAD_REQUEST.value())
+            .build());
+
   }
 
 }

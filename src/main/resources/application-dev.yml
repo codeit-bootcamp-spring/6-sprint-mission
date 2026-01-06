@@ -84,6 +84,16 @@ info:
 security:
   key:
     remember-me: ${SECURITY_KEY_REMEMBER_ME:dev-remember-me-key}
+  login: jwt
+
+jwt:
+  access-token:
+    secret: ${JWT_ACCESS_TOKEN_SECRET}
+    expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600000}
+  refresh-token:
+    secret: ${JWT_REFRESH_TOKEN_SECRET}
+    expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800000}
+  issuer: ${JWT_ISSUER:discodeit}
 
 
 

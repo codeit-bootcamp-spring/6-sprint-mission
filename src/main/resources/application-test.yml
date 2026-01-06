@@ -15,7 +15,7 @@ spring:
     password: password
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
@@ -31,3 +31,13 @@ logging:
 security:
   key:
     remember-me: test-remember-me-key
+  login: jwt
+
+jwt:
+  access-token:
+    secret: test_access_token_secret
+    expiration: 3600000
+  refresh-token:
+    secret: test_refresh_token_secret
+    expiration: 86400000
+  issuer: test_app_name

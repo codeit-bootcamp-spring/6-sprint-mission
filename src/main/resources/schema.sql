@@ -62,7 +62,17 @@ create table persistent_logins (
     series varchar(64) primary key,
     token varchar(64) not null,
     last_used timestamp not null
-)
+);
+
+create table tokens (
+    id           uuid PRIMARY KEY NOT NULL,
+    user_id uuid not null references users (id) on delete cascade,
+    access_token varchar(255) not null,
+    refresh_token varchar(255) not null,
+    created_at   timestamp with time zone      NOT NULL,
+    updated_at   timestamp with time zone,
+    UNIQUE (user_id)
+);
 
 /*
 GRANT
