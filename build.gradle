@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.spring.mission'
-version = '2.0-M9'
+version = '2.2-M11'
 description = 'Demo project for Spring Boot'
 
 java {
