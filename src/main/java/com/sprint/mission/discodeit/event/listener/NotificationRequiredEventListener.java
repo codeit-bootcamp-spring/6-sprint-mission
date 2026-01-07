@@ -25,7 +25,7 @@ public class NotificationRequiredEventListener {
   private final MessageRepository messageRepository;
   private final ReadStatusRepository readStatusRepository;
 
-  @Async
+  @Async("taskExecutor")
   @Transactional
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleMessageCreatedEvent(MessageCreatedEvent event) {
@@ -51,7 +51,7 @@ public class NotificationRequiredEventListener {
 
   }
 
-  @Async
+  @Async("taskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleRoleUpdatedEvent(RoleUpdatedEvent event) {
 
