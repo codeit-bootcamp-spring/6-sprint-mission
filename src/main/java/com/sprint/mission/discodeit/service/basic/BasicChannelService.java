@@ -76,6 +76,7 @@ public class BasicChannelService implements ChannelService {
                 .orElseThrow(NoSuchChannelException::new))
             .channel(channelEntity)
             .lastReadAt(Instant.now())
+            .notificationEnabled(true)
             .build())
         .toList();
 

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ReadStatusDTO;
+import com.sprint.mission.discodeit.entity.ChannelEntity;
 import com.sprint.mission.discodeit.entity.ReadStatusEntity;
 import com.sprint.mission.discodeit.exception.channel.NoSuchChannelException;
 import com.sprint.mission.discodeit.exception.readstatus.AllReadyExistReadStatusException;
@@ -48,10 +49,14 @@ public class BasicReadStatusService implements ReadStatusService {
       ));
     }
 
+    ChannelEntity channel = channelRepository.findById(request.channelId())
+        .orElseThrow(NoSuchChannelException::new);
+
     ReadStatusEntity readStatusEntity = ReadStatusEntity.builder()
         .user(userRepository.findById(request.userId()).get())
         .channel(channelRepository.findById(request.channelId()).get())
         .lastReadAt(request.lastReadTimeAt())
+        .notificationEnabled(channel.isPrivate())
         .build();
 
     return readStatusEntityMapper.toReadStatus(readStatusRepository.save(readStatusEntity));
