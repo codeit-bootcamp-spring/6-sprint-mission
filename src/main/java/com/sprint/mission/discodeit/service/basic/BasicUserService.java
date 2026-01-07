@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.UserDTO.UpdateUserRoleCommand;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.event.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.AlReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
 import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
@@ -221,6 +222,13 @@ public class BasicUserService implements UserService {
     }
 
     log.debug("User role with id {} updated successfully", request.userId());
+
+    eventPublisher.publishEvent(
+        RoleUpdatedEvent.of(
+            request.userId(),
+            request.newRole()
+        )
+    );
 
     return userEntityMapper.toUser(updatedUserEntity);
 
