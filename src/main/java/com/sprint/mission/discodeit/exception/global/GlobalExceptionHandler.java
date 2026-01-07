@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.exception.channel.AllReadyExistChannelExcept
 import com.sprint.mission.discodeit.exception.channel.InvalidChannelDataException;
 import com.sprint.mission.discodeit.exception.channel.NoSuchChannelException;
 import com.sprint.mission.discodeit.exception.message.NoSuchMessageException;
+import com.sprint.mission.discodeit.exception.notification.ForbiddenNotificationAccessException;
+import com.sprint.mission.discodeit.exception.notification.NoSuchNotificationException;
 import com.sprint.mission.discodeit.exception.readstatus.AllReadyExistReadStatusException;
 import com.sprint.mission.discodeit.exception.readstatus.NoSuchReadStatusException;
 import com.sprint.mission.discodeit.exception.user.AlReadyExistUserException;
@@ -321,6 +323,25 @@ public class GlobalExceptionHandler {
 
   }
 
+  @ExceptionHandler(NoSuchNotificationException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchNotificationException(
+      NoSuchNotificationException e) {
+
+    log.error("NoSuchNotificationException occurred", e);
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(ErrorApiDTO.ErrorApiResponse.builder()
+            .timestamp(e.getTimestamp())
+            .code(e.getErrorCode().name())
+            .message(e.getMessage())
+            .details(e.getDetails())
+            .exceptionType(String.valueOf(HttpStatus.NOT_FOUND.value()))
+            .status(HttpStatus.NOT_FOUND.value())
+            .build());
+
+  }
+
   @ExceptionHandler(AuthorizationDeniedException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
   public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAuthorizationDeniedException(
@@ -353,6 +374,24 @@ public class GlobalExceptionHandler {
             .status(HttpStatus.BAD_REQUEST.value())
             .build());
 
+  }
+
+  @ExceptionHandler(ForbiddenNotificationAccessException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleForbiddenNotificationAccessException(
+      ForbiddenNotificationAccessException e) {
+
+    log.error("ForbiddenNotificationAccessException occurred", e);
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(ErrorApiDTO.ErrorApiResponse.builder()
+            .timestamp(e.getTimestamp())
+            .code(e.getErrorCode().name())
+            .message(e.getMessage())
+            .details(e.getDetails())
+            .exceptionType(String.valueOf(HttpStatus.FORBIDDEN.value()))
+            .status(HttpStatus.FORBIDDEN.value())
+            .build());
   }
 
 }
