@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.config.JwtProperties;
 import com.sprint.mission.discodeit.dto.JwtDTO;
 import com.sprint.mission.discodeit.dto.TokenDTO;
 import com.sprint.mission.discodeit.dto.UserDTO;
@@ -10,6 +11,7 @@ import com.sprint.mission.discodeit.mapper.api.UserApiMapper;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.utils.TokenUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -40,6 +42,8 @@ public class AuthController {
   private final UserService userService;
   private final AuthApiMapper authApiMapper;
   private final UserApiMapper userApiMapper;
+  private final TokenUtil tokenUtil;
+  private final JwtProperties jwtProperties;
 
   /**
    * 사용자 로그인
@@ -118,6 +122,15 @@ public class AuthController {
   ) {
 
     TokenDTO token = authService.renewAccessToken(refreshToken);
+
+    tokenUtil.addCookieToResponse(
+        tokenUtil.generateCookie(
+            "REFRESH_TOKEN",
+            token.getRefreshToken(),
+            (int) jwtProperties.getRefreshExpiration()
+        ),
+        response
+    );
 
     return ResponseEntity.ok(
         JwtDTO.of(userService.findUserById(token.getUserId()), token.getAccessToken())
