@@ -10,6 +10,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Configuration
 public class AsyncConfig {
 
+  @Bean
+  public SecurityTaskDecorator securityTaskDecorator() {
+    return new SecurityTaskDecorator();
+  }
+
   @Bean("taskExecutor")
   public TaskExecutor taskExecutor() {
 
@@ -18,6 +23,8 @@ public class AsyncConfig {
     taskExecutor.setMaxPoolSize(10);
     taskExecutor.setQueueCapacity(25);
     taskExecutor.initialize();
+
+    taskExecutor.setTaskDecorator(securityTaskDecorator());
 
     return taskExecutor;
 
