@@ -44,7 +44,7 @@ public class DiscodeitUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        String roleWithPrefix = "ROLE_" + userResponseDto.role().name();
+        String roleWithPrefix = userResponseDto.role().getAuthority();
         return List.of(new SimpleGrantedAuthority(roleWithPrefix));
     }
 

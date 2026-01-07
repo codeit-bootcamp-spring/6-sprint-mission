@@ -17,7 +17,7 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(of = "id", callSuper = false)
+@EqualsAndHashCode(callSuper = false)
 @Table(name = "users")
 public class User extends BaseUpdatableEntity {
 
@@ -30,7 +30,6 @@ public class User extends BaseUpdatableEntity {
 
     // 참여중인 채널은 ReadStatus 엔터티로 확인 가능.
     // ReadStatus와 양방향매핑 불필요.
-
 
     @Setter
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -59,6 +58,15 @@ public class User extends BaseUpdatableEntity {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    public static User create(String email, String username, String encodedPassword) {
+        return User.builder()
+                .email(email)
+                .username(username)
+                .password(encodedPassword)
+                .role(Role.USER)
+                .build();
+    }
 
     public void update(String newEmail, String newUsername, String newPassword){
         if (newEmail != null) {

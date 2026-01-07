@@ -10,8 +10,6 @@ import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExists
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.userstatus.UserStatusAlreadyExistsException;
-import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -111,7 +109,7 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage());
 
         ErrorResponse error = ErrorResponse.of(
-                ErrorCode.FORBIDDEN.toString(),
+                ErrorCode.ACCESS_DENIED.toString(),
                 e.getMessage(),
                 null,
                 e.getClass().getSimpleName(),

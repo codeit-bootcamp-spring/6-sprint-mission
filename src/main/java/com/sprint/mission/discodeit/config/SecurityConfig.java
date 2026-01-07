@@ -3,16 +3,19 @@ package com.sprint.mission.discodeit.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.filter.JsonUsernamePasswordAuthenticationFilter;
+import com.sprint.mission.discodeit.security.filter.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.security.handler.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.handler.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestAttributeHandler;
-import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetailsService;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -22,6 +25,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -34,6 +38,9 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -41,8 +48,10 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
-    private final LoginSuccessHandler loginSuccessHandler;
-    private final LoginFailureHandler loginFailureHandler;
+    private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
+    private final JwtLogoutHandler jwtLogoutHandler;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ObjectMapper objectMapper;
     private final UserDetailsService userDetailsService;
 
@@ -51,36 +60,23 @@ public class SecurityConfig {
 
         http
                 // 기본 설정
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestAttributeHandler())
-                )
+                .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(basic -> basic.disable())
 
                 // 세션, 동시성
-                .sessionManagement(management -> management
-                        .sessionConcurrency(concurrency -> concurrency
-                                .sessionRegistry(sessionRegistry())
-                                .maximumSessions(1)
-                                .expiredUrl("/api/auth/login")
-                        )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 // 인증
                 .addFilterAt(jsonLoginFilter(), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(AbstractHttpConfigurer::disable)
 
-                .rememberMe(rememberMe -> rememberMe
-                        .key("uniqueAndSecretKey") // 쿠키 암호화 키
-                        .tokenValiditySeconds(86400 * 30) // 30일 유지
-                        .userDetailsService(userDetailsService) // 재인증 시 유저 조회용
-                        .rememberMeParameter("remember-me") // 프론트에서 보낼 파라미터명
-                )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
-                        .invalidateHttpSession(true) // 세션 무효화
+                        .addLogoutHandler(jwtLogoutHandler)
                 )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // 인가
                 .authorizeHttpRequests(auth -> auth
@@ -89,7 +85,7 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers("/api/auth/csrf-token", "/api/auth/login", "/api/auth/logout").permitAll()
+                        .requestMatchers("/api/auth/refresh", "/api/auth/login", "/api/auth/logout").permitAll()
                         .anyRequest().authenticated()
                 )
 
@@ -119,10 +115,10 @@ public class SecurityConfig {
 
     @Bean
     public RoleHierarchy roleHierarchy() {
-        return RoleHierarchyImpl.fromHierarchy(
-                "ROLE_ADMIN > ROLE_CHANNEL_MANAGER\n" +
-                        "ROLE_CHANNEL_MANAGER > ROLE_USER"
-        );
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+                .role("ADMIN").implies("CHANNEL_MANAGER")
+                .role("CHANNEL_MANAGER").implies("USER")
+                .build();
     }
 
     @Bean
@@ -138,32 +134,38 @@ public class SecurityConfig {
                 new JsonUsernamePasswordAuthenticationFilter(authenticationConfiguration.getAuthenticationManager());
 
         filter.setFilterProcessesUrl("/api/auth/login");
-        filter.setAuthenticationSuccessHandler(loginSuccessHandler);
-        filter.setAuthenticationFailureHandler(loginFailureHandler);
+        filter.setAuthenticationSuccessHandler(jwtLoginSuccessHandler);
         return filter;
     }
 
 
     private AuthenticationEntryPoint unauthorizedEntryPoint() {
         return (request, response, authException) -> {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-
-            ErrorResponse error = ErrorResponse.of(HttpStatus.UNAUTHORIZED.toString(), "로그인이 필요합니다.", null, authException.getClass().getSimpleName(), 401);
-            response.getWriter().write(objectMapper.writeValueAsString(error));
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.", authException);
         };
     }
 
     private AccessDeniedHandler forbiddenHandler() {
         return (request, response, accessDeniedException) -> {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType("application/json;charset=UTF-8");
-
-            ErrorResponse error = ErrorResponse.of(HttpStatus.FORBIDDEN.toString(), "권한이 없습니다.", null, accessDeniedException.getClass().getSimpleName(), 403);
-            response.getWriter().write(objectMapper.writeValueAsString(error));
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.", accessDeniedException);
         };
     }
 
+    private void sendErrorResponse(HttpServletResponse response, HttpStatus status, String message, Exception ex) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+
+        ErrorResponse error = ErrorResponse.of(
+                status.toString(),
+                message,
+                null,
+                ex.getClass().getSimpleName(),
+                status.value()
+        );
+
+        response.getWriter().write(objectMapper.writeValueAsString(error));
+    }
 
 
 }

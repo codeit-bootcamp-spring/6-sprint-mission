@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.enums.ErrorCode;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,10 +29,9 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
         response.setCharacterEncoding("UTF-8");
 
         String message = "이메일 또는 비밀번호가 올바르지 않습니다.";
-        String code = "AUTH_FAILURE";
 
         ErrorResponse errorResponse = ErrorResponse.of(
-                code,
+                ErrorCode.INVALID_AUTH.toString(),
                 message,
                 null,
                 exception.getClass().getSimpleName(),
