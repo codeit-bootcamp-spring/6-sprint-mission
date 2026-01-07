@@ -4,17 +4,22 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-@Builder(access =  AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class BinaryContentCreatedEvent {
 
   private UUID id;
   private byte[] binaryContent;
+
+  @Builder(access = AccessLevel.PROTECTED)
+  private BinaryContentCreatedEvent(UUID id, byte[] binaryContent) {
+    this.id = id;
+    this.binaryContent = binaryContent;
+  }
 
   public static BinaryContentCreatedEvent of(UUID id, byte[] binaryContent) {
     return BinaryContentCreatedEvent.builder()
