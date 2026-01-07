@@ -105,6 +105,12 @@ public class JwtTokenProvider {
   }
 
   public boolean validateAccessToken(String token) {
+
+    if (token == null) {
+      log.error("JWT token is null.");
+      return false;
+    }
+
     try {
       SignedJWT signedJWT = SignedJWT.parse(token);
       return signedJWT.verify(accessVerifier);
@@ -115,6 +121,12 @@ public class JwtTokenProvider {
   }
 
   public boolean validateRefreshToken(String token) {
+
+    if (token == null) {
+      log.error("JWT token is null.");
+      return false;
+    }
+
     try {
       SignedJWT signedJWT = SignedJWT.parse(token);
       return signedJWT.verify(refreshVerifier);
