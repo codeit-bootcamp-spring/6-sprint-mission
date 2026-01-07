@@ -64,13 +64,28 @@ public class SecurityConfig {
             HttpSecurity http,
             JwtLoginSuccessHandler jwtLoginSuccessHandler,
             LoginFailureHandler loginFailureHandler,
-            JwtLogoutHandler jwtLogoutHandler,
-            UserDetailsService userDetailsService,
-            SessionRegistry sessionRegistry
+            ObjectMapper objectMapper,
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            JwtLogoutHandler jwtLogoutHandler
+
     ) throws Exception {
 
 
         return http
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                )
+                .formLogin(loing -> loing
+                        .loginProcessingUrl("/api/auth/login")
+                        .successHandler(jwtLoginSuccessHandler)
+                        .failureHandler(loginFailureHandler)
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .addLogoutHandler(jwtLogoutHandler)
+
+                )
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(
                                 "/swagger-ui/**",
@@ -90,47 +105,25 @@ public class SecurityConfig {
                                 "/api/auth/logout",
                                 "/api/auth/refresh",
                                 "/api/users"
-                                ).permitAll()
+                        ).permitAll()
                         .anyRequest().authenticated()
-                )
-                .csrf(AbstractHttpConfigurer::disable)
-                .rememberMe(rememberMe -> rememberMe
-                        .key(COOKIE_KEY)
-                        .tokenValiditySeconds(60 * 60 * 24 * 30)
-                        .rememberMeParameter("remember-me")
-                        .userDetailsService(userDetailsService)
-                        .tokenRepository(tokenRepository())
-
-                )
-                .formLogin(loing -> loing
-                        .loginProcessingUrl("/api/auth/login")
-                        .successHandler(jwtLoginSuccessHandler)
-                        .failureHandler(loginFailureHandler)
-                )
-                .sessionManagement(management -> management
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(((request, response, authException) -> {
                             response.setStatus(HttpStatus.UNAUTHORIZED.value());
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            response.getWriter().write(new ObjectMapper().writeValueAsString(Map.of("message", "인증되지 않은 사용자")));
+                            response.getWriter().write(objectMapper.writeValueAsString(Map.of("message", "인증되지 않은 사용자")));
                         }))
                         .accessDeniedHandler(((request, response, accessDeniedException) -> {
                             response.setStatus(HttpStatus.FORBIDDEN.value());
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            response.getWriter().write(new ObjectMapper().writeValueAsString(Map.of("messge","권한이 없는 사용자")));
+                            response.getWriter().write(objectMapper.writeValueAsString(Map.of("messge","권한이 없는 사용자")));
                         }))
                 )
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .addLogoutHandler(jwtLogoutHandler)
-
+                .sessionManagement(management -> management
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(
-                        new JwtAuthenticationFilter(jwtTokenProvider),
-                        UsernamePasswordAuthenticationFilter.class
-                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -144,7 +137,7 @@ public class SecurityConfig {
                         passwordEncoder.encode("admin"),
                         null,
                         Role.ADMIN
-                        );
+                );
                 userRepository.save(user);
             }
         };

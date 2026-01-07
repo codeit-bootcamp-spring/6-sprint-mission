@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.exception;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 
 public record ErrorResponse(
@@ -20,5 +21,15 @@ public record ErrorResponse(
                 details,
                 errorCode.getStatus().getReasonPhrase(),
                 errorCode.getStatus().value());
+    }
+    public static ErrorResponse of(Exception exception, int status){
+        return new ErrorResponse(
+                Instant.now(),
+                exception.getClass().getSimpleName(),
+                exception.getMessage(),
+                new HashMap<>(),
+                exception.getClass().getSimpleName(),
+                status
+        );
     }
 }

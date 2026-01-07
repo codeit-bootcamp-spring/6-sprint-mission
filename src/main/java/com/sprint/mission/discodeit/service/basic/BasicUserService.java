@@ -2,26 +2,21 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentSave;
 import com.sprint.mission.discodeit.dto.User.*;
-import com.sprint.mission.discodeit.entity.BaseEntity;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.file.FileInPutException;
 import com.sprint.mission.discodeit.exception.file.FileOutPutException;
 import com.sprint.mission.discodeit.exception.user.UserDuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.UserDuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.Role;
-import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,7 +110,7 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
         log.info("사용자 수정 완료: userId={}", userId);
 
-        return userMapper.toDto(user, authService.isUserOnline(user.getUsername()));
+        return userMapper.toDto(user);
 }
 
     @Override
