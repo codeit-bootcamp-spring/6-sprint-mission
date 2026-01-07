@@ -146,6 +146,7 @@ public class BasicReadStatusService implements ReadStatusService {
         .orElseThrow(NoSuchReadStatusException::new);
 
     readStatusEntity.updateLastReadAt(request.lastReadAt());
+    readStatusEntity.updateNotificationEnabled(request.newNotificationEnabled());
 
     return readStatusEntityMapper.toReadStatus(readStatusRepository.save(readStatusEntity));
 

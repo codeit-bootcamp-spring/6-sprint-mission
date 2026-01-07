@@ -19,7 +19,7 @@ public class ReadStatusRequestDTO {
   }
 
   @Builder
-  public record ReadStatusUpdateRequest(Instant newLastReadAt) {
+  public record ReadStatusUpdateRequest(Instant newLastReadAt, Boolean newNotificationEnabled) {
 
   }
 }

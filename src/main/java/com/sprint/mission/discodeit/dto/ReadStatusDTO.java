@@ -33,7 +33,11 @@ public class ReadStatusDTO {
   }
 
   @Builder
-  public record UpdateReadStatusCommand(UUID id, Instant lastReadAt) {
+  public record UpdateReadStatusCommand(
+      UUID id,
+      Instant lastReadAt,
+      Boolean newNotificationEnabled
+  ) {
 
   }
 

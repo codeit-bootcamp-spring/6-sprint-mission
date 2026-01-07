@@ -124,6 +124,7 @@ public class ReadStatusController {
         ReadStatusDTO.UpdateReadStatusCommand.builder()
             .id(readStatusId)
             .lastReadAt(readStatusUpdateRequest.newLastReadAt())
+            .newNotificationEnabled(readStatusUpdateRequest.newNotificationEnabled())
             .build());
 
     return ResponseEntity.ok(readStatusApiMapper.toReadStatusResponse(readStatus));
