@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.*;
 
-@Service("messageService")
+@Service
 @Slf4j
 @RequiredArgsConstructor
 public class MessageService {
@@ -131,13 +131,6 @@ public class MessageService {
     public void delete(UUID messageId) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new MessageNotFoundException(messageId));
-
-        List<UUID> binaryContentIds = message.getAttachments().stream().map(BinaryContent::getId).toList();
-        if (message.getAttachments() != null) {
-            for (UUID binaryContentId : binaryContentIds) {
-                binaryContentRepository.deleteById(messageId);
-            }
-        }
 
         messageRepository.delete(message);
         log.info("메시지 삭제가 완료되었습니다. id=" + messageId);

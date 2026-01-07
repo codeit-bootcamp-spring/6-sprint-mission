@@ -60,13 +60,7 @@ public class UserService {
 
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        User user = User.builder()
-                .email(request.email())
-                .username(request.username())
-                .password(encodedPassword)
-                .role(Role.USER)
-                .build();
-
+        User user = User.create(request.email(), request.username(), encodedPassword);
         userRepository.save(user);
 
         if (profileImageRequest != null) {

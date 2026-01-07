@@ -59,6 +59,15 @@ public class User extends BaseUpdatableEntity {
     @LastModifiedDate
     private Instant updatedAt;
 
+    public static User create(String email, String username, String encodedPassword) {
+        return User.builder()
+                .email(email)
+                .username(username)
+                .password(encodedPassword)
+                .role(Role.USER)
+                .build();
+    }
+
     public void update(String newEmail, String newUsername, String newPassword){
         if (newEmail != null) {
             this.email = newEmail;
