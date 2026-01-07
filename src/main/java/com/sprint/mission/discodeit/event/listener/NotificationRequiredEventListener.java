@@ -11,12 +11,12 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class NotificationRequiredEventListener {
 
   @TransactionalEventListener
-  public void on(MessageCreatedEvent event) {
+  public void handleMessageCreatedEvent(MessageCreatedEvent event) {
 
   }
 
   @TransactionalEventListener
-  public void on(RoleUpdatedEvent event) {
+  public void handleRoleUpdatedEvent(RoleUpdatedEvent event) {
 
   }
 
