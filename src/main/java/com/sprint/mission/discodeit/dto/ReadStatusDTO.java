@@ -28,6 +28,7 @@ public class ReadStatusDTO {
     private UUID userId;
     private UUID channelId;
     private Instant lastReadAt;
+    private Boolean notificationEnabled;
 
   }
 

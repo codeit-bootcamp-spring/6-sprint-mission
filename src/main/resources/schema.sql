@@ -49,6 +49,7 @@ CREATE TABLE read_statuses
     user_id      uuid             NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     channel_id   uuid             NOT NULL REFERENCES channels (id) ON DELETE CASCADE,
     last_read_at timestamp with time zone      NOT NULL,
+    notification_enabled boolean NOT NULL,
     UNIQUE (user_id, channel_id)
 );
 
