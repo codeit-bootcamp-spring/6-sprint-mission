@@ -17,12 +17,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,7 +33,6 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
-  private final SessionRegistry sessionRegistry;
 
   @Transactional
   @Override
@@ -97,9 +95,9 @@ public class BasicUserService implements UserService {
     return userDtos;
   }
 
+  @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
   @Override
-  @PreAuthorize("isAuthenticated() and (hasRole('ADMIN') or authentication.principal.userDto.id == #userId)")
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     log.debug("사용자 수정 시작: id={}, request={}", userId, userUpdateRequest);
@@ -136,16 +134,17 @@ public class BasicUserService implements UserService {
         .orElse(null);
 
     String newPassword = userUpdateRequest.newPassword();
-    String encodedPassword = passwordEncoder.encode(newPassword);
+    String encodedPassword = Optional.ofNullable(newPassword).map(passwordEncoder::encode)
+        .orElse(user.getPassword());
     user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
     log.info("사용자 수정 완료: id={}", userId);
     return userMapper.toDto(user);
   }
 
+  @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
   @Override
-  @PreAuthorize("isAuthenticated() and (hasRole('ADMIN') or authentication.principal.userDto.id == #userId)")
   public void delete(UUID userId) {
     log.debug("사용자 삭제 시작: id={}", userId);
 
