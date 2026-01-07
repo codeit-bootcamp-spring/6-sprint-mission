@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.PagingDTO.OffsetPage;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.MessageEntity;
 import com.sprint.mission.discodeit.event.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.NoSuchChannelException;
 import com.sprint.mission.discodeit.exception.message.NoSuchMessageException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
@@ -89,6 +90,11 @@ public class BasicMessageService implements MessageService {
     }
 
     log.debug("Creating message with id {}", messageEntity.getId());
+
+    eventPublisher.publishEvent(MessageCreatedEvent.of(
+        request.channelId(),
+        messageEntity.getId()
+    ));
 
     return messageEntityMapper.toMessage(messageRepository.save(messageEntity));
 
