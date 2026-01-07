@@ -32,7 +32,7 @@ public class BasicNotificationService implements NotificationService {
   }
 
   @Override
-  public void deleteNotificationById(UUID id) {
+  public void deleteNotificationById(UUID id, UUID userId) {
 
     notificationRepository.deleteById(id);
 

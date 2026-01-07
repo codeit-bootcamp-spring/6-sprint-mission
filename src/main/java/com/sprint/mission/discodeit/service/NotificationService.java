@@ -8,6 +8,6 @@ public interface NotificationService {
 
   List<NotificationDTO> findAllNotificationsByUserId(UUID userId);
 
-  void deleteNotificationById(UUID id);
+  void deleteNotificationById(UUID id, UUID userId);
 
 }
