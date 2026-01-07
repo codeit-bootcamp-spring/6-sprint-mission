@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,8 +26,9 @@ public class NotificationController {
   private final NotificationService notificationService;
 
   @GetMapping
-  public List<NotificationDTO> getNotifications(@AuthenticationPrincipal DiscodeitUserDetails principal) {
-    return notificationService.findAllNotificationsByUserId(principal.getUser().getId());
+  public ResponseEntity<List<NotificationDTO>> getNotifications(@AuthenticationPrincipal DiscodeitUserDetails principal) {
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(notificationService.findAllNotificationsByUserId(principal.getUser().getId()));
   }
 
   @DeleteMapping("/{notificationId}")
