@@ -59,34 +59,13 @@ public class UserService {
         }
 
         String encodedPassword = passwordEncoder.encode(request.password());
-
         User user = User.create(request.email(), request.username(), encodedPassword);
-        userRepository.save(user);
 
         if (profileImageRequest != null) {
-            byte[] bytes = profileImageRequest.bytes();
-
-            BinaryContent binaryContent = BinaryContent.builder()
-                    .fileName(profileImageRequest.fileName())
-                    .contentType(profileImageRequest.contentType())
-                    .size((long) bytes.length)
-                    .user(user)
-                    .build();
-
-            binaryContentRepository.save(binaryContent);
-            binaryContentStorage.put(binaryContent.getId(), bytes);
-            user.setProfileImage(binaryContent);
+            saveProfileImage(profileImageRequest, user);
         }
-
+        userRepository.save(user);
         log.info("회원가입이 완료되었습니다. id=" + user.getId());
-        return userMapper.toDto(user);
-    }
-
-    @Transactional(readOnly = true)
-    public UserResponseDto findByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
-
         return userMapper.toDto(user);
     }
 
@@ -148,22 +127,12 @@ public class UserService {
         user.update(newEmail, newUsername, newPassword);
 
         if (profileImageRequest != null) {
-            byte[] bytes = profileImageRequest.bytes();
-            BinaryContent binaryContent = BinaryContent.builder()
-                    .fileName(profileImageRequest.fileName())
-                    .contentType(profileImageRequest.contentType())
-                    .size((long) profileImageRequest.bytes().length)
-                    .build();
-            binaryContentRepository.save(binaryContent);
-            binaryContentStorage.put(binaryContent.getId(), bytes);
-            user.setProfileImage(binaryContent);
+            saveProfileImage(profileImageRequest, user);
         }
-
 
         userRepository.save(user); // 명시적 저장
         log.info("사용자 수정이 완료되었습니다. id=" + user.getId());
 
-        BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
         return userMapper.toDto(user);
     }
 
@@ -189,6 +158,20 @@ public class UserService {
 
         userRepository.delete(user);
         log.info("사용자 삭제가 완료되었습니다. id=" + userId);
+    }
+
+    private BinaryContentResponseDto saveProfileImage(BinaryContentCreateRequestDto request, User user) {
+        byte[] bytes = request.bytes();
+        BinaryContent binaryContent = BinaryContent.create(
+                request.fileName(),
+                request.contentType(),
+                (long) bytes.length,
+                user
+        );
+        binaryContentRepository.save(binaryContent);
+        binaryContentStorage.put(binaryContent.getId(), bytes);
+        user.setProfileImage(binaryContent);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
 }

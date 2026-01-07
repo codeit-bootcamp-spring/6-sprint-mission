@@ -34,7 +34,7 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
-    private final MessageMapper messageMapper; // 유저 온라인 여부 확인시 리포지토리 필요, 스태틱으로 사용 불가해 별도로 선언.
+    private final MessageMapper messageMapper;
 
     // 메시지 생성
     @Transactional

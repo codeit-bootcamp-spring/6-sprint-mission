@@ -45,6 +45,13 @@ public class BinaryContent extends BaseEntity {
     @Builder.Default
     private Instant createdAt = Instant.now();
 
-
+    public static BinaryContent create(String fileName, String contentType, Long size, User user) {
+        return BinaryContent.builder()
+                .fileName(fileName)
+                .contentType(contentType)
+                .size(size)
+                .user(user)
+                .build();
+    }
 }
 
