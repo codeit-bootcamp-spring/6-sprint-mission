@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -33,6 +35,9 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   @Value("${spring.cloud.aws.s3.bucket}")
   private String bucket;
 
+  @Retryable(value = Exception.class, maxAttempts = 3,
+      backoff = @Backoff(delay = 1000, maxDelay = 4000, multiplier = 2)
+  )
   @Override
   public UUID put(UUID id, byte[] bytes) {
 
