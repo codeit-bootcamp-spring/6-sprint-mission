@@ -14,10 +14,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
+
     Message save(Message message);
+
     Optional<Message> findById(UUID id);
+
     List<Message> findByChannelId(UUID channelId);
+
     List<Message> findAllByIdIn(List<UUID> ids);
+
+    boolean existsByIdAndUser_Id(UUID id, UUID userId);
 
     @Query("SELECT m FROM Message m "
             + "LEFT JOIN FETCH m.author a "

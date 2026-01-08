@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import com.sprint.mission.discodeit.enums.ChannelType;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,7 +35,7 @@ public class ReadStatus extends BaseUpdatableEntity {
 
     private Instant lastReadAt;
 
-    private boolean notificationEnabled;
+    private boolean notificationEnabled = (channel.getType() == ChannelType.PRIVATE);
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

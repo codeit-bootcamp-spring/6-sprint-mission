@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.enums.Role;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.UserRoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -137,9 +138,12 @@ public class UserService {
         UUID userId = request.userId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
-
+        Role oldRole = user.getRole();
         user.updateRole(request.newRole());
+        userRepository.save(user);
         jwtRegistry.invalidateJwtInformationByUserId(userId);
+
+        eventPublisher.publishEvent(new UserRoleUpdatedEvent(user, oldRole, request.newRole()));
         return userMapper.toDto(user);
     }
 

@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -60,6 +61,7 @@ public class MessageService {
         messageRepository.save(message);
         saveAttachments(attachmentRequests, message);
 
+        eventPublisher.publishEvent(new MessageCreatedEvent(user, channel, message.getContent()));
         log.info("메시지 생성이 완료되었습니다. id=" + message.getId());
         return messageMapper.toDto(message);
     }
@@ -132,5 +134,9 @@ public class MessageService {
             binaryContents.add(binaryContent);
         }
         message.setAttachments(binaryContents);
+    }
+
+    public boolean isAuthor(UUID messageId, UUID userId){
+        return messageRepository.existsByIdAndUser_Id(messageId, userId);
     }
 }
