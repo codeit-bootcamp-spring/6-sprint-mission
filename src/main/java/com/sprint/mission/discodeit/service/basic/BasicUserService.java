@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentSave;
 import com.sprint.mission.discodeit.dto.User.*;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -16,6 +17,8 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,8 +36,8 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public UserDto create(MultipartFile multipartFile, UserCreateRequest userCreateRequest) {
@@ -49,7 +52,7 @@ public class BasicUserService implements UserService {
         BinaryContent profile = null;
         if (profileBinaryContent != null) {
             profile = profileBinaryContent.binaryContent();
-            binaryContentStorage.put(profile.getId(), profileBinaryContent.data());
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(profile.getId(), profileBinaryContent.data()));
         }
 
         String userPassword = passwordEncoder.encode(userCreateRequest.password());
@@ -95,7 +98,7 @@ public class BasicUserService implements UserService {
         BinaryContent profile = null;
         if (profileBinaryContent != null) {
             profile = profileBinaryContent.binaryContent();
-            binaryContentStorage.put(profile.getId(), profileBinaryContent.data());
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(profile.getId(), profileBinaryContent.data()));
         }
 
         user.update(UpdateUserDto.getUpdateUser(

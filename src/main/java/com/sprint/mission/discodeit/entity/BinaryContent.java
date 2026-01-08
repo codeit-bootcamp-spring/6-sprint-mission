@@ -1,10 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Table;
+import com.sprint.mission.discodeit.enumtype.BinaryContentStatus;
+import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
@@ -12,7 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Setter(AccessLevel.PACKAGE)
 @NoArgsConstructor
 @Table(name = "binary_contents")
-public class BinaryContent extends BaseEntity{
+public class BinaryContent extends BaseUpdatableEntity{
 
     @Column(nullable = false)
     private String fileName;
@@ -23,6 +22,10 @@ public class BinaryContent extends BaseEntity{
     @Column(nullable = false, length = 100)
     private String contentType;
 
+    @Column(nullable = false,length = 20)
+    @Enumerated(EnumType.STRING)
+    private BinaryContentStatus status = BinaryContentStatus.PROCESSING;
+
 
     //채널에 파일 업로드
     @Builder
@@ -30,6 +33,10 @@ public class BinaryContent extends BaseEntity{
         this.fileName = fileName;
         this.size = size;
         this.contentType= contentType;
+    }
+
+    public void updateStatus(BinaryContentStatus status){
+        this.status = status;
     }
 
 

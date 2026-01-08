@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentSave;
 import com.sprint.mission.discodeit.dto.Message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.Message.MessageDto;
@@ -23,6 +24,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,8 +48,8 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
     private final PageResponseMapper pageResponseMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -63,11 +65,21 @@ public class BasicMessageService implements MessageService {
             List<BinaryContentSave> messageBinaryContents = getBinaryContents(multipartFiles);
             List<BinaryContent> binaryContents = new ArrayList<>();
 
+            //이벤트 여러게 발생하면 자원 소모가 많아 서버부하 발생
+            //파일 저장하는 곳이 단건 처리 함수말고 다건 처리 함수 추가 필요
+            //파일 다건함수 따로 만들면 이벤트리스너 새로 하나 추가 해야함
+            //아니면 비동기로 처리해도 이벤트 IO처리 이벤트 많이 발생되면 서버부화 고려
             for (BinaryContentSave binaryContentSave : messageBinaryContents) {
                 binaryContents.add(binaryContentSave.binaryContent());
-                binaryContentRepository.save(binaryContentSave.binaryContent());
-                binaryContentStorage.put(binaryContentSave.binaryContent().getId(), binaryContentSave.data());
+                eventPublisher.publishEvent(
+                        new BinaryContentCreatedEvent(
+                                binaryContentSave.binaryContent().getId(),
+                                binaryContentSave.data()
+                        )
+                );
             }
+
+            binaryContentRepository.saveAll(binaryContents);
 
             Message message = new Message(user, channel, messageCreateRequest.content(), binaryContents);
             messageRepository.save(message);

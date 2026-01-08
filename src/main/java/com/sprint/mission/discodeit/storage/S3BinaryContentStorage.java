@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.storage;
 
+import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
@@ -19,6 +20,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.UUID;
@@ -53,16 +55,16 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
 
     @Override
-    public UUID put(UUID binaryContentId, byte[] bytes) {
+    public UUID put(BinaryContentCreatedEvent event) throws IOException {
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
-                .key("images/" + binaryContentId.toString())
+                .key("images/" + event.id().toString())
                 .build();
 
-        getS3Client().putObject(putObjectRequest, RequestBody.fromBytes(bytes));
+        getS3Client().putObject(putObjectRequest, RequestBody.fromBytes(event.content()));
 
-        return binaryContentId;
+        return event.id();
     }
 
     @Override

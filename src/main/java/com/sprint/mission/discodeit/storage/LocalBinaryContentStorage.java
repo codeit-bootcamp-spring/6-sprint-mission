@@ -1,10 +1,15 @@
 package com.sprint.mission.discodeit.storage;
 
+import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.enumtype.BinaryContentStatus;
 import com.sprint.mission.discodeit.exception.file.FileDownloadException;
 import com.sprint.mission.discodeit.exception.file.FileInPutException;
 import com.sprint.mission.discodeit.exception.file.FileOutPutException;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -13,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -50,15 +57,12 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     }
 
     @Override
-    public UUID put(UUID id, byte[] data) {
-        Path path = resolvePath(id);
+    public UUID put(BinaryContentCreatedEvent event) throws IOException {
+        Path path = resolvePath(event.id());
         try (FileOutputStream fos = new FileOutputStream(path.toFile());) {
-            fos.write(data);
-        } catch (IOException e) {
-            log.error("파일 저장 오류 발생: 파일Id={}",id);
-            throw new FileOutPutException();
+            fos.write(event.content());
         }
-        return id;
+        return event.id();
     }
 
     @Override
