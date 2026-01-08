@@ -248,7 +248,7 @@ public class ChannelController {
           )
       }
   )
-  @Cacheable(value = "channelsByUserId", key = "#userId", cacheManager = "defaultCacheManager")
+  @Cacheable(value = "channelsByUserIdCache", key = "#userId", cacheManager = "defaultCacheManager")
   @GetMapping()
   public List<FindChannelResponse> findChannelsByUserId(
       @Parameter(description = "사용자 ID", required = true, example = "123e4567-e89b-12d3-a456-426614174000")
