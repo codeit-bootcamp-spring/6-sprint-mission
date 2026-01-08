@@ -12,17 +12,20 @@ import org.springframework.stereotype.Component;
 @Getter
 public class FileUploadFailedEvent {
 
+  private String requestId;
   private UUID binaryContentId;
   private String errorMessage;
 
   @Builder(access = AccessLevel.PROTECTED)
-  private FileUploadFailedEvent(UUID binaryContentId, String errorMessage) {
+  private FileUploadFailedEvent(String requestId, UUID binaryContentId, String errorMessage) {
+    this.requestId = requestId;
     this.binaryContentId = binaryContentId;
     this.errorMessage = errorMessage;
   }
 
-  public static FileUploadFailedEvent of(UUID binaryContentId, String errorMessage) {
+  public static FileUploadFailedEvent of(String requestId, UUID binaryContentId, String errorMessage) {
     return FileUploadFailedEvent.builder()
+        .requestId(requestId)
         .binaryContentId(binaryContentId)
         .errorMessage(errorMessage)
         .build();

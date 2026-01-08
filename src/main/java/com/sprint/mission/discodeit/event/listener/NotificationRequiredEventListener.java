@@ -76,7 +76,11 @@ public class NotificationRequiredEventListener {
         .receiverId(userRepository.findByUsername("admin")
             .orElseThrow(NoSuchUserException::new).getId())
         .title("S3 File Upload Failed")
-        .content("File upload failed: " + event.getErrorMessage() + ".")
+        .content(
+            "Request ID: " + event.getRequestId() +
+            ", Binary Content ID: " + event.getBinaryContentId() +
+            ", Error Message: " + event.getErrorMessage()
+        )
         .build();
 
     notificationRepository.save(notification);
