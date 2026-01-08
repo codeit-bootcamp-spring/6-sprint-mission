@@ -8,6 +8,9 @@ spring:
     name: discodeit
   cache:
     type: caffeine
+    caffeine:
+      spec:
+        recordStats
   config:
     import: optional:file:.env
   datasource:
