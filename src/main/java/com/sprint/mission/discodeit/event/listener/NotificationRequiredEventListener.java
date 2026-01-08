@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.event.listener;
 
 import com.sprint.mission.discodeit.entity.MessageEntity;
 import com.sprint.mission.discodeit.entity.NotificationEntity;
+import com.sprint.mission.discodeit.event.event.CacheClearEvent;
 import com.sprint.mission.discodeit.event.event.FileUploadFailedEvent;
 import com.sprint.mission.discodeit.event.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.event.RoleUpdatedEvent;
@@ -14,6 +15,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,7 @@ public class NotificationRequiredEventListener {
   private final MessageRepository messageRepository;
   private final ReadStatusRepository readStatusRepository;
   private final UserRepository userRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Async("taskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -52,6 +55,10 @@ public class NotificationRequiredEventListener {
 
     notificationRepository.saveAll(notifications);
 
+    eventPublisher.publishEvent(
+        CacheClearEvent.RenewNotificationByUserIdCacheEvent.of(userIdList)
+    );
+
   }
 
   @Async("taskExecutor")
@@ -65,6 +72,12 @@ public class NotificationRequiredEventListener {
         .build();
 
     notificationRepository.save(notification);
+
+    eventPublisher.publishEvent(
+        CacheClearEvent.RenewNotificationByUserIdCacheEvent.of(
+            List.of(event.getUserId())
+        )
+    );
 
   }
 
@@ -84,6 +97,12 @@ public class NotificationRequiredEventListener {
         .build();
 
     notificationRepository.save(notification);
+
+    eventPublisher.publishEvent(
+        CacheClearEvent.RenewNotificationByUserIdCacheEvent.of(
+            List.of(notification.getReceiverId())
+        )
+    );
 
   }
 

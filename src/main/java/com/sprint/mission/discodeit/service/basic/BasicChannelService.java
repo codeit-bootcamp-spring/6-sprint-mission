@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ChannelDTO;
+import com.sprint.mission.discodeit.dto.UserDTO;
 import com.sprint.mission.discodeit.entity.ChannelEntity;
 import com.sprint.mission.discodeit.entity.ReadStatusEntity;
 import com.sprint.mission.discodeit.entity.enums.ChannelType;
+import com.sprint.mission.discodeit.event.event.CacheClearEvent;
 import com.sprint.mission.discodeit.exception.channel.InvalidChannelDataException;
 import com.sprint.mission.discodeit.exception.channel.NoSuchChannelException;
 import com.sprint.mission.discodeit.mapper.ChannelEntityMapper;
@@ -21,6 +23,7 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,7 @@ public class BasicChannelService implements ChannelService {
   private final ChannelEntityMapper channelEntityMapper;
   private final UserEntityMapper userEntityMapper;
   private final BasicChannelService.ChannelWithParticipants channelWithParticipants;
+  private final ApplicationEventPublisher eventPublisher;
 
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
@@ -82,14 +86,22 @@ public class BasicChannelService implements ChannelService {
 
     readStatusRepository.saveAll(readStatusEntityList);
 
-    channel.addParticipants(readStatusEntityList.stream()
+    List<UserDTO.User> participants = readStatusEntityList.stream()
         .map(ReadStatusEntity::getUser)
         .filter(Objects::nonNull)
         .map(userEntityMapper::toUser)
-        .toList());
+        .toList();
+
+    channel.addParticipants(participants);
 
     log.debug("Creating private channel with id {}, description {}, participants {}",
         channel.getId(), channel.getDescription(), channel.getParticipants().size());
+
+    eventPublisher.publishEvent(
+        CacheClearEvent.RenewChannelListByUserIdCacheEvent.of(participants.stream()
+            .map(UserDTO.User::getId)
+            .toList()
+    ));
 
     return channel;
 
@@ -153,11 +165,6 @@ public class BasicChannelService implements ChannelService {
       throw new InvalidChannelDataException(Map.of("name", "Channel name cannot be blank."));
     }
 
-    /*if (request.type() == null) {
-      log.warn("Missing channel type for updateChannel with id {}", request.id());
-      throw new InvalidChannelDataException(Map.of("type", "Channel type is required."));
-    }*/
-
     ChannelEntity updatedChannelEntity = channelRepository.findById(request.id())
         .orElseThrow(NoSuchChannelException::new);
 
@@ -170,6 +177,21 @@ public class BasicChannelService implements ChannelService {
     log.debug("Updating channel with id {}, name {}, description {}",
         updatedChannelEntity.getId(), updatedChannelEntity.getName(),
         updatedChannelEntity.getDescription());
+
+    List<UserDTO.User> participants = readStatusRepository.findByChannelId(
+            updatedChannelEntity.getId()).stream()
+        .map(ReadStatusEntity::getUser)
+        .filter(Objects::nonNull)
+        .map(userEntityMapper::toUser)
+        .toList();
+
+    eventPublisher.publishEvent(
+        CacheClearEvent.RenewChannelListByUserIdCacheEvent.of(
+            participants.stream()
+                .map(UserDTO.User::getId)
+                .toList()
+        )
+    );
 
     return channelEntityMapper.toChannel(channelRepository.save(updatedChannelEntity));
 
@@ -184,11 +206,25 @@ public class BasicChannelService implements ChannelService {
       throw new NoSuchChannelException();
     }
 
+    List<UserDTO.User> participants = readStatusRepository.findByChannelId(id).stream()
+        .map(ReadStatusEntity::getUser)
+        .filter(Objects::nonNull)
+        .map(userEntityMapper::toUser)
+        .toList();
+
     messageRepository.deleteByChannelId(id);
     readStatusRepository.deleteByChannelId(id);
     channelRepository.deleteById(id);
 
     log.debug("Deleted channel with id {}", id);
+
+    eventPublisher.publishEvent(
+        CacheClearEvent.RenewChannelListByUserIdCacheEvent.of(
+            participants.stream()
+                .map(UserDTO.User::getId)
+                .toList()
+        )
+    );
 
   }
 

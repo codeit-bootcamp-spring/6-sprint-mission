@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.UserDTO.UpdateUserRoleCommand;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.event.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.event.CacheClearEvent;
 import com.sprint.mission.discodeit.event.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.AlReadyExistUserException;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
@@ -73,6 +74,10 @@ public class BasicUserService implements UserService {
     }
 
     log.debug("User with id {} created successfully", user.getId());
+
+    eventPublisher.publishEvent(
+        new CacheClearEvent.RenewUserListCacheEvent()
+    );
 
     return user;
 
@@ -200,6 +205,10 @@ public class BasicUserService implements UserService {
 
     log.debug("User with id {} updated successfully", request.id());
 
+    eventPublisher.publishEvent(
+        new CacheClearEvent.RenewUserListCacheEvent()
+    );
+
     return userEntityMapper.toUser(userRepository.save(updatedUserEntity));
 
   }
@@ -230,6 +239,10 @@ public class BasicUserService implements UserService {
         )
     );
 
+    eventPublisher.publishEvent(
+        new CacheClearEvent.RenewUserListCacheEvent()
+    );
+
     return userEntityMapper.toUser(updatedUserEntity);
 
   }
@@ -246,6 +259,10 @@ public class BasicUserService implements UserService {
 
     binaryContentRepository.deleteById(userEntity.getProfileId().getId());
     userRepository.deleteById(id);
+
+    eventPublisher.publishEvent(
+        new CacheClearEvent.RenewUserListCacheEvent()
+    );
 
     log.debug("User with id {} deleted successfully", id);
 

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.event.listener;
 
 import com.sprint.mission.discodeit.event.event.CacheClearEvent;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.Async;
@@ -35,8 +36,10 @@ public class CacheCleatListener {
       return;
     }
 
-    Objects.requireNonNull(defaultCacheManager.getCache("notificationsByUserIdCache"))
-        .evict(event.getUserId());
+    for (UUID userId : event.getUserIdList()) {
+      Objects.requireNonNull(defaultCacheManager.getCache("notificationsByUserIdCache"))
+          .evict(userId);
+    }
 
   }
 
@@ -48,8 +51,10 @@ public class CacheCleatListener {
       return;
     }
 
-    Objects.requireNonNull(defaultCacheManager.getCache("channelsByUserIdCache"))
-        .evict(event.getUserId());
+    for (UUID userId : event.getUserIdList()) {
+      Objects.requireNonNull(defaultCacheManager.getCache("channelsByUserIdCache"))
+          .evict(userId);
+    }
 
   }
 
