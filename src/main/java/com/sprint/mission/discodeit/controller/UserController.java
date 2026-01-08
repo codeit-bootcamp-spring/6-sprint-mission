@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -223,6 +224,7 @@ public class UserController {
           )
       }
   )
+  @Cacheable(value = "userListCache", key = "'allUsers'")
   @GetMapping()
   public ResponseEntity<List<FindUserResponse>> findAll() {
 

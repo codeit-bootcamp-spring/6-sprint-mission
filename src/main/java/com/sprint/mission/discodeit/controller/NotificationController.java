@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,6 +26,7 @@ public class NotificationController {
 
   private final NotificationService notificationService;
 
+  @Cacheable(value = "notificationsByUserId", key = "#principal.user.id")
   @GetMapping
   public ResponseEntity<List<NotificationDTO>> getNotifications(@AuthenticationPrincipal DiscodeitUserDetails principal) {
     return ResponseEntity.status(HttpStatus.OK)
