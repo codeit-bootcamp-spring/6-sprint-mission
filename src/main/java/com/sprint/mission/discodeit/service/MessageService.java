@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.message.MessageCreateRequestDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -15,6 +16,7 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,8 +35,8 @@ public class MessageService {
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
     private final MessageMapper messageMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     // 메시지 생성
     @Transactional
@@ -56,28 +58,7 @@ public class MessageService {
                 .content(request.content())
                 .build();
         messageRepository.save(message);
-
-        Map<BinaryContent, byte[]> attachments = new HashMap<>(attachmentRequests.size());
-        for (BinaryContentCreateRequestDto attachmentRequest : attachmentRequests) {
-            String fileName = attachmentRequest.fileName();
-            String contentType = attachmentRequest.contentType();
-            byte[] bytes = attachmentRequest.bytes();
-
-            BinaryContent binaryContent = BinaryContent.builder()
-                    .fileName(fileName)
-                    .size((long) bytes.length)
-                    .contentType(contentType)
-                    .message(message)
-                    .build();
-            binaryContentRepository.save(binaryContent);
-
-            attachments.put(binaryContent, bytes);
-        }
-
-        for (Map.Entry<BinaryContent, byte[]> entry : attachments.entrySet()) {
-            BinaryContent binaryContent = entry.getKey();
-            binaryContentStorage.put(binaryContent.getId(), entry.getValue());
-        }
+        saveAttachments(attachmentRequests, message);
 
         log.info("메시지 생성이 완료되었습니다. id=" + message.getId());
         return messageMapper.toDto(message);
@@ -136,9 +117,20 @@ public class MessageService {
         log.info("메시지 삭제가 완료되었습니다. id=" + messageId);
     }
 
-    public boolean isAuthor(UUID messageId, UUID userId) {
-        return messageRepository.findById(messageId)
-                .map(m -> m.getAuthor().getId().equals(userId))
-                .orElse(false);
+    private void saveAttachments(List<BinaryContentCreateRequestDto> request, Message message) {
+        List<BinaryContent> binaryContents = new ArrayList<>();
+        for (BinaryContentCreateRequestDto image : request) {
+            byte[] bytes = image.bytes();
+            BinaryContent binaryContent = BinaryContent.createAttachmentImage(
+                    image.fileName(),
+                    image.contentType(),
+                    (long) bytes.length,
+                    message
+            );
+            binaryContentRepository.save(binaryContent);
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+            binaryContents.add(binaryContent);
+        }
+        message.setAttachments(binaryContents);
     }
 }

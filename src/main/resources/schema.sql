@@ -61,7 +61,9 @@ CREATE TABLE binary_contents (
     content_type VARCHAR(50) NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     size BIGINT NOT NULL,
+    status varchar(20) NOT NULL,
     created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP,
     CONSTRAINT fk_binary_message FOREIGN KEY (message_id) REFERENCES messages(id),
     CONSTRAINT fk_binary_user FOREIGN KEY (user_id) REFERENCES users(id)
 );

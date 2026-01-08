@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.enums.Role;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -20,6 +21,7 @@ import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
@@ -39,11 +41,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
-    private final BinaryContentMapper binaryContentMapper;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtRegistry jwtRegistry;
+    private final ApplicationEventPublisher eventPublisher;
 
     // 유저 생성
     @Transactional
@@ -73,21 +74,14 @@ public class UserService {
     public UserResponseDto findById(UUID id){
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
-        BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
-
         return userMapper.toDto(user);
     }
 
     @Transactional(readOnly = true)
     public List<UserResponseDto> findAll(){
         List<User> users = userRepository.findAllWithStatusAndProfile(); // N+1 문제 해결 위해 fetch join 쿼리 사용
-
         return users.stream()
-                .map(user -> {
-                    BinaryContentResponseDto profileImage = binaryContentMapper.toDto(user.getProfileImage());
-
-                    return userMapper.toDto(user);
-                })
+                .map(userMapper::toDto)
                 .toList();
     }
 
@@ -160,18 +154,18 @@ public class UserService {
         log.info("사용자 삭제가 완료되었습니다. id=" + userId);
     }
 
-    private BinaryContentResponseDto saveProfileImage(BinaryContentCreateRequestDto request, User user) {
+    private BinaryContent saveProfileImage(BinaryContentCreateRequestDto request, User user) {
         byte[] bytes = request.bytes();
-        BinaryContent binaryContent = BinaryContent.create(
+        BinaryContent binaryContent = BinaryContent.createProfileImage(
                 request.fileName(),
                 request.contentType(),
                 (long) bytes.length,
                 user
         );
         binaryContentRepository.save(binaryContent);
-        binaryContentStorage.put(binaryContent.getId(), bytes);
         user.setProfileImage(binaryContent);
-        return binaryContentMapper.toDto(binaryContent);
+        eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+        return binaryContent;
     }
 
 }

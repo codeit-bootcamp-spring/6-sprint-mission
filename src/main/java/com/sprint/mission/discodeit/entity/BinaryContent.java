@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequestDto;
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -24,7 +26,7 @@ public class BinaryContent extends BaseEntity {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "message_id", nullable = true)
+    @JoinColumn(name = "message_id")
     private Message message;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -40,18 +42,44 @@ public class BinaryContent extends BaseEntity {
     @Column(nullable = false, updatable = false)
     private Long size;
 
+    @Column(nullable = false)
+    private BinaryContentStatus status = BinaryContentStatus.PROCESSING;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private Instant createdAt = Instant.now();
 
-    public static BinaryContent create(String fileName, String contentType, Long size, User user) {
+    @LastModifiedDate
+    private Instant updatedAt;
+
+    // 파일 저장 상태
+    public enum BinaryContentStatus {
+        PROCESSING,
+        SUCCESS,
+        FAIL
+    }
+
+    public static BinaryContent createProfileImage(String fileName, String contentType, Long size, User user) {
         return BinaryContent.builder()
                 .fileName(fileName)
                 .contentType(contentType)
                 .size(size)
                 .user(user)
                 .build();
+    }
+
+    public static BinaryContent createAttachmentImage(String fileName, String contentType, Long size, Message message) {
+        return BinaryContent.builder()
+                .fileName(fileName)
+                .contentType(contentType)
+                .size(size)
+                .message(message)
+                .build();
+    }
+
+    public void updateStatus(BinaryContentStatus newStatus) {
+        this.status = newStatus;
     }
 }
 

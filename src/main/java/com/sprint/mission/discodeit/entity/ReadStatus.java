@@ -32,8 +32,9 @@ public class ReadStatus extends BaseUpdatableEntity {
     @JoinColumn(name = "channel_id")
     private Channel channel;
 
-    // NULL 허용, 수정 가능.
     private Instant lastReadAt;
+
+    private boolean notificationEnabled;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

@@ -7,8 +7,6 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +32,7 @@ public class Message extends BaseUpdatableEntity {
     @JoinColumn(name = "channel_id")
     private Channel channel;
 
+    @Setter
     @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BinaryContent> attachments = new ArrayList<>();
 
