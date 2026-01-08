@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -68,7 +69,7 @@ public class NotificationRequiredEventListener {
   }
 
   @Async("taskExecutor")
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @EventListener
   public void handleFileUploadFailedEvent(FileUploadFailedEvent event) {
 
     NotificationEntity notification = NotificationEntity.builder()
