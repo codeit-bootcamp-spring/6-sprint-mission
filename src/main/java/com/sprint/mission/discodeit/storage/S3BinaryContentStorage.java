@@ -1,17 +1,21 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDTO;
+import com.sprint.mission.discodeit.event.event.FileUploadFailedEvent;
 import java.io.InputStream;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -29,13 +33,14 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
   private final S3Client s3Client;
   private final S3Presigner s3Presigner;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Value("${discodeit.storage.s3.presigned-url-expiration}")
   private String presignedUrlExpiration;
   @Value("${spring.cloud.aws.s3.bucket}")
   private String bucket;
 
-  @Retryable(value = Exception.class, maxAttempts = 3,
+  @Retryable(value = SdkClientException.class, maxAttempts = 3,
       backoff = @Backoff(delay = 1000, maxDelay = 4000, multiplier = 2)
   )
   @Override
@@ -53,6 +58,23 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     return id;
 
   }
+
+  @Recover
+  private UUID putRecover(SdkClientException e, UUID id, byte[] bytes) {
+
+    log.error("Failed to put object to S3 with id: {} after retries", id, e);
+
+    eventPublisher.publishEvent(
+        FileUploadFailedEvent.of(
+            id,
+            e.getMessage()
+        )
+    );
+
+    throw new IllegalStateException("Failed to put object to S3 with id: " + id, e);
+
+  }
+
 
   @Override
   public void deleteById(UUID id) {
