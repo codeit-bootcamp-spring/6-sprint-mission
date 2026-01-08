@@ -6,6 +6,8 @@ discodeit:
 spring:
   application:
     name: discodeit
+  cache:
+    type: caffeine
   config:
     import: optional:file:.env
   datasource:
