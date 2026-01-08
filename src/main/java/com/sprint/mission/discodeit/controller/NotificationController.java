@@ -26,7 +26,7 @@ public class NotificationController {
 
   private final NotificationService notificationService;
 
-  @Cacheable(value = "notificationsByUserId", key = "#principal.user.id")
+  @Cacheable(value = "notificationsByUserId", key = "#principal.user.id", cacheManager = "defaultCacheManager")
   @GetMapping
   public ResponseEntity<List<NotificationDTO>> getNotifications(@AuthenticationPrincipal DiscodeitUserDetails principal) {
     return ResponseEntity.status(HttpStatus.OK)

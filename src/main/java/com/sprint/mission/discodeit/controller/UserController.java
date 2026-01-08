@@ -224,7 +224,7 @@ public class UserController {
           )
       }
   )
-  @Cacheable(value = "userListCache", key = "'allUsers'")
+  @Cacheable(value = "userListCache", key = "'allUsers'", cacheManager = "defaultCacheManager")
   @GetMapping()
   public ResponseEntity<List<FindUserResponse>> findAll() {
 
