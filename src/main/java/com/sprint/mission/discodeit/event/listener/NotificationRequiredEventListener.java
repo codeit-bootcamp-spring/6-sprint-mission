@@ -32,7 +32,7 @@ public class NotificationRequiredEventListener {
   private final UserRepository userRepository;
   private final ApplicationEventPublisher eventPublisher;
 
-  @Async("taskExecutor")
+  @Async("eventTaskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleMessageCreatedEvent(MessageCreatedEvent event) {
 
@@ -61,7 +61,7 @@ public class NotificationRequiredEventListener {
 
   }
 
-  @Async("taskExecutor")
+  @Async("eventTaskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleRoleUpdatedEvent(RoleUpdatedEvent event) {
 
@@ -81,7 +81,7 @@ public class NotificationRequiredEventListener {
 
   }
 
-  @Async("taskExecutor")
+  @Async("eventTaskExecutor")
   @EventListener
   public void handleFileUploadFailedEvent(FileUploadFailedEvent event) {
 

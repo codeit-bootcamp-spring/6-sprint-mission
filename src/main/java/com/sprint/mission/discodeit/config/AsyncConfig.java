@@ -15,7 +15,7 @@ public class AsyncConfig {
     return new SecurityTaskDecorator();
   }
 
-  @Bean("taskExecutor")
+  @Bean("eventTaskExecutor")
   public TaskExecutor taskExecutor() {
 
     ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();

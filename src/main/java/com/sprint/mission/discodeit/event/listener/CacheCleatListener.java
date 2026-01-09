@@ -16,7 +16,7 @@ public class CacheCleatListener {
 
   private final CacheManager defaultCacheManager;
 
-  @Async("taskExecutor")
+  @Async("eventTaskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleCacheClearEvent(CacheClearEvent.RenewUserListCacheEvent event) {
 
@@ -28,7 +28,7 @@ public class CacheCleatListener {
 
   }
 
-  @Async("taskExecutor")
+  @Async("eventTaskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleCacheClearEvent(CacheClearEvent.RenewNotificationByUserIdCacheEvent event) {
 
@@ -43,7 +43,7 @@ public class CacheCleatListener {
 
   }
 
-  @Async("taskExecutor")
+  @Async("eventTaskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleCacheClearEvent(CacheClearEvent.RenewChannelListByUserIdCacheEvent event) {
 
