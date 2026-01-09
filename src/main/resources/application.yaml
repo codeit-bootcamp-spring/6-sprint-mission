@@ -74,6 +74,7 @@ discodeit:
 
 jwt:
   secret: "nimbus-jose-jwt-practice-secret-key-must-be-at-least-256-bits"
-  expiration: 3600000
+  access-token-validity-in-ms: 1800000     # 30분
+  refresh-token-validity-in-ms: 1209600000 # 14일
   # 토큰 발급자 명시 (Registered Claim: iss)
   issuer: "discodeit-server"

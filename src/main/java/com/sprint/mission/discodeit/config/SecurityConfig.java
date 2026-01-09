@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.common.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -51,7 +51,7 @@ public class SecurityConfig {
                 "/assets/**",
                 "/favicon.ico",
                 "/index.html",
-                "/api/auth/csrf-token",
+                "/api/auth/refresh",
                 "/api/auth/login",
                 "/api/auth/logout",
                 "/actuator/health").permitAll()

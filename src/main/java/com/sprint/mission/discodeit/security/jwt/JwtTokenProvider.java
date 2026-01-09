@@ -41,11 +41,19 @@ public class JwtTokenProvider {
     }
   }
 
+  public String createAccessToken(DiscodeitUserDetails userDetails) {
+    return generateToken(userDetails, jwtProperties.getAccessTokenValidityInMs());
+  }
+
+  public String createRefreshToken(DiscodeitUserDetails userDetails) {
+    return generateToken(userDetails, jwtProperties.getRefreshTokenValidityInMs());
+  }
+
   // 인증 성공 이후 토큰 생성
-  public String generateToken(DiscodeitUserDetails userDetails) {
+  public String generateToken(DiscodeitUserDetails userDetails, long validityInMs) {
     try {
       Date now = new Date();
-      Date expirationTime = new Date(now.getTime() + jwtProperties.getExpiration());
+      Date expirationTime = new Date(now.getTime() + validityInMs);
 
       JWTClaimsSet cliamsSet = new JWTClaimsSet.Builder()
           .issuer(jwtProperties.getIssuer())
