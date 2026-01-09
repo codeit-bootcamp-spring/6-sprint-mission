@@ -131,7 +131,18 @@ public class BasicUserService implements UserService {
     public UserDto roleUpdate(UserRoleUpdateRequest userUpdateRequest) {
         User user = userRepository.findById(userUpdateRequest.userId())
                 .orElseThrow(UserNotFoundException::new);
+
+        String oldRole = user.getRole().toString();
+
         user.updateRole(userUpdateRequest.newRole());
+
+        RoleUpdatedEvent event = RoleUpdatedEvent.builder()
+                .userId(user.getId())
+                .newRole(user.getRole().toString())
+                .oldRole(oldRole)
+                .build();
+
+        eventPublisher.publishEvent(event);
         userRepository.save(user);
         return userMapper.toDto(user);
     }

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.enumtype.ChannelType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -33,11 +34,15 @@ public class ReadStatus extends BaseUpdatableEntity {
     @Column(nullable = false)
     private Instant lastReadAt;
 
+    @Column(nullable = false)
+    private boolean notification_enabled;
+
     @Builder
     public ReadStatus(Channel channel, User user) {
         this.user = user;
         this.channel = channel;
         this.lastReadAt = Instant.now();
+        this.notification_enabled = ChannelType.PRIVATE.equals(channel.getType());
     }
 
     public void update(Instant lastReadAt) {

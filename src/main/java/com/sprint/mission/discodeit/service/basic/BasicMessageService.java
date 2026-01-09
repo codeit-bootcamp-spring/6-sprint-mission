@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentSave;
 import com.sprint.mission.discodeit.dto.Message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.Message.MessageCreatedEvent;
 import com.sprint.mission.discodeit.dto.Message.MessageDto;
 import com.sprint.mission.discodeit.dto.Page.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -89,6 +90,16 @@ public class BasicMessageService implements MessageService {
         }
 
         Message message = new Message(user, channel, messageCreateRequest.content());
+
+        MessageCreatedEvent event = MessageCreatedEvent.builder()
+                .userId(user.getId())
+                .userName(user.getUsername())
+                .channelName(channel.getName())
+                .content(message.getContent())
+                .build();
+
+        eventPublisher.publishEvent(event);
+
         messageRepository.save(message);
         log.info("메시자 생성 완료: messageId={}", message.getId());
         return messageMapper.toDto(message);
