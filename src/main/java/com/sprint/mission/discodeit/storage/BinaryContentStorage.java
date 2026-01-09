@@ -7,11 +7,12 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public interface BinaryContentStorage {
 
-    UUID put(UUID binaryContentId, byte[] bytes);
+    CompletableFuture<UUID> put(UUID binaryContentId, byte[] bytes);
 
     InputStream get(UUID binaryContentId);
 

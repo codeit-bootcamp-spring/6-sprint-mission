@@ -34,11 +34,11 @@ public class JwtTokenProvider {
         }
     }
     public String createAccessToken(String username, String role) {
-        return generateToken(username, role, jwtProperties.getAccessTokenValidityInMilliseconds());
+        return generateToken(username, role, jwtProperties.getAccessTokenValidityInMs());
     }
 
     public String createRefreshToken(String username, String role) {
-        return generateToken(username, role, jwtProperties.getRefreshTokenValidityInMilliseconds());
+        return generateToken(username, role, jwtProperties.getRefreshTokenValidityInMs());
     }
 
     // JWT 토큰 생성

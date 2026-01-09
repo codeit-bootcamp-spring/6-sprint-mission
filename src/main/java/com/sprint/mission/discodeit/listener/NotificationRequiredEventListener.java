@@ -2,13 +2,18 @@ package com.sprint.mission.discodeit.listener;
 
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.enums.Role;
+import com.sprint.mission.discodeit.event.BinaryContentPutFailEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.UserRoleUpdatedEvent;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -22,6 +27,10 @@ public class NotificationRequiredEventListener {
 
     private final ReadStatusRepository readStatusRepository;
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
+
+    @Value("${discodeit.storage.type}")
+    String storageType;
 
     @Async("eventTaskExecutor")
     @TransactionalEventListener
@@ -50,6 +59,24 @@ public class NotificationRequiredEventListener {
                 event.oldRole().toString() + " -> "  + event.newRole().toString()
         );
         notificationRepository.save(notification);
+    }
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener
+    public void onBinaryContentPutFailure(BinaryContentPutFailEvent event) {
+
+        final String title = storageType.equals("s3") ? "S3 파일 업로드 실패" : "파일 저장 실패";
+        List<User> adminUsers = userRepository.findAllByRole(Role.ADMIN);
+        adminUsers.forEach(user -> {
+            Notification notification = Notification.create(
+                    user,
+                    title,
+                    "requestId: " + event.requestId() + '\n' +
+                            "binaryContentId: " + event.binaryContentId().toString() + '\n' +
+                            "error: " + event.errorMessage()
+            );
+            notificationRepository.save(notification);
+        });
     }
 
 }

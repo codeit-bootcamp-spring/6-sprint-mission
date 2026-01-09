@@ -33,4 +33,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     """)
     List<User> findAllWithStatusAndProfile();
 
+    List<User> findAllByRole(Role role);
 }

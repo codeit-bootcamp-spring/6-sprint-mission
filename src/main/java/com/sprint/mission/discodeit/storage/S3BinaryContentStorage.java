@@ -1,24 +1,21 @@
-package com.sprint.mission.discodeit.storage.s3;
+package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.event.BinaryContentPutFailEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -28,6 +25,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
@@ -38,16 +36,17 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
     private final BinaryContentRepository binaryContentRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    @Value("${AWS_S3_BUCKET}")
+    @Value("${discodeit.storage.s3.bucket}")
     private String bucketName;
 
-    @Value("${AWS_S3_PRESIGNED_URL_EXPIRATION:600}")
+    @Value("${discodeit.storage.s3.presigned-url-expiration}")
     private long presignedUrlExpirationSeconds;
 
     // S3에 저장
     @Override
-    public UUID put(UUID binaryContentId, byte[] bytes) {
+    public CompletableFuture<UUID> put(UUID binaryContentId, byte[] bytes) {
 
         binaryContentRepository.findById(binaryContentId)
                 .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId));
@@ -65,11 +64,19 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
         try {
             s3Client.putObject(putRequest, RequestBody.fromBytes(bytes));
-            return binaryContentId;
+            return CompletableFuture.completedFuture(binaryContentId);
 
         } catch (S3Exception e) {
             throw new RuntimeException("S3 파일 업로드 실패. key=" + key, e);
         }
+    }
+
+    @Recover
+    public void recoverFromPut(S3Exception e, UUID id) {
+        String requestId = MDC.get("requestId");
+        log.error("S3 저장 최종 재시도 실패. requestId: {}, contentId: {}", requestId, id);
+        eventPublisher.publishEvent(new BinaryContentPutFailEvent(requestId, id, e.getMessage()));
+        throw e;
     }
 
     // S3에 저장된 파일 읽기

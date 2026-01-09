@@ -53,12 +53,12 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtTokenProvider.generateToken(
                 user.getUsername(),
                 user.getRole().name(),
-                jwtProperties.getAccessTokenValidityInMilliseconds()
+                jwtProperties.getAccessTokenValidityInMs()
         );
         String refreshToken = jwtTokenProvider.generateToken(
                 user.getUsername(),
                 user.getRole().name(),
-                jwtProperties.getRefreshTokenValidityInMilliseconds()
+                jwtProperties.getRefreshTokenValidityInMs()
         );
 
         JwtInformation jwtInformation = new JwtInformation(
