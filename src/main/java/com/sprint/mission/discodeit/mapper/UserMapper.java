@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.security.SessionManager;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,11 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class UserMapper {
 
   @Autowired
-  protected SessionManager sessionManager;
+  protected JwtRegistry jwtRegistry;
 
   // User의 profile을 BinaryContentMapper.todto를 이용해 UserDto의 profile로 매핑
   @Mapping(source = "profile", target = "profile", qualifiedByName = "binaryContentToDto")
-  @Mapping(target = "online", expression = "java(sessionManager.hasActiveSessions(user.getId()))")
+  @Mapping(target = "online", expression = "java(jwtRegistry.hasActiveJwtInformationByUserId(user.getId()))")
   @Named("userToDto")
   public abstract UserDto toDto(User user);
 

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -9,16 +9,12 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
-import com.sprint.mission.discodeit.security.SessionManager;
-import com.sprint.mission.discodeit.security.jwt.JwtInformation;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,8 +70,8 @@ public class BasicAuthService implements AuthService {
     String newAccess = jwtTokenProvider.createAccessToken(userDetails);
     String newRefresh = jwtTokenProvider.createRefreshToken(userDetails);
 
-    // 4. DB Rotation
-    JwtInformation newInfo = new JwtInformation(UserDto.from(member), newAccess, newRefresh);
+    // 4. 레지스트리 갱신
+    JwtInformation newInfo = new JwtInformation(userDetails.getUserDto(), newAccess, newRefresh);
     jwtRegistry.rotateJwtInformation(refreshToken, newInfo);
 
     return newInfo;

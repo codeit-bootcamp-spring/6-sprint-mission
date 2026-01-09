@@ -4,6 +4,7 @@ package com.sprint.mission.discodeit.security.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.common.TokenUtil;
 import com.sprint.mission.discodeit.dto.data.JwtDto;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
   private final ObjectMapper objectMapper;
+  private final JwtRegistry jwtRegistry;
   private final JwtTokenProvider jwtTokenProvider;
 
   @Override
@@ -34,6 +36,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     String accessToken = jwtTokenProvider.createAccessToken(userDetails);
     String refreshToken = jwtTokenProvider.createRefreshToken(userDetails);
+
+    // 레지스트리에 등록
+    JwtInformation info = new JwtInformation(userDto, accessToken, refreshToken);
+    jwtRegistry.registerJwtInformation(info);
 
     Cookie refreshCookie = TokenUtil.createRefreshTokenCookie(refreshToken);
     response.addCookie(refreshCookie);
