@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.data;
+package com.sprint.mission.discodeit.dto.model;
 
 import com.sprint.mission.discodeit.entity.ChannelType;
 import java.time.Instant;

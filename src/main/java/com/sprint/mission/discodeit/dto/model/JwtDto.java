@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.data;
+package com.sprint.mission.discodeit.dto.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.model.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.CreateReadStatusRequest;
 import com.sprint.mission.discodeit.dto.request.UpdateReadStatusRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;

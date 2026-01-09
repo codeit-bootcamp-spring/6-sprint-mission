@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import com.sprint.mission.discodeit.common.TokenUtil;
-import com.sprint.mission.discodeit.dto.data.JwtInformation;
+import com.sprint.mission.discodeit.dto.model.JwtInformation;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;

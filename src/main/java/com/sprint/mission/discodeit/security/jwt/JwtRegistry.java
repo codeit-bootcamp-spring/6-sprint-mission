@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.security.jwt;
 
-import com.sprint.mission.discodeit.dto.data.JwtInformation;
+import com.sprint.mission.discodeit.dto.model.JwtInformation;
 import java.util.UUID;
 
 public interface JwtRegistry {
 
-  void registerJwtInformation(com.sprint.mission.discodeit.dto.data.JwtInformation jwtInformation);
+  void registerJwtInformation(com.sprint.mission.discodeit.dto.model.JwtInformation jwtInformation);
 
   void invalidateJwtInformationByUserId(UUID userId);
 
