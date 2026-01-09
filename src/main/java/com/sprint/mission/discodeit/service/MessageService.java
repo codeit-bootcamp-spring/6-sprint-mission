@@ -137,6 +137,6 @@ public class MessageService {
     }
 
     public boolean isAuthor(UUID messageId, UUID userId){
-        return messageRepository.existsByIdAndUser_Id(messageId, userId);
+        return messageRepository.existsByIdAndAuthor_Id(messageId, userId);
     }
 }

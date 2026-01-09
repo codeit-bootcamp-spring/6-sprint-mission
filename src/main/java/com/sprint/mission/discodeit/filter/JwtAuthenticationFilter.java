@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.security.filter;
+package com.sprint.mission.discodeit.filter;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;

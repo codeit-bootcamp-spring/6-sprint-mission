@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -22,8 +23,9 @@ public class NotificationRequiredEventListener {
     private final ReadStatusRepository readStatusRepository;
     private final NotificationRepository notificationRepository;
 
+    @Async("eventTaskExecutor")
     @TransactionalEventListener
-    public void on(MessageCreatedEvent event) {
+    public void onMessageCreated(MessageCreatedEvent event) {
         List<ReadStatus> readStatuses = readStatusRepository
                 .findAllByChannelIdAndNotificationEnabledIsTrueAndUser_IdNot(event.channel().getId(), event.author().getId());
 
@@ -37,8 +39,9 @@ public class NotificationRequiredEventListener {
         });
     }
 
+    @Async("eventTaskExecutor")
     @TransactionalEventListener
-    public void on(UserRoleUpdatedEvent event) {
+    public void onUserRoleUpdate(UserRoleUpdatedEvent event) {
 
         final String roleUpdateMessage = "권한이 변경되었습니다.";
         Notification notification = Notification.create(

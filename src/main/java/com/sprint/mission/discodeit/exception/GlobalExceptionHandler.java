@@ -5,7 +5,9 @@ import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentAlready
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.jwt.InvalidRefreshTokenException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
@@ -34,6 +36,7 @@ public class GlobalExceptionHandler {
             MessageNotFoundException.class,
             ReadStatusNotFoundException.class,
             BinaryContentNotFoundException.class,
+            NotificationNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> handleNotFound(DiscodeitException e) {
         log.error(e.getMessage());
@@ -103,9 +106,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
+    // 유효하지 않은 JWT 토큰
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRefreshToken(InvalidRefreshTokenException e) {
+        log.error(e.getMessage());
+        ErrorResponse error = ErrorResponse.of(
+                ErrorCode.INVALID_AUTH.toString(),
+                e.getMessage(),
+                null,
+                e.getClass().getSimpleName(),
+                HttpStatus.UNAUTHORIZED.value()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
     // 접근 권한 없음
     @ExceptionHandler(AccessDeniedException.class)
-    public  ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e) {
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e) {
         log.error(e.getMessage());
 
         ErrorResponse error = ErrorResponse.of(

@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -18,20 +19,20 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 public class BinaryContentEventListener {
 
-    private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentService binaryContentService;
 
+    @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onBinaryContentCreated(BinaryContentCreatedEvent event) {
 
         try {
-            binaryContentStorage.put(event.getId(), event.getBytes());
-            binaryContentService.updateStatus(event.getId(), BinaryContent.BinaryContentStatus.SUCCESS);
+            binaryContentStorage.put(event.id(), event.bytes());
+            binaryContentService.updateStatus(event.id(), BinaryContent.BinaryContentStatus.SUCCESS);
 
         } catch (Exception e) {
-            log.warn("Binary content storage failed for ID: {}", event.getId(), e);
-            binaryContentService.updateStatus(event.getId(), BinaryContent.BinaryContentStatus.FAIL);
+            log.warn("Binary content storage failed for ID: {}", event.id(), e);
+            binaryContentService.updateStatus(event.id(), BinaryContent.BinaryContentStatus.FAIL);
         }
     }
 }

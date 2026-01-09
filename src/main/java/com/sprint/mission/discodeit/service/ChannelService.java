@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -165,21 +164,11 @@ public class ChannelService {
                 .orElseThrow(() -> new ChannelNotFoundException(id));
 
         if (channel.getType() == ChannelType.PUBLIC && user.getRole() == Role.USER) {
-            throw new AccessDeniedException("권한이 없습니다."); // TODO 커스텀예외?
+            throw new AccessDeniedException("권한이 없습니다.");
         }
 
-        List<Message> messages = messageRepository.findByChannelId(id);
-        if (messages != null) {
-            messageRepository.deleteAll(messages);
-        }
-
-        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(id);
-        if (readStatuses != null) {
-            readStatuses.stream().
-                    map(ReadStatus::getId).
-                    forEach(readStatusRepository::deleteById);
-        }
-
+        messageRepository.deleteAllByChannel_Id(id);
+        readStatusRepository.deleteAllByChannel_Id(id);
         channelRepository.delete(channel);
         log.info("채널 삭제가 완료되었습니다. id=" + id);
     }

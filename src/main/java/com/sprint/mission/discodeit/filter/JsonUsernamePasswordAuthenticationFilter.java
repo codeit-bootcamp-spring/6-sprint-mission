@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.security.filter;
+package com.sprint.mission.discodeit.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
