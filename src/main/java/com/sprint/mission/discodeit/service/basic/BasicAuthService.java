@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -7,12 +8,17 @@ import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
+import com.sprint.mission.discodeit.security.SessionManager;
+import com.sprint.mission.discodeit.security.jwt.JwtInformation;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +26,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
 
-  private final SessionRegistry sessionRegistry;
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
+  private final JwtTokenProvider jwtTokenProvider;
+  private final DiscodeitUserDetailsService detailsService;
+  private final JwtRegistry jwtRegistry;
 
   public boolean isOwner(UUID id, Object principal) {
     if (!(principal instanceof DiscodeitUserDetails userDetails)) {
@@ -47,21 +55,29 @@ public class BasicAuthService implements AuthService {
         .orElseThrow(UserNotFoundException::new);
     user.updateRole(updateRequest.newRole());
 
-    expireUserSessions(updateRequest);
-
     return user;
   }
 
-  private void expireUserSessions(RoleUpdateRequest updateRequest) {
+  @Transactional
+  public JwtInformation refreshToken(String refreshToken) {
+    // 1. 검증: 서명 유효성 확인 AND DB 존재 여부 확인
+    if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken) ||
+        !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
+      return null;
+    }
 
-    // 역할 업데이트 시 세션 만료 처리
-    sessionRegistry.getAllPrincipals().stream()
-        .filter(DiscodeitUserDetails.class::isInstance)
-        .map(p -> (DiscodeitUserDetails) p)
-        .filter(u -> u.getUserDto().id().equals(updateRequest.userId()))
-        .forEach(targetPrincipal ->
-            sessionRegistry.getAllSessions(targetPrincipal, false)
-                .forEach(SessionInformation::expireNow)
-        );
+    // 2. 정보 조회
+    String username = jwtTokenProvider.getClaims(refreshToken).getSubject();
+    DiscodeitUserDetails userDetails = (DiscodeitUserDetails) detailsService.loadUserByUsername(username);
+
+    // 3. 새 토큰 생성
+    String newAccess = jwtTokenProvider.createAccessToken(userDetails);
+    String newRefresh = jwtTokenProvider.createRefreshToken(userDetails);
+
+    // 4. DB Rotation
+    JwtInformation newInfo = new JwtInformation(UserDto.from(member), newAccess, newRefresh);
+    jwtRegistry.rotateJwtInformation(refreshToken, newInfo);
+
+    return newInfo;
   }
 }

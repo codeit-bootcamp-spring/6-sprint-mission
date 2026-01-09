@@ -6,8 +6,8 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '2.0-M9'
-description = '6sprint8'
+version = '2.1-M10'
+description = '6sprint10'
 
 java {
     toolchain {
@@ -51,7 +51,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
-    testImplementation 'org.springframework.security:spring-security-test'
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.6'
+
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -65,6 +66,8 @@ dependencies {
 
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'com.h2database:h2'
+
+    testImplementation 'org.springframework.security:spring-security-test'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

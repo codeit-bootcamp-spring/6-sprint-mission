@@ -1,9 +1,13 @@
 
-package com.sprint.mission.discodeit.security;
+package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.common.TokenUtil;
+import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -16,9 +20,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class LoginSuccessHandler implements AuthenticationSuccessHandler {
+public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
   private final ObjectMapper objectMapper;
+  private final JwtTokenProvider jwtTokenProvider;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -27,8 +32,20 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     DiscodeitUserDetails userDetails = (DiscodeitUserDetails) authentication.getPrincipal();
     UserDto userDto = userDetails.getUserDto();
 
+    String accessToken = jwtTokenProvider.createAccessToken(userDetails);
+    String refreshToken = jwtTokenProvider.createRefreshToken(userDetails);
+
+    Cookie refreshCookie = TokenUtil.createRefreshTokenCookie(refreshToken);
+    response.addCookie(refreshCookie);
+
     response.setStatus(HttpStatus.OK.value());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
-    objectMapper.writeValue(response.getWriter(), userDto);
+
+    JwtDto jwtDto = JwtDto.builder()
+        .accessToken(accessToken)
+        .userDto(userDto)
+        .build();
+
+    objectMapper.writeValue(response.getWriter(), jwtDto);
   }
 }
