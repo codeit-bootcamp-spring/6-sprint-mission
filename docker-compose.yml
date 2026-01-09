@@ -21,6 +21,14 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
   postgres-db:
     image: postgres:17-alpine
     container_name: discodeit-db
@@ -47,3 +55,4 @@ services:
 volumes:
     postgres_data:
     discodeit_uploads:
+    redis-data:
