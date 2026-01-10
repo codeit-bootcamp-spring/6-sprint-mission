@@ -24,6 +24,12 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
+  cache:
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
 
 logging:
   level:
@@ -54,6 +60,15 @@ management:
     web:
       exposure:
         include: "health,info,metrics,loggers"
+  endpoint:
+    health:
+      show-details: always
+    caches:
+      access: unrestricted
+    metrics:
+      export:
+        simple:
+          enabled: true
   observations:
     annotations:
       enabled: true

@@ -15,6 +15,8 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,7 @@ public class ChannelService {
 
     // 채널 생성 및 저장
     @Transactional
+    @CacheEvict(value = "channels", allEntries = true)
     public ChannelResponseDto create(PrivateChannelCreateRequestDto request) {
 
         Channel channel = Channel.builder()
@@ -61,6 +64,7 @@ public class ChannelService {
 
     @Transactional
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(value = "channels", allEntries = true)
     public ChannelResponseDto create(PublicChannelCreateRequestDto request) {
         Channel channel = Channel.builder()
                 .type(ChannelType.PUBLIC)
@@ -103,6 +107,7 @@ public class ChannelService {
 
     // 전체 PUBLIC, 참여중인 PRIVATE 채널
     @Transactional(readOnly = true)
+    @Cacheable("channels")
     public List<ChannelResponseDto> findAllByUserId(UUID id) {
 
         List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(id);
@@ -136,6 +141,7 @@ public class ChannelService {
 
     @Transactional
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(value = "channels", allEntries = true)
     public ChannelResponseDto update(UUID id, PublicChannelUpdateRequestDto request) {
 
         Channel channel = channelRepository.findById(id)
@@ -158,6 +164,7 @@ public class ChannelService {
 
     // 채널 삭제
     @Transactional
+    @CacheEvict(value = "channels", allEntries = true)
     public void deleteById(UUID id, User user) {
 
         Channel channel = channelRepository.findById(id)

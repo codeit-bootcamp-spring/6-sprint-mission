@@ -22,6 +22,9 @@ import com.sprint.mission.discodeit.security.principal.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
@@ -49,6 +52,7 @@ public class UserService {
 
     // 유저 생성
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public UserResponseDto create(UserCreateRequestDto request,
                                   BinaryContentCreateRequestDto profileImageRequest) {
 
@@ -79,6 +83,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable("users")
     public List<UserResponseDto> findAll(){
         List<User> users = userRepository.findAllWithStatusAndProfile(); // N+1 문제 해결 위해 fetch join 쿼리 사용
         return users.stream()
@@ -89,6 +94,7 @@ public class UserService {
     // 수정
     @Transactional
     @PreAuthorize("#userId == authentication.principal.id")
+    @CacheEvict(value = "users", allEntries = true)
     public UserResponseDto update(UUID userId, UserUpdateRequestDto request,
                                   BinaryContentCreateRequestDto profileImageRequest) {
 
@@ -133,6 +139,7 @@ public class UserService {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
+    @CacheEvict(value = "users", allEntries = true)
     public UserResponseDto updateUserRole(UserRoleUpdateRequest request) {
 
         UUID userId = request.userId();
@@ -150,6 +157,7 @@ public class UserService {
     // 유저 삭제
     @Transactional
     @PreAuthorize("#userId == authentication.principal.id")
+    @CacheEvict(value = "users", allEntries = true)
     public void delete(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
