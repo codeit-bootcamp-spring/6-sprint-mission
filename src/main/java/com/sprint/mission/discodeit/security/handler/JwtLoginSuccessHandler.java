@@ -38,6 +38,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper; // JSON 변환
     private final UserMapper userMapper; // 객체 변환
+    private static final int REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 14;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -72,7 +73,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(60 * 60 * 24 * 14);
+        refreshCookie.setMaxAge(REFRESH_TOKEN_MAX_AGE);
         response.addCookie(refreshCookie);
 
         response.setStatus(HttpServletResponse.SC_OK);

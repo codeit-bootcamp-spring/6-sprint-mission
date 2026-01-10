@@ -14,9 +14,8 @@ import java.util.*;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
 @EqualsAndHashCode(callSuper = false)
 @Table(name = "users")
 public class User extends BaseUpdatableEntity {
@@ -48,23 +47,28 @@ public class User extends BaseUpdatableEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    Role role;
+    @Column(nullable = false)
+    Role role = Role.USER;
 
     @CreatedDate
-    @Builder.Default
     @Column(nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
+    private Instant createdAt;
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @Builder
+    public User (String email, String username, String password) {
+        this.email = email;
+        this.username = username;
+        this.password = password;
+    }
 
     public static User create(String email, String username, String encodedPassword) {
         return User.builder()
                 .email(email)
                 .username(username)
                 .password(encodedPassword)
-                .role(Role.USER)
                 .build();
     }
 

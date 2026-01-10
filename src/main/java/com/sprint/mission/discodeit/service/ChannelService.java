@@ -43,9 +43,7 @@ public class ChannelService {
     @CacheEvict(value = "channels", allEntries = true)
     public ChannelResponseDto create(PrivateChannelCreateRequestDto request) {
 
-        Channel channel = Channel.builder()
-                .type(ChannelType.PRIVATE)
-                .build();
+        Channel channel = Channel.createPrivateChannel();
         channelRepository.save(channel);
 
         List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
@@ -66,11 +64,7 @@ public class ChannelService {
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @CacheEvict(value = "channels", allEntries = true)
     public ChannelResponseDto create(PublicChannelCreateRequestDto request) {
-        Channel channel = Channel.builder()
-                .type(ChannelType.PUBLIC)
-                .name(request.name())
-                .description(request.description())
-                .build();
+        Channel channel = Channel.createPublicChannel(request.name(), request.description());
 
         channelRepository.save(channel);
         log.info("공개 채널 생성이 완료되었습니다. id=" + channel.getId());

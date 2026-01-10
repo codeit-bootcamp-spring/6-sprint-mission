@@ -15,9 +15,8 @@ import java.util.UUID;
  */
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
 @Table(name = "binary_contents")
 public class BinaryContent extends BaseEntity {
 
@@ -47,8 +46,7 @@ public class BinaryContent extends BaseEntity {
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    @Builder.Default
-    private Instant createdAt = Instant.now();
+    private Instant createdAt;
 
     @LastModifiedDate
     private Instant updatedAt;
@@ -58,6 +56,16 @@ public class BinaryContent extends BaseEntity {
         PROCESSING,
         SUCCESS,
         FAIL
+    }
+
+    @Builder(access = AccessLevel.PRIVATE)
+    public BinaryContent(Message message, User user, String fileName, String contentType, Long size, BinaryContentStatus status) {
+        this.message = message;
+        this.user = user;
+        this.fileName = fileName;
+        this.contentType = contentType;
+        this.size = size;
+        this.status = status;
     }
 
     public static BinaryContent createProfileImage(String fileName, String contentType, Long size, User user) {

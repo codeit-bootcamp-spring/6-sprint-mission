@@ -14,9 +14,8 @@ import java.util.UUID;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
 @Table(name = "messages")
 public class Message extends BaseUpdatableEntity {
 
@@ -42,15 +41,17 @@ public class Message extends BaseUpdatableEntity {
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    @Builder.Default
-    private Instant createdAt = Instant.now();
+    private Instant createdAt;
 
     @LastModifiedDate
     private Instant updatedAt;
 
-    // TODO 필요없는 메서드일수 있음. 연관관계 검토 필요
-    public void updateBinaryContents(List<BinaryContent> attachments) {
-        this.attachments = (attachments != null ? attachments : new ArrayList<>());
+    @Builder
+    public Message (User author, Channel channel, List<BinaryContent> attachments, String content) {
+        this.author = author;
+        this.channel = channel;
+        this.attachments = attachments;
+        this.content = content;
     }
 
     public void updateContent(String content) {

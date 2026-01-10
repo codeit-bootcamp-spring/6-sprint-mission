@@ -15,9 +15,8 @@ import java.util.UUID;
 // user:channel(N:M)의 연결 테이블 역할도 수행.
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
 @Table(name = "read_statuses")
 public class ReadStatus extends BaseUpdatableEntity {
 
@@ -39,11 +38,17 @@ public class ReadStatus extends BaseUpdatableEntity {
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    @Builder.Default
-    private Instant createdAt = Instant.now();
+    private Instant createdAt;
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @Builder
+    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+        this.user = user;
+        this.channel = channel;
+        this.lastReadAt = lastReadAt;
+    }
 
     public void updateLastReadAt(Instant lastReadAt) {
         this.lastReadAt = lastReadAt;

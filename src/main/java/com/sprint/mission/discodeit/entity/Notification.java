@@ -10,6 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Getter
+@Table(name = "notifications")
 public class Notification {
 
     @Id

@@ -7,10 +7,8 @@ import java.util.UUID;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
 public class TokenInfo {
 
     @Id
@@ -29,5 +27,12 @@ public class TokenInfo {
     public void rotate(String newAccess, String newRefresh) {
         this.accessToken = newAccess;
         this.refreshToken = newRefresh;
+    }
+
+    @Builder
+    public TokenInfo(UUID userId, String accessToken, String refreshToken) {
+        this.userId = userId;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 }
