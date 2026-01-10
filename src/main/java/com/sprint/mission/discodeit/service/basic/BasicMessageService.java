@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.storage.event.BinaryContentCreatedEvent;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,7 @@ public class BasicMessageService implements MessageService {
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage storage;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public Message create(CreateMessageRequest createMessageRequest,
@@ -69,7 +71,7 @@ public class BasicMessageService implements MessageService {
                 file.getContentType()
             );
             BinaryContent saved = binaryContentRepository.save(binaryContent);
-            storage.put(saved.getId(), file.getBytes());
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(saved.getId(), file.getBytes()));
             return saved;
           } catch (IOException e) {
             log.error("첨부파일 처리 실패", e);

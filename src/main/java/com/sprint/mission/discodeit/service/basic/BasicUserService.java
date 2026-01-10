@@ -1,15 +1,16 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.common.Role;
 import com.sprint.mission.discodeit.dto.request.CreateUserRequest;
 import com.sprint.mission.discodeit.dto.request.UpdateUserRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.common.Role;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.storage.event.BinaryContentCreatedEvent;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,8 +32,8 @@ public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage storage;
   private final PasswordEncoder passwordEncoder;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public User create(CreateUserRequest request, Optional<MultipartFile> profile) {
@@ -44,20 +46,20 @@ public class BasicUserService implements UserService {
 
     Optional<BinaryContent> binaryContentOptional = profile.map(
         file -> {
+          BinaryContent bc = new BinaryContent(
+              file.getOriginalFilename(),
+              file.getSize(),
+              file.getContentType()
+          );
+          // em.persist(bc) 이후에 id 값이 생성됨
+          BinaryContent saved = binaryContentRepository.save(bc);
           try {
-            BinaryContent bc = new BinaryContent(
-                file.getOriginalFilename(),
-                file.getSize(),
-                file.getContentType()
-            );
-            System.out.println(bc.getId() + " bc의 id");       // 여기 id는 null
-            BinaryContent saved = binaryContentRepository.save(bc);
-            storage.put(saved.getId(), file.getBytes());      // id는 영속화 이후 발생
-            return saved;
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(saved.getId(), file.getBytes()));
           } catch (IOException e) {
             log.error("유저 프로필 사진 처리 실패", e);
             throw new RuntimeException("유저 프로필 사진 처리 실패");
           }
+          return saved;
         }
     );
     user = User.builder()
@@ -125,12 +127,12 @@ public class BasicUserService implements UserService {
                   file.getContentType()
               );
               BinaryContent updated = binaryContentRepository.save(bc);
-              storage.put(updated.getId(), file.getBytes());
+              eventPublisher.publishEvent(new BinaryContentCreatedEvent(updated.getId(), file.getBytes()));
               return updated;
             } else {
               user.getProfile()
                   .update(file.getOriginalFilename(), file.getSize(), file.getContentType());
-              storage.put(user.getProfile().getId(), file.getBytes());     // 기존 프로필 사진 덮어쓰기
+              eventPublisher.publishEvent(new BinaryContentCreatedEvent(user.getProfile().getId(), file.getBytes()));
               return binaryContentRepository.save(user.getProfile());
             }
           } catch (IOException e) {
