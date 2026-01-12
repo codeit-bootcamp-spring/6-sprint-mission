@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
+import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.List;
@@ -52,6 +53,7 @@ public class MessageController {
     return ResponseEntity.ok(pageResponseMapper.fromSlice(dtoSlice));
   }
 
+  @Timed("message.create.async")
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,
       MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<MessageDto> createMessage(

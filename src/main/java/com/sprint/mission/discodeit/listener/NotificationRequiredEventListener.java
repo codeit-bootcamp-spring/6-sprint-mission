@@ -2,14 +2,14 @@ package com.sprint.mission.discodeit.listener;
 
 import com.sprint.mission.discodeit.dto.request.CreateMessageNotificationRequest;
 import com.sprint.mission.discodeit.dto.request.UpdateRoleNotificationRequest;
-import com.sprint.mission.discodeit.service.NotificationService;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.service.NotificationService;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
@@ -19,8 +19,9 @@ public class NotificationRequiredEventListener {
 
   private final NotificationService notificationService;
 
+  @Timed("async.notification.message.create")
+  @Async("notificationEventTaskExecutor")
   @TransactionalEventListener
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void on(MessageCreatedEvent event) {
 
     log.debug("메시지 알림 생성 시작: messageId={}", event.messageId());
@@ -35,8 +36,8 @@ public class NotificationRequiredEventListener {
     notificationService.createMessageNotification(request);
   }
 
+  @Async("notificationEventTaskExecutor")
   @TransactionalEventListener
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void on(RoleUpdatedEvent event) {
 
     log.debug("역할 업데이트 알림 생성 시작: userId={}", event.userId());

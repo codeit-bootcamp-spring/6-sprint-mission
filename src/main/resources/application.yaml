@@ -52,12 +52,16 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,loggers,info,metrics
+        include: "*"
+  #        include: health,loggers,info,metrics,prometheus
   endpoint:
     health:
       show-details: always
   info:
     env:
+      enabled: true
+  observations:
+    annotations:
       enabled: true
 
 discodeit:
