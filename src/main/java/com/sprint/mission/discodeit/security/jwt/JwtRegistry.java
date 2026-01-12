@@ -1,17 +1,21 @@
 package com.sprint.mission.discodeit.security.jwt;
 
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import java.util.UUID;
 
 public interface JwtRegistry {
 
-    void registerJwtInformation(JwtInformation jwtInformation);
+  void registerJwtInformation(JwtInformation jwtInformation);
 
-    void invalidateJwtInformationByUserId(UUID userId);
+  void invalidateJwtInformationByUserId(UUID userId);
 
-    boolean hasActiveJwtInformationByRefreshToken(String refreshToken);
+  boolean hasActiveJwtInformationByUserId(UUID userId);
 
-    void rotateJwtInformation(String refreshToken, JwtInformation newJwtInformation);
+  boolean hasActiveJwtInformationByAccessToken(String accessToken);
 
-    void clearExpiredJwtInformation();
+  boolean hasActiveJwtInformationByRefreshToken(String refreshToken);
 
+  void rotateJwtInformation(String refreshToken, JwtInformation newJwtInformation);
+
+  void clearExpiredJwtInformation();
 }

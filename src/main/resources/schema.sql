@@ -66,16 +66,6 @@ CREATE TABLE read_statuses
     UNIQUE (user_id, channel_id)
 );
 
--- TokenInfo
-CREATE TABLE token_info
-(
-    id            bigserial PRIMARY KEY,
-    username      varchar(50) NOT NULL,
-    access_token  text,
-    refresh_token text,
-    UNIQUE (username)
-);
-
 
 -- 제약 조건
 -- User (1) -> BinaryContent (1)

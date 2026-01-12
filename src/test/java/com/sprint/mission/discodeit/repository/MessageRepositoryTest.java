@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -49,7 +50,8 @@ class MessageRepositoryTest {
    * TestFixture: 테스트용 사용자 생성
    */
   private User createTestUser(String username, String email) {
-    BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg");
+    BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg",
+        BinaryContentStatus.PROCESSING);
     User user = new User(username, email, "password123!@#", profile);
     return userRepository.save(user);
   }
