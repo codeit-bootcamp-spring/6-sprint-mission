@@ -10,15 +10,22 @@ import com.sprint.mission.discodeit.service.NotificationService;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.EventListener;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(
+    prefix = "discodeit.cache",
+    name = "type",
+    havingValue = "inmemory"
+)
 @RequiredArgsConstructor
 public class NotificationRequiredEventListener {
 
@@ -31,7 +38,7 @@ public class NotificationRequiredEventListener {
       maxAttempts = 3,
       backoff = @Backoff(delay = 500, multiplier = 2.0)
   )
-  @EventListener
+  @TransactionalEventListener
   public void on(MessageCreatedEvent event) {
 
     log.debug("메시지 알림 생성 시작: messageId={}", event.messageId());
@@ -52,7 +59,7 @@ public class NotificationRequiredEventListener {
       maxAttempts = 3,
       backoff = @Backoff(delay = 500, multiplier = 2.0)
   )
-  @EventListener
+  @TransactionalEventListener
   public void on(RoleUpdatedEvent event) {
 
     log.debug("역할 업데이트 알림 생성 시작: userId={}", event.userId());
@@ -66,7 +73,6 @@ public class NotificationRequiredEventListener {
     notificationService.createRoleUpdateNotification(request);
   }
 
-  // 비동기 리스너의 recover 메서드에서 이벤트 발행한 것을 받는 리스너
   @EventListener
   public void on(StoragePutFailedEvent event) {
 
