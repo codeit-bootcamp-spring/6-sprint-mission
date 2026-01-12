@@ -91,10 +91,13 @@ public class BasicMessageService implements MessageService {
 
     log.debug("Creating message with id {}", messageEntity.getId());
 
-    eventPublisher.publishEvent(MessageCreatedEvent.of(
-        request.channelId(),
-        messageEntity.getId()
-    ));
+    if (channelRepository.findById(request.channelId())
+        .orElseThrow(NoSuchChannelException::new).isPrivate()) {
+      eventPublisher.publishEvent(MessageCreatedEvent.of(
+          request.channelId(),
+          messageEntity.getId()
+      ));
+    }
 
     return messageEntityMapper.toMessage(messageRepository.save(messageEntity));
 
