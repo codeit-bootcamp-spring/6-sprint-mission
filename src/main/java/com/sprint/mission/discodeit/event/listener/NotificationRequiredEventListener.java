@@ -33,7 +33,7 @@ public class NotificationRequiredEventListener {
   private final ApplicationEventPublisher eventPublisher;
 
   @Async("eventTaskExecutor")
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  //@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleMessageCreatedEvent(MessageCreatedEvent event) {
 
     MessageEntity message = messageRepository.findById(event.getMessageId())
@@ -62,7 +62,7 @@ public class NotificationRequiredEventListener {
   }
 
   @Async("eventTaskExecutor")
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  //@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleRoleUpdatedEvent(RoleUpdatedEvent event) {
 
     NotificationEntity notification = NotificationEntity.builder()
@@ -82,7 +82,7 @@ public class NotificationRequiredEventListener {
   }
 
   @Async("eventTaskExecutor")
-  @EventListener
+  //@EventListener
   public void handleFileUploadFailedEvent(FileUploadFailedEvent event) {
 
     NotificationEntity notification = NotificationEntity.builder()
