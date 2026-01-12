@@ -19,6 +19,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +57,7 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
+  @Cacheable(value = "readStatusCache", key = "#readStatusId", sync = true)
   @Transactional(readOnly = true)
   public ReadStatus find(UUID readStatusId) {
     return readStatusRepository.findById(readStatusId)
@@ -71,6 +74,7 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
+  @CacheEvict(value = "readStatusCache", key = "#readStatusId")
   public ReadStatus update(UUID readStatusId, UpdateReadStatusRequest updateReadStatusRequest) {
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> {
@@ -83,6 +87,7 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
+  @CacheEvict(value = "readStatusCache", key = "#readStatusId")
   public void delete(UUID readStatusId) {
     if (!readStatusRepository.existsById(readStatusId)) {
       log.warn("ReadStatus not found. readStatusId: {}", readStatusId);

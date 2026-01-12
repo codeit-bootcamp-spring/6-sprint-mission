@@ -8,10 +8,14 @@ import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoun
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +51,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
+  @CacheEvict(value = "binaryContentCache", key = "#binaryContentId")
   public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
     BinaryContent binaryContent = find(binaryContentId);
     binaryContent.setStatus(status);
@@ -60,6 +65,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
+  @Cacheable(value = "binaryContentCache", key = "#binaryContentId", sync = true)
   @Transactional(readOnly = true)
   public BinaryContent find(UUID binaryContentId) {
     return binaryContentRepository.findById(binaryContentId)
@@ -76,6 +82,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
+  @CacheEvict(value = "binaryContentCache", key = "#binaryContentId")
   public void delete(UUID binaryContentId) {
     if (!binaryContentRepository.existsById(binaryContentId)) {
       log.warn("BinaryContent Not Found. binaryContentId: {}", binaryContentId);

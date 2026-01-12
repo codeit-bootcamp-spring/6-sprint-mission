@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -99,6 +101,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Cacheable(value = "messageCache", key = "#messageId", sync = true)
   @Transactional(readOnly = true)
   public Message find(UUID messageId) {
     return messageRepository.findById(messageId)
@@ -119,6 +122,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @CacheEvict(value = "messageCache", key = "#messageId")
   public Message update(UUID messageId, UpdateMessageRequest updateMessageRequest) {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> {
@@ -134,6 +138,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @CacheEvict(value = "messageCache", key = "#messageId")
   public void delete(UUID messageId) {
     if (!messageRepository.existsById(messageId)) {
       log.warn("Message not found. messageId: {}", messageId);

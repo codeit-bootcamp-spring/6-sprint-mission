@@ -70,6 +70,9 @@ dependencies {
     implementation 'org.springframework.retry:spring-retry'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+
     testImplementation 'org.springframework.security:spring-security-test'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

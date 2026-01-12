@@ -17,6 +17,8 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -80,6 +82,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @Cacheable(value = "userCache", key = "#userId", sync = true)
   @Transactional(readOnly = true)
   public User find(UUID userId) {
     return userRepository.findById(userId)
@@ -100,6 +103,7 @@ public class BasicUserService implements UserService {
 
   // 유저 이름, 이메일, 비밀번호, 사진, 온라인 상태 업데이트
   @Override
+  @CacheEvict(value = "userCache", key = "#userId")
   public User update(UUID userId, UpdateUserRequest updateUserRequest,
       Optional<MultipartFile> profile) {
     User user = userRepository.findById(userId)
@@ -153,6 +157,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @CacheEvict(value = "userCache", key = "#userId")
   public void delete(UUID userId) {
     if (!userRepository.existsById(userId)) {
       log.warn("User not found. userId: {}", userId);

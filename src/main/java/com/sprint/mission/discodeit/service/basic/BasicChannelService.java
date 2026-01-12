@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +66,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @Cacheable(value = "channelCache", key = "#channelId", sync = true)
   @Transactional(readOnly = true)
   public Channel find(UUID channelId) {
     return channelRepository.findById(channelId)
@@ -90,6 +93,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @CacheEvict(value = "channelCache", key = "#channelId")
   public Channel update(UUID channelId, UpdateChannelRequest updateChannelRequest) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> {
@@ -107,6 +111,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @CacheEvict(value = "channelCache", key = "#channelId")
   public void delete(UUID channelId) {
     if (!channelRepository.existsById(channelId)) {
       log.warn("Channel Not Found. channelId: {}", channelId);
