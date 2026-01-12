@@ -8,10 +8,11 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 
 public interface BinaryContentStorage {
-    UUID put(BinaryContentCreatedEvent event) throws IOException;
+    CompletableFuture<UUID> put(BinaryContentCreatedEvent event)throws IOException;
     InputStream get(UUID id);
     ResponseEntity<?> download(BinaryContentDto binaryContentDto);
 }

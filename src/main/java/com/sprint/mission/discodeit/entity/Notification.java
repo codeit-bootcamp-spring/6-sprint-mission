@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Getter
+@Entity
 @NoArgsConstructor
 public class Notification extends BaseEntity{
 

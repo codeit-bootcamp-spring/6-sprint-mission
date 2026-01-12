@@ -2,12 +2,18 @@ package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentDto;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -22,8 +28,14 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -55,7 +67,11 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
 
     @Override
-    public UUID put(BinaryContentCreatedEvent event) throws IOException {
+    @Retryable(
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    public CompletableFuture<UUID> put(BinaryContentCreatedEvent event){
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -64,7 +80,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
         getS3Client().putObject(putObjectRequest, RequestBody.fromBytes(event.content()));
 
-        return event.id();
+        return CompletableFuture.completedFuture(event.id());
     }
 
     @Override
@@ -118,5 +134,16 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
             PresignedGetObjectRequest presignedGetObjectRequest = resigned.presignGetObject(getObjectPresignRequest);
             return presignedGetObjectRequest.url().toString();
         }
+    }
+
+    @Recover
+    public CompletableFuture<UUID> recover(Exception e){
+        log.error("S3 재시도 모두 실패. Error: {}", e.getMessage());
+        return CompletableFuture.failedFuture(
+                new DiscodeitException(
+                        Instant.now(),
+                        ErrorCode.S3_STORAGE_SAVE_ERROR,
+                        Map.of("errMessage",e.getMessage()))
+        );
     }
 }

@@ -17,6 +17,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -28,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -57,12 +61,23 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     }
 
     @Override
-    public UUID put(BinaryContentCreatedEvent event) throws IOException {
+    @Retryable(
+            retryFor = {FileNotFoundException.class, IOException.class},
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    public CompletableFuture<UUID> put(BinaryContentCreatedEvent event) throws IOException {
+        try{
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Thread interrupted while simulating delay", e);
+        }
         Path path = resolvePath(event.id());
         try (FileOutputStream fos = new FileOutputStream(path.toFile());) {
             fos.write(event.content());
         }
-        return event.id();
+        return CompletableFuture.completedFuture(event.id());
     }
 
     @Override
@@ -99,5 +114,9 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             log.error("파일 다운로드 오류 발생: 파일 이름={}",binaryContentDto.fileName());
             throw new FileDownloadException();
         }
+    }
+    @Recover
+    public CompletableFuture<UUID> recover(Exception e){
+        return CompletableFuture.failedFuture(e);
     }
 }
