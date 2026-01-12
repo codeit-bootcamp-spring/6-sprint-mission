@@ -24,12 +24,37 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
+
   cache:
+    type: redis # caffeine | redis
+    cache-names:
+      - channels
+      - notifications
+      - users
     caffeine:
       spec: >
         maximumSize=100,
         expireAfterAccess=600s,
         recordStats
+      # 캐시에 담을 객체 수, 자동 삭제, 통계정보 기록
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 
 logging:
   level:

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.listener;
+package com.sprint.mission.discodeit.event.listener;
 
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;

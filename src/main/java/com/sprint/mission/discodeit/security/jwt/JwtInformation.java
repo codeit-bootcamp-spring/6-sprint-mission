@@ -10,6 +10,6 @@ public record JwtInformation (
         String refreshToken
     ){
     public UUID getUserId() {
-        return dto.getId();
+        return dto.id();
     }
 }
