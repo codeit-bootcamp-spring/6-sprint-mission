@@ -91,6 +91,7 @@ public class BasicMessageService implements MessageService {
 
     log.debug("Creating message with id {}", messageEntity.getId());
 
+    // Public Channel에는 ReadStatus 존재하지 않으므로 이벤트 발행하지 않음
     if (channelRepository.findById(request.channelId())
         .orElseThrow(NoSuchChannelException::new).isPrivate()) {
       eventPublisher.publishEvent(MessageCreatedEvent.of(
