@@ -54,7 +54,6 @@ dependencies {
 
     implementation 'com.nimbusds:nimbus-jose-jwt:10.6'
 
-
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
@@ -67,6 +66,9 @@ dependencies {
 
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'com.h2database:h2'
+
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 
     testImplementation 'org.springframework.security:spring-security-test'
 

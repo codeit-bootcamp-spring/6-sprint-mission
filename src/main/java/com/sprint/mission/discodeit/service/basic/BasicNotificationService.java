@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.common.Role;
 import com.sprint.mission.discodeit.dto.model.NotificationDto;
 import com.sprint.mission.discodeit.dto.request.CreateMessageNotificationRequest;
-import com.sprint.mission.discodeit.dto.request.UpdateRoleNotificationRequest;
+import com.sprint.mission.discodeit.dto.request.CreateRoleNotificationRequest;
+import com.sprint.mission.discodeit.dto.request.CreateStorageNotificationRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.NotificationType;
@@ -16,12 +18,12 @@ import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -31,6 +33,7 @@ public class BasicNotificationService implements NotificationService {
 
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
+  private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
 
   @Override
@@ -74,7 +77,7 @@ public class BasicNotificationService implements NotificationService {
   }
 
   @Override
-  public void createRoleUpdateNotification(UpdateRoleNotificationRequest request) {
+  public void createRoleUpdateNotification(CreateRoleNotificationRequest request) {
 
     Notification notification = Notification.builder()
         .sourceType(NotificationType.USER_ROLE_UPDATED)
@@ -87,11 +90,35 @@ public class BasicNotificationService implements NotificationService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<NotificationDto> getMessageNotifications(UUID receiverId) {
 
     return notificationRepository.findAllByReceiverId(receiverId).stream()
         .map(NotificationDto::fromEntity)
         .toList();
+  }
+
+  @Override
+  public void createStorageNotification(CreateStorageNotificationRequest request) {
+
+    User admin = userRepository.findByRole(Role.ADMIN).stream()
+        .findFirst()
+        .orElseThrow(() -> {
+          log.warn("Admin user not found.");
+          return new UserNotFoundException();
+        });
+
+    Notification notification = Notification.builder()
+        .sourceType(NotificationType.STORAGE_PUT_FAILED)
+        .receiverId(admin.getId())
+        .title("스토리지 저장 실패")
+        .content("RequestId: " + request.requestId() +
+            ", BinaryContentId: " + request.binaryContentId() +
+            ", ErrorType: " + request.errorType() +
+            ", ErrorMessage: " + request.errorMessage())
+        .build();
+
+    notificationRepository.save(notification);
   }
 
   @Override

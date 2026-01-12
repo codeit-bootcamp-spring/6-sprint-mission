@@ -5,7 +5,7 @@ import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public record UpdateRoleNotificationRequest(
+public record CreateRoleNotificationRequest(
     UUID userId,
     Role oldRole,
     Role newRole
