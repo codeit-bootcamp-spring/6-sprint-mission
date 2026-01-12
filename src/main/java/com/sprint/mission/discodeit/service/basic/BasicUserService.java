@@ -9,8 +9,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.storage.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -116,7 +115,7 @@ public class BasicUserService implements UserService {
       encodedNewPassword = passwordEncoder.encode(rawNewPassword);
     }
 
-    boolean isUpdated = user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(),
+    user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(),
         encodedNewPassword);
 
     Optional<BinaryContent> binaryContent = profile.map(

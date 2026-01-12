@@ -15,8 +15,8 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.storage.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
@@ -82,6 +82,13 @@ public class BasicMessageService implements MessageService {
 
     Message message = new Message(createMessageRequest.content(), channel, author, binaryContents);
     Message saved = messageRepository.save(message);
+
+    eventPublisher.publishEvent(MessageCreatedEvent.builder()
+        .channelId(channel.getId())
+        .messageId(saved.getId())
+        .authorId(author.getId())
+        .content(saved.getContent())
+        .build());
 
     log.info("메시지 생성: {}", message.getId());
     if (!binaryContents.isEmpty()) {

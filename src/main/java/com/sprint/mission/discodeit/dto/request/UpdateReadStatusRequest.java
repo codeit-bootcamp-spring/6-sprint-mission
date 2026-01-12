@@ -5,7 +5,8 @@ import java.time.Instant;
 
 public record UpdateReadStatusRequest(
     @NotNull
-    Instant newLastReadAt
+    Instant newLastReadAt,
+    boolean newNotificationEnabled
 ) {
 
 }

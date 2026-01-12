@@ -13,8 +13,10 @@ import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ public class BasicAuthService implements AuthService {
   private final JwtTokenProvider jwtTokenProvider;
   private final DiscodeitUserDetailsService detailsService;
   private final JwtRegistry jwtRegistry;
+  private final ApplicationEventPublisher eventPublisher;
 
   public boolean isOwner(UUID id, Object principal) {
     if (!(principal instanceof DiscodeitUserDetails userDetails)) {
@@ -49,7 +52,10 @@ public class BasicAuthService implements AuthService {
   public User updateRole(RoleUpdateRequest updateRequest) {
     User user = userRepository.findById(updateRequest.userId())
         .orElseThrow(UserNotFoundException::new);
-    user.updateRole(updateRequest.newRole());
+    boolean isUpdated = user.updateRole(updateRequest.newRole());
+    if (isUpdated) {
+      eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), user.getRole(), updateRequest.newRole()));
+    }
 
     return user;
   }

@@ -1,13 +1,12 @@
-package com.sprint.mission.discodeit.storage.listener;
+package com.sprint.mission.discodeit.listener;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.storage.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +28,7 @@ public class StorageEventListener {
    */
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void handleStoragePutEvent(BinaryContentCreatedEvent event) {
+  public void handleStoragePut(BinaryContentCreatedEvent event) {
 
     BinaryContent binaryContent = binaryContentRepository.findById(event.binaryContentId())
         .orElseThrow(BinaryContentNotFoundException::new);

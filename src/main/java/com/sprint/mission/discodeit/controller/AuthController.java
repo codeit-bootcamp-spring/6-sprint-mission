@@ -36,11 +36,6 @@ public class AuthController {
   private final UserMapper userMapper;
   private final BasicAuthService authService;
 
-  @GetMapping("/me")
-  public ResponseEntity<UserDto> getUserDto(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-    return ResponseEntity.ok(userDetails.getUserDto());
-  }
-
   @PutMapping("/role")
   public ResponseEntity<UserDto> updateUserRole(
       @RequestBody RoleUpdateRequest updateRequest

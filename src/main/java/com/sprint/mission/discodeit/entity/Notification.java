@@ -1,0 +1,37 @@
+package com.sprint.mission.discodeit.entity;
+
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Builder
+@Table(name = "notifications")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Notification extends BaseEntity {
+
+  @Enumerated(EnumType.STRING)
+  private NotificationType sourceType;
+
+  @Column(name = "receiver_id", nullable = false)
+  private UUID receiverId;
+
+  @Column(name = "source_id", nullable = false)
+  private UUID sourceId;
+
+  @Column(name = "title", nullable = false)
+  private String title;
+
+  @Column(name = "content", nullable = false)
+  private String content;
+}

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.request.CreateReadStatusRequest;
 import com.sprint.mission.discodeit.dto.request.UpdateReadStatusRequest;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -46,6 +47,10 @@ public class BasicReadStatusService implements ReadStatusService {
           return new ChannelNotFoundException();
         });
     ReadStatus readStatus = new ReadStatus(user, channel, createReadStatusRequest.lastReadAt());
+    if (channel.getType() == ChannelType.PRIVATE) {
+      readStatus.setNotificationEnabled(true);
+    }
+
     return readStatusRepository.save(readStatus);
   }
 
@@ -72,7 +77,8 @@ public class BasicReadStatusService implements ReadStatusService {
           log.warn("ReadStatus not found. readStatusId: {}", readStatusId);
           return new ReadStatusNotFoundException();
         });
-    readStatus.update(updateReadStatusRequest.newLastReadAt());
+    // 메시지를 한번이라도 확인하면 채널의 알림 설정을 프론트가 꺼버림
+    readStatus.update(updateReadStatusRequest.newLastReadAt(), updateReadStatusRequest.newNotificationEnabled());
     return readStatusRepository.save(readStatus);
   }
 

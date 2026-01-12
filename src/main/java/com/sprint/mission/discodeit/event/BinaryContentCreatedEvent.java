@@ -1,7 +1,5 @@
-package com.sprint.mission.discodeit.storage.event;
+package com.sprint.mission.discodeit.event;
 
-import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
-import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 // 배열 필드있으면 equals, hashcode 문제 발생할 수 있음?
