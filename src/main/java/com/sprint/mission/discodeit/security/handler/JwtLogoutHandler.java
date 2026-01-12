@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,26 +29,12 @@ public class JwtLogoutHandler implements LogoutHandler {
     @Transactional
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
 
-        String refreshToken = null;
-        Cookie[] cookies = request.getCookies();
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
+            String username = userDetails.getUsername();
 
-        if (cookies != null) {
-            refreshToken = Arrays.stream(cookies)
-                    .filter(cookie -> "REFRESH_TOKEN".equals(cookie.getName()))
-                    .map(Cookie::getValue)
-                    .findFirst()
-                    .orElse(null);
-        }
-
-        if (refreshToken != null) {
-            try {
-                // 토큰 무효화 - 토큰에서 username 추출 -> User 조회 -> DB 삭제
-                String username = jwtTokenProvider.getClaims(refreshToken).getSubject();
-                userRepository.findByUsername(username)
-                        .ifPresent(user -> jwtRegistry.invalidateJwtInformationByUserId(user.getId()));
-            } catch (Exception e) {
-                // 무시
-            }
+            // 2. DB 조회가 필요하다면 username으로 한 번만 조회 (토큰 파싱 생략)
+            userRepository.findByUsername(username)
+                    .ifPresent(user -> jwtRegistry.invalidateJwtInformationByUserId(user.getId()));
         }
 
         response.addCookie(TokenUtil.emptyRefreshTokenCookie());

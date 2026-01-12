@@ -18,10 +18,10 @@ public class TokenInfo {
     @Column(nullable = false, unique = true) // 동시 로그인 제한
     private UUID userId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String accessToken;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String refreshToken;
 
     public void rotate(String newAccess, String newRefresh) {

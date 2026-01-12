@@ -32,6 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtRegistry jwtRegistry;
     private static final String HEADER_AUTHORIZATION = "Authorization";
     private static final String TOKEN_PREFIX = "Bearer ";
+    private static final String ROLE_PREFIX = "ROLE_";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -39,48 +40,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
 
         // 토큰 검증
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) { // 토큰 서명 유효성, 만료 여부 검증
             JWTClaimsSet claims = jwtTokenProvider.getClaims(token);
+            if (claims == null) {
+                log.error("Unable to read Claims from token");
+                filterChain.doFilter(request, response);
+                return;
+            }
             String username = claims.getSubject();
             String role = (String) claims.getClaim("role");
 
-            if (isTokenValidInRegistry(token)){
+            if (StringUtils.hasText(username) && role != null) {
+                if (isTokenValidInRegistry(token)) {
 
-                List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
+                    List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + role));
 
-                UserDetails userDetails = User.builder()
-                        .username(username)
-                        .password("")
-                        .authorities(authorities)
-                        .build();
+                    UserDetails userDetails = User.builder()
+                            .username(username)
+                            .password("")
+                            .authorities(authorities)
+                            .build();
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.debug("Authenticated user: {}", username);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.debug("Authenticated user: {}", username);
+                } else {
+                    log.warn("Invalid token");
+                }
+
             } else {
-                log.warn("Invalid token");
+                log.warn("토큰 내에 필수 사용자 정보가 누락되었습니다. (subject: {}, role: {})", username, role);
             }
-
         }
         filterChain.doFilter(request, response); // 다음 필터로 넘김
     }
 
-    // 토큰 상태 검증
-    private boolean isTokenValidInRegistry(String token) {
-        if (jwtRegistry.hasActiveJwtInformationByRefreshToken(token)) { // 서비스 로직에 맞는 메서드 호출
-            return true;
-        } else {
-            log.warn("유효하지 않은 토큰입니다.");
-            return false;
-        }
-    }
-
-    // 헤더 형식 검증 - 요청 헤더에 Bearer 토큰이 포함된 경우에만 인증을 시도
+    // 토큰 추출 - 요청 헤더에 Bearer로 시작하는 토큰 문자열을 꺼냄.
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(HEADER_AUTHORIZATION);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(TOKEN_PREFIX)) {
@@ -88,5 +88,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         return null;
     }
+
+    // 토큰 상태 검증
+    private boolean isTokenValidInRegistry(String token) {
+        if (jwtRegistry.hasActiveJwtInformationByAccessToken(token)) { // 서비스 로직에 맞는 메서드 호출
+            return true;
+        } else {
+            log.warn("유효하지 않은 토큰입니다.");
+            return false;
+        }
+    }
+
 
 }
