@@ -1,12 +1,9 @@
 package com.sprint.mission.discodeit.listener;
 
-import com.sprint.mission.discodeit.dto.request.CreateMessageNotificationRequest;
-import com.sprint.mission.discodeit.dto.request.CreateRoleNotificationRequest;
-import com.sprint.mission.discodeit.dto.request.CreateStorageNotificationRequest;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.StoragePutFailedEvent;
-import com.sprint.mission.discodeit.service.NotificationService;
+import com.sprint.mission.discodeit.handler.NotificationTaskHandler;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +26,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class NotificationRequiredEventListener {
 
-  private final NotificationService notificationService;
+  private final NotificationTaskHandler notificationTaskHandler;
 
   @Timed("async.notification.message.create")
   @Async("notificationEventTaskExecutor")
@@ -43,14 +40,7 @@ public class NotificationRequiredEventListener {
 
     log.debug("메시지 알림 생성 시작: messageId={}", event.messageId());
 
-    CreateMessageNotificationRequest request = CreateMessageNotificationRequest.builder()
-        .channelId(event.channelId())
-        .messageId(event.messageId())
-        .authorId(event.authorId())
-        .content(event.content())
-        .build();
-
-    notificationService.createMessageNotification(request);
+    notificationTaskHandler.createMessageNotificationTask(event);
   }
 
   @Async("notificationEventTaskExecutor")
@@ -64,13 +54,7 @@ public class NotificationRequiredEventListener {
 
     log.debug("역할 업데이트 알림 생성 시작: userId={}", event.userId());
 
-    CreateRoleNotificationRequest request = CreateRoleNotificationRequest.builder()
-        .userId(event.userId())
-        .oldRole(event.oldRole())
-        .newRole(event.newRole())
-        .build();
-
-    notificationService.createRoleUpdateNotification(request);
+    notificationTaskHandler.createRoleUpdateNotificationTask(event);
   }
 
   @EventListener
@@ -78,14 +62,7 @@ public class NotificationRequiredEventListener {
 
     log.debug("스토리지 저장 실패 이벤트 수신: binaryContentId={}", event.binaryContentId());
 
-    CreateStorageNotificationRequest request = CreateStorageNotificationRequest.builder()
-        .requestId(event.requestId())
-        .binaryContentId(event.binaryContentId())
-        .errorType(event.errorType())
-        .errorMessage(event.errorMessage())
-        .build();
-
-    notificationService.createStorageNotification(request);
+    notificationTaskHandler.createStorageNotificationTask(event);
   }
 
   @Recover
