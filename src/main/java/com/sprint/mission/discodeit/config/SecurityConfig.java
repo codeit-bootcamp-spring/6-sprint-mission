@@ -49,8 +49,8 @@ public class SecurityConfig {
 
   private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
   private final LoginFailureHandler loginFailureHandler;
-  private final JwtTokenProvider jwtTokenProvider;
   private final JwtLogoutHandler jwtLogoutHandler;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final ObjectMapper objectMapper;
 
   @Bean
@@ -65,14 +65,12 @@ public class SecurityConfig {
                 "/api/auth/refresh",
                 "/api/auth/login",
                 "/api/auth/logout",
-                "/actuator/health").permitAll()
+                "/actuator/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
             .requestMatchers(
-                "/actuator/**",
                 "/swagger-ui.html",
                 "/swagger-ui/**",
                 "/v3/**").hasRole("ADMIN")
-            .requestMatchers("/api/auth/me").authenticated()
             .anyRequest().authenticated()
         )
         .exceptionHandling(ex -> ex
@@ -105,7 +103,7 @@ public class SecurityConfig {
             .addLogoutHandler(jwtLogoutHandler)
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
         )
-        .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 

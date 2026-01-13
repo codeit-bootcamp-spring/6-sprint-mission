@@ -55,17 +55,18 @@ public class JwtTokenProvider {
       Date now = new Date();
       Date expirationTime = new Date(now.getTime() + validityInMs);
 
-      JWTClaimsSet cliamsSet = new JWTClaimsSet.Builder()
+      JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
           .issuer(jwtProperties.getIssuer())
           .subject(userDetails.getUsername())
           .issueTime(now)
           .expirationTime(expirationTime)
           .claim("role", userDetails.getRole().name())
+          .claim("userId", userDetails.getId().toString())
           .build();
 
       SignedJWT signedJWT = new SignedJWT(
           new JWSHeader(JWSAlgorithm.HS256),
-          cliamsSet
+          claimsSet
       );
 
       signedJWT.sign(signer);
