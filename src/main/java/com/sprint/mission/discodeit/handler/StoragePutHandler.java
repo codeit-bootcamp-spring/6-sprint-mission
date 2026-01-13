@@ -25,14 +25,13 @@ public class StoragePutHandler {
 
   public void putFailAndPublishEvent(Exception e, UUID binaryContentId) {
 
-    if (binaryContentStorage instanceof S3BinaryContentStorage) {
-      eventPublisher.publishEvent(StoragePutFailedEvent.builder()
-          .requestId(MDC.get("requestId"))
-          .binaryContentId(binaryContentId)
-          .errorType(e.getClass().getSimpleName())
-          .errorMessage(e.getMessage())
-          .build());
-    }
+    // 로컬, s3 저장 둘 다 실패 이벤트 발행
+    eventPublisher.publishEvent(StoragePutFailedEvent.builder()
+        .requestId(MDC.get("requestId"))
+        .binaryContentId(binaryContentId)
+        .errorType(e.getClass().getSimpleName())
+        .errorMessage(e.getMessage())
+        .build());
 
     storageTxHandler.updateStorageStatus(binaryContentId, false);
   }
