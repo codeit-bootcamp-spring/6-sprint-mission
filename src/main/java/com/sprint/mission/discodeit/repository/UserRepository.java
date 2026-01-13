@@ -12,13 +12,13 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User>findByEmail(String email);
     Optional<User>findByUsername(String username);
+    Optional<User>findAllByRole(Role role);
 
     @Query("SELECT DISTINCT u FROM User " +
             "u LEFT JOIN FETCH u.profile "
     )
     List<User> findAll();
 
-    List<User> findAllByRole(Role role);
 
     Boolean existsByEmail(String email);
     Boolean existsByUsername(String username);

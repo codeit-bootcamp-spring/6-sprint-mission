@@ -13,6 +13,7 @@ file:
       # macOS용 파일 업로드 기본 경로
       # /Users/mac/ 이부분이 각자 컴퓨터 맞게
       path: /Users/mac/myWs/uploadedFilesimg
+
 cookie:
   key: 2_]08iD^zr6]9AbverLgyhbBYu(VcIBN
 

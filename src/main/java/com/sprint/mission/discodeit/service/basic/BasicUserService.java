@@ -17,6 +17,8 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,6 +42,7 @@ public class BasicUserService implements UserService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto create(MultipartFile multipartFile, UserCreateRequest userCreateRequest) {
 
         log.info("유저 생성 요청 수신: userName={} userEmail={}",userCreateRequest.username(), userCreateRequest.email());
@@ -75,6 +78,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Cacheable(value = "users")
     public List<UserDto> findAll() {
         log.info("유저 목록 조회 요청 수신");
         List<User> users = userRepository.findAll();
@@ -83,6 +87,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     @PreAuthorize("hasPermission(#userId, 'User', 'UPDATE')")
     public UserDto update(MultipartFile multipartFile, UUID userId, UserUpdateRequest userUpdateRequest) {
         log.info("사용자 수정 요청 수신: userId={}", userId);
@@ -117,6 +122,7 @@ public class BasicUserService implements UserService {
 }
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     @PreAuthorize("hasPermission(#id, 'User', 'DELETE')")
     public void delete(UUID id) {
         User user = userRepository.findById(id)
@@ -127,6 +133,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     @PreAuthorize("hasRole('ADMIN')")
     public UserDto roleUpdate(UserRoleUpdateRequest userUpdateRequest) {
         User user = userRepository.findById(userUpdateRequest.userId())
