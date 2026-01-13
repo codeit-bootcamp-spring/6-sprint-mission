@@ -55,7 +55,10 @@ public class BasicUserService implements UserService {
           // em.persist(bc) 이후에 id 값이 생성됨
           BinaryContent saved = binaryContentRepository.save(bc);
           try {
-            eventPublisher.publishEvent(new BinaryContentCreatedEvent(saved.getId(), file.getBytes()));
+            eventPublisher.publishEvent(BinaryContentCreatedEvent.builder()
+                .binaryContentId(saved.getId())
+                .file(file.getBytes())
+                .build());
           } catch (IOException e) {
             log.error("유저 프로필 사진 처리 실패", e);
             throw new RuntimeException("유저 프로필 사진 처리 실패");
@@ -131,12 +134,18 @@ public class BasicUserService implements UserService {
                   file.getContentType()
               );
               BinaryContent updated = binaryContentRepository.save(bc);
-              eventPublisher.publishEvent(new BinaryContentCreatedEvent(updated.getId(), file.getBytes()));
+              eventPublisher.publishEvent(BinaryContentCreatedEvent.builder()
+                  .binaryContentId(updated.getId())
+                  .file(file.getBytes())
+                  .build());
               return updated;
             } else {
               user.getProfile()
                   .update(file.getOriginalFilename(), file.getSize(), file.getContentType());
-              eventPublisher.publishEvent(new BinaryContentCreatedEvent(user.getProfile().getId(), file.getBytes()));
+              eventPublisher.publishEvent(BinaryContentCreatedEvent.builder()
+                  .binaryContentId(user.getProfile().getId())
+                  .file(file.getBytes())
+                  .build());
               return binaryContentRepository.save(user.getProfile());
             }
           } catch (IOException e) {

@@ -4,16 +4,16 @@ import com.sprint.mission.discodeit.dto.model.JwtInformation;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
-import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -54,7 +54,11 @@ public class BasicAuthService implements AuthService {
         .orElseThrow(UserNotFoundException::new);
     boolean isUpdated = user.updateRole(updateRequest.newRole());
     if (isUpdated) {
-      eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), user.getRole(), updateRequest.newRole()));
+      eventPublisher.publishEvent(RoleUpdatedEvent.builder()
+          .userId(user.getId())
+          .oldRole(user.getRole())
+          .newRole(updateRequest.newRole())
+          .build());
     }
 
     return user;

@@ -73,7 +73,10 @@ public class BasicMessageService implements MessageService {
                 file.getContentType()
             );
             BinaryContent saved = binaryContentRepository.save(binaryContent);
-            eventPublisher.publishEvent(new BinaryContentCreatedEvent(saved.getId(), file.getBytes()));
+            eventPublisher.publishEvent(BinaryContentCreatedEvent.builder()
+                .binaryContentId(saved.getId())
+                .file(file.getBytes())
+                .build());
             return saved;
           } catch (IOException e) {
             log.error("첨부파일 처리 실패", e);

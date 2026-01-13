@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.event;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record BinaryContentCreatedEvent(
     UUID binaryContentId,
     byte[] file

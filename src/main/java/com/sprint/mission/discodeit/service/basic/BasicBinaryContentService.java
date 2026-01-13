@@ -4,17 +4,15 @@ import com.sprint.mission.discodeit.dto.model.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.CreateBinaryContentRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
-import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -43,7 +41,10 @@ public class BasicBinaryContentService implements BinaryContentService {
         contentType
     );
     BinaryContent saved = binaryContentRepository.save(binaryContent);
-    eventPublisher.publishEvent(new BinaryContentCreatedEvent(saved.getId(), request.bytes()));
+    eventPublisher.publishEvent(BinaryContentCreatedEvent.builder()
+        .binaryContentId(saved.getId())
+        .file(bytes)
+        .build());
 
     log.info("바이너리 컨텐츠 생성 완료: id={}, fileName={}, size={}",
         binaryContent.getId(), fileName, bytes.length);
