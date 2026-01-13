@@ -22,9 +22,9 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @Component
 @ConditionalOnProperty(
-    prefix = "discodeit.cache",
+    prefix = "discodeit.event",
     name = "type",
-    havingValue = "inmemory"
+    havingValue = "spring"
 )
 @RequiredArgsConstructor
 public class NotificationRequiredEventListener {
