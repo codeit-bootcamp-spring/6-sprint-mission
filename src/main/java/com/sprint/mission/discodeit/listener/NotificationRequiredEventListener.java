@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.listener;
 
+import com.sprint.mission.discodeit.dto.request.CreateMessageNotificationRequest;
+import com.sprint.mission.discodeit.dto.request.CreateRoleNotificationRequest;
+import com.sprint.mission.discodeit.dto.request.CreateStorageNotificationRequest;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.StoragePutFailedEvent;
@@ -40,7 +43,14 @@ public class NotificationRequiredEventListener {
 
     log.debug("메시지 알림 생성 시작: messageId={}", event.messageId());
 
-    notificationTaskHandler.createMessageNotificationTask(event);
+    CreateMessageNotificationRequest request = CreateMessageNotificationRequest.builder()
+        .channelId(event.channelId())
+        .messageId(event.messageId())
+        .authorId(event.authorId())
+        .content(event.content())
+        .build();
+
+    notificationTaskHandler.createMessageNotificationTask(request);
   }
 
   @Async("notificationEventTaskExecutor")
@@ -54,7 +64,13 @@ public class NotificationRequiredEventListener {
 
     log.debug("역할 업데이트 알림 생성 시작: userId={}", event.userId());
 
-    notificationTaskHandler.createRoleUpdateNotificationTask(event);
+    CreateRoleNotificationRequest request = CreateRoleNotificationRequest.builder()
+        .userId(event.userId())
+        .oldRole(event.oldRole())
+        .newRole(event.newRole())
+        .build();
+
+    notificationTaskHandler.createRoleUpdateNotificationTask(request);
   }
 
   @EventListener
@@ -62,7 +78,13 @@ public class NotificationRequiredEventListener {
 
     log.debug("스토리지 저장 실패 이벤트 수신: binaryContentId={}", event.binaryContentId());
 
-    notificationTaskHandler.createStorageNotificationTask(event);
+    CreateStorageNotificationRequest request = CreateStorageNotificationRequest.builder()
+        .binaryContentId(event.binaryContentId())
+        .errorType(event.errorType())
+        .errorMessage(event.errorMessage())
+        .build();
+
+    notificationTaskHandler.createStorageNotificationTask(request);
   }
 
   @Recover

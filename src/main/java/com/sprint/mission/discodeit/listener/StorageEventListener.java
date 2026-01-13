@@ -36,7 +36,7 @@ public class StorageEventListener {
 
     log.debug("비동기 파일 저장 시작: binaryContentId={}", event.binaryContentId());
 
-    storagePutHandler.putSuccess(event);
+    storagePutHandler.putSuccess(event.binaryContentId(), event.file());
 
     log.debug("비동기 파일 저장 완료: binaryContentId={}", event.binaryContentId());
   }
@@ -44,7 +44,7 @@ public class StorageEventListener {
   @Recover
   public void recoverStoragePut(Exception e, BinaryContentCreatedEvent event) {
 
-    storagePutHandler.putFailAndPublishEvent(e, event);
+    storagePutHandler.putFailAndPublishEvent(e, event.binaryContentId());
 
     throw new RuntimeException("파일 저장에 실패하였습니다. binaryContentId=" + event.binaryContentId(), e);
   }
