@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.listener;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
@@ -34,17 +35,14 @@ public class NotificationRequiredTopicListener {
       topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
   )
   @KafkaListener(topics = "discodeit.MessageCreatedEvent")
-  public void onMessageCreatedEvent(String kafkaEvent) {
-    try {
-      MessageCreatedEvent event = objectMapper.readValue(kafkaEvent, MessageCreatedEvent.class);
+  public void onMessageCreatedEvent(String kafkaEvent) throws JsonProcessingException {
 
-      log.debug("메시지 알림 생성 시작: messageId={}", event.messageId());
+    MessageCreatedEvent event = objectMapper.readValue(kafkaEvent, MessageCreatedEvent.class);
 
-      notificationTaskHandler.createMessageNotificationTask(event);
+    log.debug("메시지 알림 생성 시작: messageId={}", event.messageId());
 
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    notificationTaskHandler.createMessageNotificationTask(event);
+
   }
 
   @RetryableTopic(
@@ -55,18 +53,14 @@ public class NotificationRequiredTopicListener {
       topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
   )
   @KafkaListener(topics = "discodeit.RoleUpdatedEvent")
-  public void onRoleUpdatedEvent(String kafkaEvent) {
+  public void onRoleUpdatedEvent(String kafkaEvent) throws JsonProcessingException {
 
-    try {
-      RoleUpdatedEvent event = objectMapper.readValue(kafkaEvent, RoleUpdatedEvent.class);
+    RoleUpdatedEvent event = objectMapper.readValue(kafkaEvent, RoleUpdatedEvent.class);
 
-      log.debug("역할 업데이트 알림 생성 시작: userId={}", event.userId());
+    log.debug("역할 업데이트 알림 생성 시작: userId={}", event.userId());
 
-      notificationTaskHandler.createRoleUpdateNotificationTask(event);
+    notificationTaskHandler.createRoleUpdateNotificationTask(event);
 
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @RetryableTopic(
@@ -77,18 +71,14 @@ public class NotificationRequiredTopicListener {
       topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE
   )
   @KafkaListener(topics = "discodeit.S3UploadFailedEvent")
-  public void onStorageUploadFailedEvent(String kafkaEvent) {
+  public void onStorageUploadFailedEvent(String kafkaEvent) throws JsonProcessingException {
 
-    try {
-      StoragePutFailedEvent event = objectMapper.readValue(kafkaEvent, StoragePutFailedEvent.class);
+    StoragePutFailedEvent event = objectMapper.readValue(kafkaEvent, StoragePutFailedEvent.class);
 
-      log.debug("스토리지 저장 실패 이벤트 수신: binaryContentId={}", event.binaryContentId());
+    log.debug("스토리지 저장 실패 이벤트 수신: binaryContentId={}", event.binaryContentId());
 
-      notificationTaskHandler.createStorageNotificationTask(event);
+    notificationTaskHandler.createStorageNotificationTask(event);
 
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @DltHandler
