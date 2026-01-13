@@ -122,7 +122,6 @@ public class BasicNotificationService implements NotificationService {
   }
 
   @Override
-  // todo 메서드 보안 - 본인 알림만 삭제 가능
   public void deleteNotification(UUID notificationId, UUID userId) {
 
     Notification notification = notificationRepository.findById(notificationId)
