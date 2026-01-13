@@ -94,6 +94,7 @@ public class BasicUserService implements UserService {
 
   // 유저 목록 새로고침할때마다 상태 업데이트
   @Override
+  @Cacheable(value = "userCache", key = "'all'", sync = true)
   @Transactional(readOnly = true)
   public List<User> findAll() {
     List<User> userList = userRepository.findAll();

@@ -24,6 +24,11 @@ spring:
     show-sql: false
     open-in-view: false
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -43,7 +48,6 @@ spring:
         secret-key: ${AWS_S3_SECRET_KEY}
       region:
         static: ${AWS_S3_REGION:ap-northeast-2}
-
 
 info:
   app:
@@ -87,6 +91,8 @@ discodeit:
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
   cache:
+    type: redis
+  event:
     type: kafka
 
 jwt:
