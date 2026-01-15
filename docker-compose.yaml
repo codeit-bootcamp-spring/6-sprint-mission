@@ -12,6 +12,5 @@ services:
       - "5432:5432"
     volumes:
       - discodeit_db_data:/var/lib/postgresql/data
-
 volumes:
   discodeit_db_data:
