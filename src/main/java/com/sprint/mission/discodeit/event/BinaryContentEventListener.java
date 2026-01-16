@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.file.FileOutPutException;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.NotificationService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.storage.LocalBinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,15 +27,19 @@ import java.util.concurrent.ExecutionException;
 @Component
 @RequiredArgsConstructor
 public class BinaryContentEventListener {
-    private final LocalBinaryContentStorage contentStorage;
+    private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentService contentService;
     private final NotificationService notificationService;
+
+    //요구사항에는 따로 binaryContent인벤트 리스너를 만들어라고 말이 없어지만 만든 이유는
+    // 1. 파일을 저장하는 클레스에 다는 역할을 안줄려고 했습니다.
+    // 2. 로컬과 S3는 같은 스토리지 인터페이스를 공유 하고 있어 이를 최대한 이용해보고자 하나의 함수로 만들었습니다.
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void binaryContentPut(BinaryContentCreatedEvent event){
         try {
-            contentStorage.put(event)
+            binaryContentStorage.put(event)
                     .thenAccept(uuid -> {
                         contentService.updateStatus(uuid,BinaryContentStatus.SUCCESS);
                     }).exceptionally(ex ->{
