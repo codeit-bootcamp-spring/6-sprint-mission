@@ -4,17 +4,16 @@ import com.sprint.mission.discodeit.dto.model.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.CreateBinaryContentRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
-import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.service.BinaryContentUploader;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
-  private final ApplicationEventPublisher eventPublisher;
+  private final BinaryContentUploader uploader;
 
   @Override
   public BinaryContent create(CreateBinaryContentRequest request) {
@@ -35,19 +34,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     String fileName = request.fileName();
     byte[] bytes = request.bytes();
     String contentType = request.contentType();
-    BinaryContent binaryContent = new BinaryContent(
-        fileName,
-        (long) bytes.length,
-        contentType
-    );
-    BinaryContent saved = binaryContentRepository.save(binaryContent);
-    eventPublisher.publishEvent(BinaryContentCreatedEvent.builder()
-        .binaryContentId(saved.getId())
-        .file(bytes)
-        .build());
+
+    BinaryContent saved = uploader.uploadBinaryContent(fileName, bytes, contentType);
 
     log.info("바이너리 컨텐츠 생성 완료: id={}, fileName={}, size={}",
-        binaryContent.getId(), fileName, bytes.length);
+        saved.getId(), fileName, bytes.length);
     return saved;
   }
 
