@@ -45,16 +45,18 @@ spring:
       port: ${REDIS_PORT:6379}
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:9092 # 애플리케이션이 Kafka 접속시 쓸 주소
     producer:
+      # Kafka는 바이트 형태로만 데이터를 주고받음. 이하는 직렬화 설정임.
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
-      group-id: discodeit-group
+      group-id: discodeit-group # 애플리케이션이 속한 소비자 그룹
       auto-offset-reset: earliest
+        # 어디서부터 메시지를 읽기 시작할지 설정.
+        # earliest: 처음부터, latest: 지금 시점 이후부터
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-
 
 logging:
   level:

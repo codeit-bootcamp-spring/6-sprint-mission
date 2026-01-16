@@ -1,3 +1,4 @@
+# KRaft 모드 사용 - Zookeeper 없이 자체적인 컨트롤러 역할을 수행. Kafka 자체적으로 클러스터를 관리.
 services:
   broker:
     image: apache/kafka:latest
@@ -6,18 +7,36 @@ services:
     ports:
       - 9092:9092
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_NODE_ID: 1
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+
+      # 기본 설정
+      KAFKA_BROKER_ID: 1 # 클러스터 내의 브로커 고유 ID
+      KAFKA_NODE_ID: 1 # 클러스터 내의 노드 고유 ID
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0 # 새로운 소비자가 그룹에 합류 시 업무 분담(Rebalance) 전 대기 시간
+
+      # KRaft 관련 설정
+      KAFKA_PROCESS_ROLES: broker,controller # broker: 데이터 저장, controller: 클러스터 관리
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093 # 컨트롤러 역할 할 노드 명단
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk # 클러스터 고유 ID
+
+      # 리스너 설정
       KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+        # PLAINTEXT: 내부 브로커끼리 통신용, CONTROLLER: 컨트롤러 통신용, PLAINTEXT_HOST: 외부 요청 받을때 사용.
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+        # 클라이언트(앱)에게 알려주는 접속 주소.
+        # PLAINTEXT: 도커 네트워크 내부의 다른 컨테이너용 주소.
+        # PLAINTEXT_HOST: 내 컴퓨터에서 돌아가는 Spring Boot 앱용 주소.
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+        # 각 연결 통로의 보안 규칙. 모두 평문 사용 중.
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT # 브로커들끼리 데이터 주고받을 때 쓸 리스너 이름
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER # 컨트롤러 역할을 수행할 때 쓸 리스너 이름
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs # 카프카의 실제 데이터(메시지 로그)가 저장될 경로
+
+      # 복제, 안정성 설정
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # 소비자의 위치(Offset)를 저장하는 토픽의 복제본 수
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1 # 트랜잭션 상태 로그의 복제본 수
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1 # 최소 동기화 보장 개수 (1 = 나만 살아있으면 됨)
+
+    volumes:
+      - kafka-data:/tmp/kraft-combined-logs # 로그 저장 경로를 외부 볼륨에 연결
+volumes:
+  kafka-data:
