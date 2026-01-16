@@ -14,6 +14,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.io.IOException;
+import java.nio.file.Files;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -27,12 +30,20 @@ public class BinaryContentEventListener {
     public void onBinaryContentCreated(BinaryContentCreatedEvent event) {
 
         try {
-            binaryContentStorage.put(event.id(), event.bytes());
+            byte[] bytes =Files.readAllBytes(event.tempFilePath());
+            binaryContentStorage.put(event.id(), bytes);
             binaryContentService.updateStatus(event.id(), BinaryContent.BinaryContentStatus.SUCCESS);
 
         } catch (Exception e) {
             log.warn("Binary content storage failed for ID: {}", event.id(), e);
             binaryContentService.updateStatus(event.id(), BinaryContent.BinaryContentStatus.FAIL);
+
+        } finally { // 임시 파일 삭제
+            try {
+                Files.deleteIfExists(event.tempFilePath());
+            } catch (IOException e) {
+                log.error("임시 파일 삭제 실패: {}", event.tempFilePath());
+            }
         }
     }
 }

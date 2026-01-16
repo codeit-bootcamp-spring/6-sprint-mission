@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.event;
 
+import java.nio.file.Path;
 import java.util.UUID;
 
 /**
@@ -7,7 +8,7 @@ import java.util.UUID;
  */
 public record BinaryContentCreatedEvent (
         UUID id,
-        byte[] bytes
+        Path tempFilePath
 )  {
 
 }

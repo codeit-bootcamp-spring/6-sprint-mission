@@ -14,7 +14,6 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.*;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,6 +23,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 
@@ -38,6 +40,9 @@ public class MessageService {
     private final BinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
     private final ApplicationEventPublisher eventPublisher;
+
+    private static final String TEMP_FILE_PREFIX = "binary_";
+    private static final String TEMP_FILE_EXTENSION = ".tmp";
 
     // 메시지 생성
     @Transactional
@@ -120,18 +125,28 @@ public class MessageService {
     }
 
     private void saveAttachments(List<BinaryContentCreateRequestDto> request, Message message) {
-        List<BinaryContent> binaryContents = new ArrayList<>();
-        for (BinaryContentCreateRequestDto image : request) {
-            byte[] bytes = image.bytes();
-            BinaryContent binaryContent = BinaryContent.createAttachmentImage(
-                    image.fileName(),
-                    image.contentType(),
-                    (long) bytes.length,
-                    message
-            );
-            binaryContentRepository.save(binaryContent);
-            eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
-            binaryContents.add(binaryContent);
+
+        List<BinaryContent> binaryContents = request.stream()
+                .map(dto ->
+                        BinaryContent.createAttachmentImage(dto.fileName(), dto.contentType(), (long) dto.bytes().length, message)
+                ).toList();
+        binaryContentRepository.saveAll(binaryContents);
+
+        for (int i = 0; i < binaryContents.size(); i++) {
+            BinaryContent entity = binaryContents.get(i);
+            BinaryContentCreateRequestDto dto = request.get(i);
+            try {
+                // OS가 지정한 기본 임시 디렉토리에 임시 파일 생성
+                // 저장 예시) binary_123456789_id~~.tmp
+                Path tempFile = Files.createTempFile(TEMP_FILE_PREFIX, "_" + entity.getId() + TEMP_FILE_EXTENSION);
+
+                Files.write(tempFile, dto.bytes());
+
+                eventPublisher.publishEvent(new BinaryContentCreatedEvent(entity.getId(), tempFile));
+            } catch (IOException e) {
+                log.error("임시 파일 생성 실패", e);
+                throw new RuntimeException("임시 파일 저장 중 오류가 발생했습니다.");
+            }
         }
         message.setAttachments(binaryContents);
     }
