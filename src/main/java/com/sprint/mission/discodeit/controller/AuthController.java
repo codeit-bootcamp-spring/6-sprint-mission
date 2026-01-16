@@ -34,13 +34,13 @@ public class AuthController {
 
         JwtInformation newInfo = authService.refreshToken(refreshToken);
 
-        Cookie refreshCookie = TokenUtil.createRefreshTokenCookie(newInfo.getRefreshToken());
+        Cookie refreshCookie = TokenUtil.createRefreshTokenCookie(newInfo.refreshToken());
         response.addCookie(refreshCookie);
 
         return ResponseEntity.ok(
                 JwtDto.builder()
-                .accessToken(newInfo.getAccessToken())
-                .dto(newInfo.getDto())
+                .accessToken(newInfo.accessToken())
+                .dto(newInfo.dto())
                 .build()
         );
     }

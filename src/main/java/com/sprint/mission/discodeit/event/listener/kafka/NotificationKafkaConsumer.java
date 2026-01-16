@@ -35,7 +35,6 @@ public class NotificationKafkaConsumer {
 
     @Value("${discodeit.storage.type}")
     private String storageType;
-    private final String PUT_FAILURE_TITLE = storageType.equals("s3") ? "S3 파일 업로드 실패" : "파일 저장 실패";
 
     private static final String ROLE_UPDATE_MESSAGE = "권한이 변경되었습니다.";
 
@@ -90,7 +89,7 @@ public class NotificationKafkaConsumer {
             adminUsers.forEach(user -> {
                 Notification notification = Notification.create(
                         user,
-                        PUT_FAILURE_TITLE,
+                        getPutFailureTitle(),
                         "requestId: " + payload.requestId() + '\n' +
                                 "binaryContentId: " + payload.binaryContentId() + '\n' +
                                 "error: " + payload.errorMessage()
@@ -101,5 +100,9 @@ public class NotificationKafkaConsumer {
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    private String getPutFailureTitle() {
+        return storageType.equals("s3") ? "S3 파일 업로드 실패" : "파일 저장 실패";
     }
 }

@@ -50,8 +50,7 @@ public class ChannelService {
                 .map(user -> ReadStatus.builder()
                         .user(user)
                         .channel(channel)
-                        .createdAt(channel.getCreatedAt())
-                        .build()
+                        .build() // TODO Channel, ReadStatus의 createdAt 맞춰줘야 하는지 확인 필요
                 )
                 .toList();
         readStatusRepository.saveAll(readStatuses);
