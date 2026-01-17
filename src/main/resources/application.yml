@@ -79,7 +79,7 @@ discodeit:
   setup:
     admin:
       email: "${ADMIN_EMAIL:admin@discodeit.com}" # TODO 기본값 .env로 이동
-      username: "${ADMIN_USERNAME:관리자}"
+      username: "${ADMIN_USERNAME:admin}"
       password: "${ADMIN_PASSWORD:admin1234}"
 
 management:

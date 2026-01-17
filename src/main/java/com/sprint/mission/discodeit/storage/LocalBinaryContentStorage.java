@@ -36,7 +36,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     private final Path root;
     private final ApplicationEventPublisher eventPublisher;
 
-    public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") Path root, ApplicationEventPublisher eventPublisher) {
+    public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") Path root,
+                                     ApplicationEventPublisher eventPublisher) {
         this.root = root;
         log.info("root=" + root.toString());
         this.eventPublisher = eventPublisher;

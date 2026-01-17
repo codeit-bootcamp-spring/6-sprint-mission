@@ -34,6 +34,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,6 +52,9 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtRegistry jwtRegistry;
     private final ApplicationEventPublisher eventPublisher;
+
+    private static final String TEMP_FILE_PREFIX = "binary_";
+    private static final String TEMP_FILE_EXTENSION = ".tmp";
 
     // 유저 생성
     @Transactional
@@ -166,18 +172,29 @@ public class UserService {
         log.info("사용자 삭제가 완료되었습니다. id=" + userId);
     }
 
-    private BinaryContent saveProfileImage(BinaryContentCreateRequestDto request, User user) {
-        byte[] bytes = request.bytes();
+    private void saveProfileImage(BinaryContentCreateRequestDto request, User user) {
+
         BinaryContent binaryContent = BinaryContent.createProfileImage(
                 request.fileName(),
                 request.contentType(),
-                (long) bytes.length,
+                (long) request.bytes().length,
                 user
         );
         binaryContentRepository.save(binaryContent);
+
+        try {
+            // OS가 지정한 기본 임시 디렉토리에 임시 파일 생성
+            // 저장 예시) binary_123456789_id~~.tmp
+            Path tempFile = Files.createTempFile(TEMP_FILE_PREFIX, "_" + binaryContent.getId() + TEMP_FILE_EXTENSION);
+
+            Files.write(tempFile, request.bytes());
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), tempFile));
+        } catch (IOException e) {
+            log.error("임시 파일 생성 실패", e);
+            throw new RuntimeException("임시 파일 저장 중 오류가 발생했습니다.");
+        }
+
         user.setProfileImage(binaryContent);
-        eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
-        return binaryContent;
     }
 
 }

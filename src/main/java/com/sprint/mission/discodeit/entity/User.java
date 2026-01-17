@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.*;
@@ -18,6 +19,7 @@ import java.util.*;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Table(name = "users")
+@EntityListeners(AuditingEntityListener.class)
 public class User extends BaseUpdatableEntity {
 
     @Id
@@ -70,6 +72,16 @@ public class User extends BaseUpdatableEntity {
                 .username(username)
                 .password(encodedPassword)
                 .build();
+    }
+
+    public static User createAdmin(String email, String username, String encodedPassword) {
+        User admin = User.builder()
+                .email(email)
+                .username(username)
+                .password(encodedPassword)
+                .build();
+        admin.role = Role.ADMIN;
+        return admin;
     }
 
     public void update(String newEmail, String newUsername, String newPassword){
