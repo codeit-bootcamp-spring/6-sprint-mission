@@ -27,10 +27,10 @@ public class NotificationService {
                 .stream().map(NotificationMapper::toDto).toList();
     }
 
-    @PreAuthorize("@notificationService.isOwner(#notificationId, authentication.principal.id)")
+    @PreAuthorize("@notificationService.isOwner(#notificationId, authentication.principal.userId)")
     @Transactional
     @CacheEvict(value = "notifications", allEntries = true)
-    public void delete(UUID notificationId) {
+    public void delete(UUID notificationId) { // 알림을 누르면 삭제됨
         notificationRepository.findById(notificationId)
                         .orElseThrow(() -> new NotificationNotFoundException(notificationId));
         notificationRepository.deleteById(notificationId);
