@@ -62,20 +62,18 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             maxAttempts = 3,
             backoff = @Backoff(delay = 1000, multiplier = 2)
     )
-    public CompletableFuture<UUID> put(UUID id, byte[] bytes) {
+    public UUID put(UUID id, byte[] bytes) {
+
         Path filePath = resolvePath(id);
         if (Files.exists(filePath)) {
             throw new BinaryContentAlreadyExistsException(id);
         }
         try (OutputStream outputStream = Files.newOutputStream(filePath)){
             outputStream.write(bytes);
-            Thread.sleep(3000);
         } catch (IOException e) {
             throw new RuntimeException("업로드에 실패했습니다.", e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
-        return CompletableFuture.completedFuture(id);
+        return id;
     }
 
     @Recover

@@ -60,6 +60,8 @@ spring:
 
 logging:
   level:
+    org.apache.kafka: ERROR
+    org.springframework.kafka: ERROR
     root: info
     org.hibernate.SQL: debug # JDBC 관련 로그를 DEBUG 레벨로 출력
     # SQL 파라미터를 출력
@@ -69,7 +71,7 @@ discodeit:
   storage:
     type: ${STORAGE_TYPE:local} # local | s3 (기본값: local)
     local:
-      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:uploads}
     s3:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}

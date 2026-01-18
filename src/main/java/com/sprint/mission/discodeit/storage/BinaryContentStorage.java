@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 @Component
 public interface BinaryContentStorage {
 
-    CompletableFuture<UUID> put(UUID binaryContentId, byte[] bytes);
+    UUID put(UUID binaryContentId, byte[] bytes);
 
     InputStream get(UUID binaryContentId);
 

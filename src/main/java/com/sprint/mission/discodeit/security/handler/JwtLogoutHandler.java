@@ -21,7 +21,6 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class JwtLogoutHandler implements LogoutHandler {
 
-    private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
     private final UserRepository userRepository;
 
@@ -30,13 +29,11 @@ public class JwtLogoutHandler implements LogoutHandler {
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
 
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
-            String username = userDetails.getUsername();
-
-            // 2. DB 조회가 필요하다면 username으로 한 번만 조회 (토큰 파싱 생략)
-            userRepository.findByUsername(username)
+            userRepository.findByUsername(userDetails.getUsername())
                     .ifPresent(user -> jwtRegistry.invalidateJwtInformationByUserId(user.getId()));
         }
 
+        // 쿠키 삭제 명령
         response.addCookie(TokenUtil.emptyRefreshTokenCookie());
     }
 }

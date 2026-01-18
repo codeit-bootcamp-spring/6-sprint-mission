@@ -30,6 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
+    private final UserDetailsService userDetailsService;
     private static final String HEADER_AUTHORIZATION = "Authorization";
     private static final String TOKEN_PREFIX = "Bearer ";
     private static final String ROLE_PREFIX = "ROLE_";
@@ -53,14 +54,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(username) && role != null) {
                 if (isTokenValidInRegistry(token)) {
 
-                    List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + role));
+//                    List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + role));
 
-                    UserDetails userDetails = User.builder()
-                            .username(username)
-                            .password("")
-                            .authorities(authorities)
-                            .build();
-
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
@@ -78,6 +74,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response); // 다음 필터로 넘김
+    }
+
+    // 로그아웃 요청은 제외 (JwtAuthenticationFilter가 LogoutFilter보다 먼저 실행되므로)
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.equals("/api/auth/logout");
     }
 
     // 토큰 추출 - 요청 헤더에 Bearer로 시작하는 토큰 문자열을 꺼냄.

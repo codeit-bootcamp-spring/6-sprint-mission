@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "binary_contents")
+@EntityListeners(AuditingEntityListener.class)
 public class BinaryContent extends BaseEntity {
 
     @Id
@@ -41,6 +43,7 @@ public class BinaryContent extends BaseEntity {
     private Long size;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private BinaryContentStatus status = BinaryContentStatus.PROCESSING;
 
     @CreatedDate
@@ -68,21 +71,25 @@ public class BinaryContent extends BaseEntity {
     }
 
     public static BinaryContent createProfileImage(String fileName, String contentType, Long size, User user) {
-        return BinaryContent.builder()
+        BinaryContent binaryContent = BinaryContent.builder()
                 .fileName(fileName)
                 .contentType(contentType)
                 .size(size)
                 .user(user)
                 .build();
+        binaryContent.status = BinaryContentStatus.PROCESSING;
+        return binaryContent;
     }
 
     public static BinaryContent createAttachmentImage(String fileName, String contentType, Long size, Message message) {
-        return BinaryContent.builder()
+        BinaryContent binaryContent = BinaryContent.builder()
                 .fileName(fileName)
                 .contentType(contentType)
                 .size(size)
                 .message(message)
                 .build();
+        binaryContent.status = BinaryContentStatus.PROCESSING;
+        return binaryContent;
     }
 
     public void updateStatus(BinaryContentStatus newStatus) {

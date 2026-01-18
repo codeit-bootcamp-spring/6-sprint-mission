@@ -40,15 +40,23 @@ public class AuthController {
         return ResponseEntity.ok(
                 JwtDto.builder()
                 .accessToken(newInfo.accessToken())
-                .dto(newInfo.dto())
+                .userDto(newInfo.dto())
                 .build()
         );
     }
 
-    @PatchMapping("/role")
+    @PutMapping("/role")
     public ResponseEntity<UserResponseDto> updateUserRole(@Validated @RequestBody UserRoleUpdateRequest request) {
         UserResponseDto response = userService.updateUserRole(request);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 불필요하지만, 프론트가 csrf-token 요청을 호출하므로 응답 반환
+     */
+    @GetMapping("/csrf-token")
+    public ResponseEntity<?> getCsrfToken() {
+        return ResponseEntity.ok().build();
     }
 
 }

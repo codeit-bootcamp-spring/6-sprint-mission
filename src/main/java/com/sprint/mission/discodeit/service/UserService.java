@@ -26,6 +26,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.method.P;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
@@ -33,6 +34,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -99,7 +101,7 @@ public class UserService {
 
     // 수정
     @Transactional
-    @PreAuthorize("#userId == authentication.principal.id")
+    @PreAuthorize("#userId == authentication.principal.userId")
     @CacheEvict(value = "users", allEntries = true)
     public UserResponseDto update(UUID userId, UserUpdateRequestDto request,
                                   BinaryContentCreateRequestDto profileImageRequest) {
@@ -162,7 +164,7 @@ public class UserService {
 
     // 유저 삭제
     @Transactional
-    @PreAuthorize("#userId == authentication.principal.id")
+    @PreAuthorize("#userId == authentication.principal.userId")
     @CacheEvict(value = "users", allEntries = true)
     public void delete(UUID userId) {
         User user = userRepository.findById(userId)

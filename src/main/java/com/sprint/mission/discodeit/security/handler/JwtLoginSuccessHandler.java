@@ -81,7 +81,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
         JwtDto jwtDto = JwtDto.builder()
-                .dto(userMapper.toDto(user))
+                .userDto(userMapper.toDto(user))
                 .accessToken(accessToken)
                 .build();
 

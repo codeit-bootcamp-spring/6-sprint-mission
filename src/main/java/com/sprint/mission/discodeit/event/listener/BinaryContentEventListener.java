@@ -28,14 +28,21 @@ public class BinaryContentEventListener {
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onBinaryContentCreated(BinaryContentCreatedEvent event) {
+        log.info("파일 저장 시작 - ID: {}, TempPath: {}", event.id(), event.tempFilePath());
+
+        if (Files.notExists(event.tempFilePath())) {
+            log.error("파일 저장 실패: 임시 파일이 존재하지 않습니다! 경로: {}", event.tempFilePath());
+            binaryContentService.updateStatus(event.id(), BinaryContent.BinaryContentStatus.FAIL);
+            return;
+        }
 
         try {
-            byte[] bytes =Files.readAllBytes(event.tempFilePath());
+            byte[] bytes = Files.readAllBytes(event.tempFilePath());
             binaryContentStorage.put(event.id(), bytes);
             binaryContentService.updateStatus(event.id(), BinaryContent.BinaryContentStatus.SUCCESS);
-
+            log.info("최종 저장 완료 - ID: {}", event.id());
         } catch (Exception e) {
-            log.warn("Binary content storage failed for ID: {}", event.id(), e);
+            log.warn("파일 저장 실패 ID: {}", event.id(), e);
             binaryContentService.updateStatus(event.id(), BinaryContent.BinaryContentStatus.FAIL);
 
         } finally { // 임시 파일 삭제
