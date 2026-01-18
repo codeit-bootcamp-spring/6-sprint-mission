@@ -28,81 +28,81 @@ import java.util.List;
 @Component
 public class NotificationKafkaConsumer {
 
-    private final ObjectMapper objectMapper;
-    private final UserRepository userRepository;
-    private final ReadStatusRepository readStatusRepository;
-    private final NotificationRepository notificationRepository;
-
-    @Value("${discodeit.storage.type}")
-    private String storageType;
-
-    private static final String ROLE_UPDATE_MESSAGE = "권한이 변경되었습니다.";
-
-    @KafkaListener(topics = "discodeit.MessageCreatedEvent")
-    public void onMessageCreated(String kafkaEvent) {
-        try {
-            MessageCreatedPayload payload
-                    = objectMapper.readValue(kafkaEvent, MessageCreatedPayload.class);
-            List<ReadStatus> readStatuses = readStatusRepository
-                    .findAllByChannelIdAndNotificationEnabledIsTrueAndUser_IdNot(payload.channelId(), payload.authorId());
-
-            readStatuses.forEach(readStatus -> {
-                Notification notification = Notification.create(
-                        readStatus.getUser(),
-                        payload.authorUsername() + " (" + payload.channelName() + ")",
-                        payload.content()
-                );
-                notificationRepository.save(notification);
-            });
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    @KafkaListener(topics = "discodeit.RoleUpdatedEvent")
-    public void onUserRoleUpdate(String kafkaEvent) {
-        try {
-            UserRoleUpdatedPayload payload
-                    = objectMapper.readValue(kafkaEvent, UserRoleUpdatedPayload.class);
-            User user = userRepository.findById(payload.userId())
-                    .orElseThrow(() -> new UserNotFoundException(payload.userId()));
-            Notification notification = Notification.create(
-                    user,
-                    ROLE_UPDATE_MESSAGE,
-                    payload.oldRole().toString() + " -> "  + payload.newRole().toString()
-            );
-            notificationRepository.save(notification);
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    @KafkaListener(topics = "discodeit.S3UploadFailedEvent")
-    public void onBinaryContentPutFailure(String kafkaEvent) {
-        try {
-            BinaryContentPutFailPayload payload
-                    = objectMapper.readValue(kafkaEvent, BinaryContentPutFailPayload.class);
-
-            List<User> adminUsers = userRepository.findAllByRole(Role.ADMIN);
-            adminUsers.forEach(user -> {
-                Notification notification = Notification.create(
-                        user,
-                        getPutFailureTitle(),
-                        "requestId: " + payload.requestId() + '\n' +
-                                "binaryContentId: " + payload.binaryContentId() + '\n' +
-                                "error: " + payload.errorMessage()
-                );
-                notificationRepository.save(notification);
-            });
-        } catch (JsonProcessingException e){
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String getPutFailureTitle() {
-        return storageType.equals("s3") ? "S3 파일 업로드 실패" : "파일 저장 실패";
-    }
+//    private final ObjectMapper objectMapper;
+//    private final UserRepository userRepository;
+//    private final ReadStatusRepository readStatusRepository;
+//    private final NotificationRepository notificationRepository;
+//
+//    @Value("${discodeit.storage.type}")
+//    private String storageType;
+//
+//    private static final String ROLE_UPDATE_MESSAGE = "권한이 변경되었습니다.";
+//
+//    @KafkaListener(topics = "discodeit.MessageCreatedEvent")
+//    public void onMessageCreated(String kafkaEvent) {
+//        try {
+//            MessageCreatedPayload payload
+//                    = objectMapper.readValue(kafkaEvent, MessageCreatedPayload.class);
+//            List<ReadStatus> readStatuses = readStatusRepository
+//                    .findAllByChannelIdAndNotificationEnabledIsTrueAndUser_IdNot(payload.channelId(), payload.authorId());
+//
+//            readStatuses.forEach(readStatus -> {
+//                Notification notification = Notification.create(
+//                        readStatus.getUser(),
+//                        payload.authorUsername() + " (" + payload.channelName() + ")",
+//                        payload.content()
+//                );
+//                notificationRepository.save(notification);
+//            });
+//        } catch (JsonProcessingException e) {
+//            log.error(e.getMessage());
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//    @KafkaListener(topics = "discodeit.RoleUpdatedEvent")
+//    public void onUserRoleUpdate(String kafkaEvent) {
+//        try {
+//            UserRoleUpdatedPayload payload
+//                    = objectMapper.readValue(kafkaEvent, UserRoleUpdatedPayload.class);
+//            User user = userRepository.findById(payload.userId())
+//                    .orElseThrow(() -> new UserNotFoundException(payload.userId()));
+//            Notification notification = Notification.create(
+//                    user,
+//                    ROLE_UPDATE_MESSAGE,
+//                    payload.oldRole().toString() + " -> "  + payload.newRole().toString()
+//            );
+//            notificationRepository.save(notification);
+//        } catch (JsonProcessingException e) {
+//            log.error(e.getMessage());
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//    @KafkaListener(topics = "discodeit.S3UploadFailedEvent")
+//    public void onBinaryContentPutFailure(String kafkaEvent) {
+//        try {
+//            BinaryContentPutFailPayload payload
+//                    = objectMapper.readValue(kafkaEvent, BinaryContentPutFailPayload.class);
+//
+//            List<User> adminUsers = userRepository.findAllByRole(Role.ADMIN);
+//            adminUsers.forEach(user -> {
+//                Notification notification = Notification.create(
+//                        user,
+//                        getPutFailureTitle(),
+//                        "requestId: " + payload.requestId() + '\n' +
+//                                "binaryContentId: " + payload.binaryContentId() + '\n' +
+//                                "error: " + payload.errorMessage()
+//                );
+//                notificationRepository.save(notification);
+//            });
+//        } catch (JsonProcessingException e){
+//            log.error(e.getMessage());
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//    private String getPutFailureTitle() {
+//        return storageType.equals("s3") ? "S3 파일 업로드 실패" : "파일 저장 실패";
+//    }
 }

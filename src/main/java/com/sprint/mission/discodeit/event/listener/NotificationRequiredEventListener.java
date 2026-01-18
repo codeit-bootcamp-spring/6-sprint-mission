@@ -25,58 +25,58 @@ import java.util.List;
 @Slf4j
 public class NotificationRequiredEventListener {
 
-//    private final ReadStatusRepository readStatusRepository;
-//    private final NotificationRepository notificationRepository;
-//    private final UserRepository userRepository;
-//
-//    @Value("${discodeit.storage.type}")
-//    String storageType;
-//
-//    @Async("eventTaskExecutor")
-//    @TransactionalEventListener
-//    public void onMessageCreated(MessageCreatedEvent event) {
-//        List<ReadStatus> readStatuses = readStatusRepository
-//                .findAllByChannelIdAndNotificationEnabledIsTrueAndUser_IdNot(event.channel().getId(), event.author().getId());
-//
-//        readStatuses.forEach(readStatus -> {
-//            Notification notification = Notification.create(
-//                    readStatus.getUser(),
-//                    event.author().getUsername() + " (" + event.channel().getName() + ")",
-//                    event.content()
-//            );
-//            notificationRepository.save(notification);
-//        });
-//    }
-//
-//    @Async("eventTaskExecutor")
-//    @TransactionalEventListener
-//    public void onUserRoleUpdate(UserRoleUpdatedEvent event) {
-//
-//        final String roleUpdateMessage = "권한이 변경되었습니다.";
-//        Notification notification = Notification.create(
-//                event.user(),
-//                roleUpdateMessage,
-//                event.oldRole().toString() + " -> "  + event.newRole().toString()
-//        );
-//        notificationRepository.save(notification);
-//    }
-//
-//    @Async("eventTaskExecutor")
-//    @TransactionalEventListener
-//    public void onBinaryContentPutFailure(BinaryContentPutFailEvent event) {
-//
-//        final String title = storageType.equals("s3") ? "S3 파일 업로드 실패" : "파일 저장 실패";
-//        List<User> adminUsers = userRepository.findAllByRole(Role.ADMIN);
-//        adminUsers.forEach(user -> {
-//            Notification notification = Notification.create(
-//                    user,
-//                    title,
-//                    "requestId: " + event.requestId() + '\n' +
-//                            "binaryContentId: " + event.binaryContentId().toString() + '\n' +
-//                            "error: " + event.errorMessage()
-//            );
-//            notificationRepository.save(notification);
-//        });
-//    }
+    private final ReadStatusRepository readStatusRepository;
+    private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
+
+    @Value("${discodeit.storage.type}")
+    String storageType;
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener
+    public void onMessageCreated(MessageCreatedEvent event) {
+        List<ReadStatus> readStatuses = readStatusRepository
+                .findAllByChannelIdAndNotificationEnabledIsTrueAndUser_IdNot(event.channel().getId(), event.author().getId());
+
+        readStatuses.forEach(readStatus -> {
+            Notification notification = Notification.create(
+                    readStatus.getUser(),
+                    event.author().getUsername() + " (" + event.channel().getName() + ")",
+                    event.content()
+            );
+            notificationRepository.save(notification);
+        });
+    }
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener
+    public void onUserRoleUpdate(UserRoleUpdatedEvent event) {
+
+        final String roleUpdateMessage = "권한이 변경되었습니다.";
+        Notification notification = Notification.create(
+                event.user(),
+                roleUpdateMessage,
+                event.oldRole().toString() + " -> "  + event.newRole().toString()
+        );
+        notificationRepository.save(notification);
+    }
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener
+    public void onBinaryContentPutFailure(BinaryContentPutFailEvent event) {
+
+        final String title = storageType.equals("s3") ? "S3 파일 업로드 실패" : "파일 저장 실패";
+        List<User> adminUsers = userRepository.findAllByRole(Role.ADMIN);
+        adminUsers.forEach(user -> {
+            Notification notification = Notification.create(
+                    user,
+                    title,
+                    "requestId: " + event.requestId() + '\n' +
+                            "binaryContentId: " + event.binaryContentId().toString() + '\n' +
+                            "error: " + event.errorMessage()
+            );
+            notificationRepository.save(notification);
+        });
+    }
 
 }

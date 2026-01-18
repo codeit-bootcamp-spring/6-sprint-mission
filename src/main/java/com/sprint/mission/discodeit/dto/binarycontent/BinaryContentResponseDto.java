@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto.binarycontent;
 
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,5 +11,6 @@ public record BinaryContentResponseDto(
         UUID id,
         String fileName,
         String contentType,
-        Long size
+        Long size,
+        BinaryContent.BinaryContentStatus status
 ) {}

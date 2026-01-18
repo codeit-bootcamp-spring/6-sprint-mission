@@ -65,7 +65,7 @@ logging:
     root: info
     org.hibernate.SQL: debug # JDBC 관련 로그를 DEBUG 레벨로 출력
     # SQL 파라미터를 출력
-    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.orm.jdbc.bind: info
 
 discodeit:
   storage:
