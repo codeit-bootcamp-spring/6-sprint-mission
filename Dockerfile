@@ -1,6 +1,6 @@
 # ----- 0. Global Build Arguments -----
 ARG PROJECT_NAME="discodeit"
-ARG PROJECT_VERSION="1.2-M8"
+ARG PROJECT_VERSION="2.2-M11"
 
 # ----- 1. Build Stage -----
 # Java 17과 Gradle을 포함한 이미지를 'builder'라는 별칭으로 사용
