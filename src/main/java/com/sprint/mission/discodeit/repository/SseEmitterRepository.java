@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,6 +25,23 @@ public class SseEmitterRepository {
 
   }
 
+  //pageable
+  public List<SseEmitter> findAllByPage(int page, int size) {
+
+    List<SseEmitter> allEmitters = new ArrayList<>();
+    data.values().forEach(allEmitters::addAll);
+
+    int fromIndex = page * size;
+    int toIndex = Math.min(fromIndex + size, allEmitters.size());
+
+    if (fromIndex > allEmitters.size()) {
+      return new ArrayList<>();
+    }
+
+    return allEmitters.subList(fromIndex, toIndex);
+
+  }
+
   public List<SseEmitter> findAllByReceiverId(UUID receiverId) {
     return data.get(receiverId);
   }
@@ -40,8 +58,12 @@ public class SseEmitterRepository {
 
   }
 
-  public void deleteByReceiverId(UUID receiverId) {
-    data.remove(receiverId);
+  public void deleteAllBySseEmitters(List<SseEmitter> sseEmitters) {
+
+    for (List<SseEmitter> emitters : data.values()) {
+      emitters.removeAll(sseEmitters);
+    }
+
   }
 
   public void deleteByReceiverIdAndSseEmitter(UUID receiverId, SseEmitter sseEmitter) {
