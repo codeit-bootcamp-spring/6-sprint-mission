@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.event.event;
 
-import com.sprint.mission.discodeit.dto.ChannelDTO;
+import com.sprint.mission.discodeit.dto.UserDTO;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -11,36 +11,36 @@ import org.springframework.stereotype.Component;
 @Component
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class ChannelUpdatedEvent {
+public class UserUpdatedEvent {
 
   private UUID receiverId;
-  private ChannelNotificationType type;
-  private ChannelDTO.Channel data;
+  private UserNotificationType type;
+  private UserDTO.User data;
 
   @Getter
-  public enum ChannelNotificationType {
-    CREATED("channels.created"),
-    UPDATED("channels.updated"),
-    DELETED("channels.deleted");
+  public enum UserNotificationType {
+    CREATED("users.created"),
+    UPDATED("users.updated"),
+    DELETED("users.deleted");
 
     private final String eventName;
 
-    ChannelNotificationType(String eventName) {
+    UserNotificationType(String eventName) {
       this.eventName = eventName;
     }
 
   }
 
   @Builder(access = AccessLevel.PROTECTED)
-  public ChannelUpdatedEvent(UUID receiverId, ChannelNotificationType type, ChannelDTO.Channel data) {
+  public UserUpdatedEvent(UUID receiverId, UserNotificationType type, UserDTO.User data) {
     this.receiverId = receiverId;
     this.type = type;
     this.data = data;
   }
 
-  public static ChannelUpdatedEvent of(UUID receiverId, ChannelNotificationType type,
-      ChannelDTO.Channel data) {
-    return ChannelUpdatedEvent.builder()
+  public static UserUpdatedEvent of(UUID receiverId, UserNotificationType type,
+      UserDTO.User data) {
+    return UserUpdatedEvent.builder()
         .receiverId(receiverId)
         .type(type)
         .data(data)

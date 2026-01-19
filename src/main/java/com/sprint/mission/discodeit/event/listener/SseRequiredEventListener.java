@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.event.listener;
 import com.sprint.mission.discodeit.event.event.BinaryContentUpdatedEvent;
 import com.sprint.mission.discodeit.event.event.ChannelUpdatedEvent;
 import com.sprint.mission.discodeit.event.event.NotificationEvent;
+import com.sprint.mission.discodeit.event.event.UserUpdatedEvent;
 import com.sprint.mission.discodeit.service.SseService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,18 @@ public class SseRequiredEventListener {
       List.of(event.getReceiverId()),
       event.getType().getEventName(),
       event.getData()
+    );
+
+  }
+
+  @Async("notificationExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void handleUserUpdateEvent(UserUpdatedEvent event) {
+
+    sseService.send(
+        List.of(event.getReceiverId()),
+        event.getType().getEventName(),
+        event.getData()
     );
 
   }
