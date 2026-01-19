@@ -42,13 +42,13 @@ public class NotificationRequiredTopicListener {
 
     MessageCreatedEvent event = objectMapper.readValue(kafkaEvent, MessageCreatedEvent.class);
 
-    log.debug("메시지 알림 생성 시작: messageId={}", event.messageId());
+    log.debug("메시지 알림 생성 시작: messageId={}", event.message().getId());
 
     CreateMessageNotificationRequest request = CreateMessageNotificationRequest.builder()
         .channelId(event.channelId())
-        .messageId(event.messageId())
+        .messageId(event.message().getId())
         .authorId(event.authorId())
-        .content(event.content())
+        .content(event.message().getContent())
         .build();
 
     notificationTaskHandler.createMessageNotificationTask(request);

@@ -63,7 +63,8 @@ public class SecurityConfig {
                 "/api/auth/refresh",
                 "/api/auth/login",
                 "/api/auth/logout",
-                "/actuator/**").permitAll()
+                "/actuator/**",
+                "/ws/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
             .requestMatchers(
                 "/swagger-ui.html",

@@ -71,9 +71,8 @@ public class BasicMessageService implements MessageService {
 
     eventPublisher.publishEvent(MessageCreatedEvent.builder()
         .channelId(channel.getId())
-        .messageId(saved.getId())
+        .message(saved)
         .authorId(author.getId())
-        .content(saved.getContent())
         .build());
 
     log.info("메시지 생성: {}", message.getId());

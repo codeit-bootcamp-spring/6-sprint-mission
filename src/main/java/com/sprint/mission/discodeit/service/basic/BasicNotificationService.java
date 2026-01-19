@@ -36,6 +36,7 @@ public class BasicNotificationService implements NotificationService {
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
 
+  // todo request 개선 (message 객체 받고 n+1 문제 해결)
   @Override
   public void createMessageNotification(CreateMessageNotificationRequest request) {
 
