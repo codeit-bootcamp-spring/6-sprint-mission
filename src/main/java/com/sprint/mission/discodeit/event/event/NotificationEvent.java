@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.event.event;
 
 import com.sprint.mission.discodeit.dto.NotificationDTO;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,18 +14,18 @@ import org.springframework.stereotype.Component;
 @Getter
 public class NotificationEvent {
 
-  Instant name;
-  NotificationDTO data;
+  private UUID receiverId;
+  private NotificationDTO data;
 
   @Builder(access = AccessLevel.PROTECTED)
-  public NotificationEvent(Instant name, NotificationDTO data) {
-    this.name = name;
+  public NotificationEvent(UUID receiverId, NotificationDTO data) {
+    this.receiverId = receiverId;
     this.data = data;
   }
 
-  public static NotificationEvent of(Instant name, NotificationDTO data) {
+  public static NotificationEvent of(UUID receiverId, NotificationDTO data) {
     return NotificationEvent.builder()
-        .name(name)
+        .receiverId(receiverId)
         .data(data)
         .build();
   }
