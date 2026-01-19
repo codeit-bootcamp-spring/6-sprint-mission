@@ -2,13 +2,16 @@ package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.BinaryContent.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
@@ -22,6 +25,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -42,6 +46,8 @@ import java.util.concurrent.CompletableFuture;
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
 public class S3BinaryContentStorage implements BinaryContentStorage {
 
+    private final ApplicationEventPublisher eventPublisher;
+
     private final String accessKey;
 
     private final String secretKey;
@@ -58,29 +64,33 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
             @Value("${discodeit.storage.s3.secret-key}") String secretKey,
             @Value("${discodeit.storage.s3.region}") String region,
             @Value("${discodeit.storage.s3.bucket}") String bucket,
-            @Value("${discodeit.storage.s3.presigned-url-expiration}") int presignedTime) {
+            @Value("${discodeit.storage.s3.presigned-url-expiration}") int presignedTime,
+            ApplicationEventPublisher applicationEventPublisher
+    ) {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.region = region;
         this.bucket = bucket;
         this.presignedTime = presignedTime;
+        this.eventPublisher = applicationEventPublisher;
     }
 
     @Override
     @Retryable(
+            retryFor = S3Exception.class,
             maxAttempts = 5,
             backoff = @Backoff(delay = 1000, multiplier = 2)
     )
-    public CompletableFuture<UUID> put(BinaryContentCreatedEvent event){
+    public UUID put(UUID id, byte[] content){
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
-                .key("images/" + event.id().toString())
+                .key("images/" + id.toString())
                 .build();
 
-        getS3Client().putObject(putObjectRequest, RequestBody.fromBytes(event.content()));
+        getS3Client().putObject(putObjectRequest, RequestBody.fromBytes(content));
 
-        return CompletableFuture.completedFuture(event.id());
+        return id;
     }
 
     @Override
@@ -137,13 +147,11 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
 
     @Recover
-    public CompletableFuture<UUID> recover(Exception e){
+    public UUID recover(S3Exception e, UUID id, byte[] content){
         log.error("S3 재시도 모두 실패. Error: {}", e.getMessage());
-        return CompletableFuture.failedFuture(
-                new DiscodeitException(
-                        Instant.now(),
-                        ErrorCode.S3_STORAGE_SAVE_ERROR,
-                        Map.of("errMessage",e.getMessage()))
+        eventPublisher.publishEvent(
+                new S3UploadFailedEvent(id,e)
         );
+        throw  new RuntimeException(e);
     }
 }

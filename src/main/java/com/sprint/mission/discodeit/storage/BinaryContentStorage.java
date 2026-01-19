@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 
 
 public interface BinaryContentStorage {
-    CompletableFuture<UUID> put(BinaryContentCreatedEvent event)throws IOException;
+    UUID put(UUID id, byte[] content)throws IOException;
     InputStream get(UUID id);
     ResponseEntity<?> download(BinaryContentDto binaryContentDto);
 }

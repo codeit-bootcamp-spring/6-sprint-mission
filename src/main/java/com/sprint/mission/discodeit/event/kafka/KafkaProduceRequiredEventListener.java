@@ -2,14 +2,18 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.BinaryContent.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.dto.Message.MessageCreatedEvent;
 import com.sprint.mission.discodeit.dto.User.RoleUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
+
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,4 +36,13 @@ public class KafkaProduceRequiredEventListener {
         String payload = objectMapper.writeValueAsString(event);
         kafkaTemplate.send("discodeit.RoleUpdatedEvent",payload);
     }
+
+    @Async
+    @TransactionalEventListener
+    public void on(S3UploadFailedEvent event) throws JsonProcessingException{
+        String payload = objectMapper.writeValueAsString(event);
+        kafkaTemplate.send("discodeit.S3UploadFailedEvent",payload);
+    }
+
+
 }
