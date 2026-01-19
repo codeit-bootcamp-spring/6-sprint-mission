@@ -12,7 +12,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
-public class CacheCleatListener {
+public class CacheCleanListener {
 
   private final CacheManager defaultCacheManager;
 
