@@ -66,18 +66,18 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             maxAttempts = 5,
             backoff = @Backoff(delay = 1000, multiplier = 2)
     )
-    public CompletableFuture<UUID> put(BinaryContentCreatedEvent event) throws IOException {
+    public UUID put(UUID id, byte[] content) throws IOException {
         try{
             Thread.sleep(3000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Thread interrupted while simulating delay", e);
         }
-        Path path = resolvePath(event.id());
+        Path path = resolvePath(id);
         try (FileOutputStream fos = new FileOutputStream(path.toFile());) {
-            fos.write(event.content());
+            fos.write(content);
         }
-        return CompletableFuture.completedFuture(event.id());
+        return id;
     }
 
     @Override
@@ -116,7 +116,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         }
     }
     @Recover
-    public CompletableFuture<UUID> recover(Exception e){
-        return CompletableFuture.failedFuture(e);
+    public UUID recover(Exception e,UUID id, byte[] content){
+        throw new RuntimeException(e);
     }
 }
