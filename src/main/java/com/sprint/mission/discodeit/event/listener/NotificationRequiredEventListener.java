@@ -42,7 +42,7 @@ public class NotificationRequiredEventListener {
             Notification notification = Notification.create(
                     readStatus.getUser(),
                     event.author().getUsername() + " (" + event.channel().getName() + ")",
-                    event.content()
+                    event.message().getContent()
             );
             notificationRepository.save(notification);
         });

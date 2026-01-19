@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.event;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
 /**
@@ -9,7 +10,7 @@ import com.sprint.mission.discodeit.entity.User;
 public record MessageCreatedEvent (
         User author,
         Channel channel,
-        String content
+        Message message
 ){
 
 }

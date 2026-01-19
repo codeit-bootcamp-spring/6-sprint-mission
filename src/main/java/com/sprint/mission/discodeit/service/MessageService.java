@@ -64,9 +64,10 @@ public class MessageService {
                 .content(request.content())
                 .build();
         messageRepository.save(message);
-        saveAttachments(attachmentRequests, message);
-
-        eventPublisher.publishEvent(new MessageCreatedEvent(user, channel, message.getContent()));
+        if (attachmentRequests != null) {
+            saveAttachments(attachmentRequests, message);
+        }
+        eventPublisher.publishEvent(new MessageCreatedEvent(user, channel, message));
         log.info("메시지 생성이 완료되었습니다. id=" + message.getId());
         return messageMapper.toDto(message);
     }

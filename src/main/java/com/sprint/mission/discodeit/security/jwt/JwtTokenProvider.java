@@ -33,6 +33,7 @@ public class JwtTokenProvider {
             throw new RuntimeException("JWT Key Init Failed", e);
         }
     }
+
     public String createAccessToken(String username, String role) {
         return generateToken(username, role, jwtProperties.getAccessTokenValidityInMs());
     }
@@ -100,6 +101,16 @@ public class JwtTokenProvider {
             return true;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    public String getUsernameFromToken(String token) {
+        try {
+            JWTClaimsSet claims = getClaims(token);
+            return claims.getSubject();
+        } catch (Exception e) {
+            log.error("Failed to extract username from token: {}", e.getMessage());
+            throw new RuntimeException("Invalid Token while extracting username", e);
         }
     }
 

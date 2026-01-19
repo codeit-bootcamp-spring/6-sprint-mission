@@ -31,7 +31,7 @@ public class KafkaProduceRequiredEventListener {
                 event.channel().getName(),
                 event.author().getId(),
                 event.author().getUsername(),
-                event.content()
+                event.message().getContent()
         );
         String payload = objectMapper.writeValueAsString(messageCreatedPayload);
         kafkaTemplate.send("discodeit.MessageCreatedEvent", payload);
