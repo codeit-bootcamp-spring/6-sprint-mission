@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.exception.global;
 
 import com.sprint.mission.discodeit.dto.api.ErrorApiDTO;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.binarycontent.NoSuchBinaryContentException;
 import com.sprint.mission.discodeit.exception.channel.AllReadyExistChannelException;
 import com.sprint.mission.discodeit.exception.channel.InvalidChannelDataException;
@@ -80,6 +81,24 @@ public class GlobalExceptionHandler {
 
   }
 
+  @ExceptionHandler(DiscodeitException.class)
+  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleDiscodeitException(
+      DiscodeitException e) {
+
+    log.error("DiscodeitException occurred", e);
+
+    return ResponseEntity.status(e.getErrorCode().getStatus())
+        .body(ErrorApiDTO.ErrorApiResponse.builder()
+            .timestamp(e.getTimestamp())
+            .code(e.getErrorCode().name())
+            .message(e.getMessage())
+            .details(e.getDetails())
+            .exceptionType(String.valueOf(HttpStatus.valueOf(e.getErrorCode().getStatus())))
+            .status(e.getErrorCode().getStatus())
+            .build());
+
+  }
+
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleException(Exception e) {
@@ -96,252 +115,6 @@ public class GlobalExceptionHandler {
             .build());
   }
 
-  @ExceptionHandler(NoSuchBinaryContentException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchBinaryContentException(
-      NoSuchBinaryContentException e) {
-
-    log.error("NoSuchBinaryContentException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.NOT_FOUND.value()))
-            .status(HttpStatus.NOT_FOUND.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(AllReadyExistChannelException.class)
-  @ResponseStatus(HttpStatus.CONFLICT)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAllReadyExistChannelException(
-      AllReadyExistChannelException e) {
-
-    log.error("AllReadyExistChannelException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.CONFLICT.value()))
-            .status(HttpStatus.CONFLICT.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(InvalidChannelDataException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleInvalidChannelDataException(
-      InvalidChannelDataException e) {
-
-    log.error("InvalidChannelDataException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-            .status(HttpStatus.BAD_REQUEST.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(NoSuchChannelException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchChannelException(
-      NoSuchChannelException e) {
-
-    log.error("NoSuchChannelException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.NOT_FOUND.value()))
-            .status(HttpStatus.NOT_FOUND.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(NoSuchMessageException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchMessageException(
-      NoSuchMessageException e) {
-
-    log.error("NoSuchMessageException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.NOT_FOUND.value()))
-            .status(HttpStatus.NOT_FOUND.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(AllReadyExistReadStatusException.class)
-  @ResponseStatus(HttpStatus.CONFLICT)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAllReadyExistReadStatusException(
-      AllReadyExistReadStatusException e) {
-
-    log.error("AllReadyExistReadStatusException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.CONFLICT.value()))
-            .status(HttpStatus.CONFLICT.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(NoSuchReadStatusException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchReadStatusException(
-      NoSuchReadStatusException e) {
-
-    log.error("NoSuchReadStatusException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.NOT_FOUND.value()))
-            .status(HttpStatus.NOT_FOUND.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(AlReadyExistUserException.class)
-  @ResponseStatus(HttpStatus.CONFLICT)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAllReadyExistUserException(
-      AlReadyExistUserException e) {
-
-    log.error("AllReadyExistUserException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.CONFLICT.value()))
-            .status(HttpStatus.CONFLICT.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(NoSuchUserException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchUserException(
-      NoSuchUserException e) {
-
-    log.error("NoSuchUserException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.NOT_FOUND.value()))
-            .status(HttpStatus.NOT_FOUND.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(PasswordMismatchException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handlePasswordMismatchException(
-      PasswordMismatchException e) {
-
-    log.error("PasswordMismatchException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-            .status(HttpStatus.BAD_REQUEST.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(AllReadyExistUserStatusException.class)
-  @ResponseStatus(HttpStatus.CONFLICT)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAllReadyExistUserStatusException(
-      AllReadyExistUserStatusException e) {
-
-    log.error("AllReadyExistUserStatusException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .exceptionType(String.valueOf(HttpStatus.CONFLICT.value()))
-            .status(HttpStatus.CONFLICT.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(NoSuchUserStatusException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchUserStatusException(
-      NoSuchUserStatusException e) {
-
-    log.error("NoSuchUserStatusException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.NOT_FOUND.value()))
-            .status(HttpStatus.NOT_FOUND.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(NoSuchNotificationException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleNoSuchNotificationException(
-      NoSuchNotificationException e) {
-
-    log.error("NoSuchNotificationException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.NOT_FOUND.value()))
-            .status(HttpStatus.NOT_FOUND.value())
-            .build());
-
-  }
-
   @ExceptionHandler(AuthorizationDeniedException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
   public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleAuthorizationDeniedException(
@@ -352,43 +125,6 @@ public class GlobalExceptionHandler {
             .timestamp(Instant.now())
             .code(String.valueOf(HttpStatus.FORBIDDEN.value()))
             .message("Authorization Denied: " + e.getMessage())
-            .exceptionType(String.valueOf(HttpStatus.FORBIDDEN.value()))
-            .status(HttpStatus.FORBIDDEN.value())
-            .build());
-  }
-
-  @ExceptionHandler(InvalidJwtTokenException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleInvalidJwtTokenException(
-      InvalidJwtTokenException e) {
-
-    log.error("InvalidJwtTokenException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
-            .exceptionType(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-            .status(HttpStatus.BAD_REQUEST.value())
-            .build());
-
-  }
-
-  @ExceptionHandler(ForbiddenNotificationAccessException.class)
-  @ResponseStatus(HttpStatus.FORBIDDEN)
-  public ResponseEntity<ErrorApiDTO.ErrorApiResponse> handleForbiddenNotificationAccessException(
-      ForbiddenNotificationAccessException e) {
-
-    log.error("ForbiddenNotificationAccessException occurred", e);
-
-    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-        .body(ErrorApiDTO.ErrorApiResponse.builder()
-            .timestamp(e.getTimestamp())
-            .code(e.getErrorCode().name())
-            .message(e.getMessage())
-            .details(e.getDetails())
             .exceptionType(String.valueOf(HttpStatus.FORBIDDEN.value()))
             .status(HttpStatus.FORBIDDEN.value())
             .build());
