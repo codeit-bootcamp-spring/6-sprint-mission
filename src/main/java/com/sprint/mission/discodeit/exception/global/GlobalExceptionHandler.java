@@ -91,7 +91,7 @@ public class GlobalExceptionHandler {
         .body(ErrorApiDTO.ErrorApiResponse.builder()
             .timestamp(e.getTimestamp())
             .code(e.getErrorCode().name())
-            .message(e.getMessage())
+            .message(e.getErrorCode().getMessage())
             .details(e.getDetails())
             .exceptionType(String.valueOf(HttpStatus.valueOf(e.getErrorCode().getStatus())))
             .status(e.getErrorCode().getStatus())
