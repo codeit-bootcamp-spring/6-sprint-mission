@@ -12,14 +12,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 public class InMemoryJwtRegistry implements JwtRegistry{
 
-  private final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
-  private final int maxActiveJwtCount = 1;
+  private static final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
+  private static final int MAX_ACTIVE_JWT_COUNT = 1;
   private final JwtTokenProvider jwtTokenProvider;
-
 
   @Override
   public void registerJwtInformation(JwtInformation jwtInformation) {
@@ -28,7 +27,7 @@ public class InMemoryJwtRegistry implements JwtRegistry{
 
     if (origin.containsKey(key)){
       Queue<JwtInformation> queue = origin.get(key);
-      if (queue.size() >= maxActiveJwtCount){
+      if (queue.size() >= MAX_ACTIVE_JWT_COUNT){
         queue.poll();
       }
       queue.offer(jwtInformation);
