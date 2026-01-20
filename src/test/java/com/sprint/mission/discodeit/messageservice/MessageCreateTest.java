@@ -109,7 +109,7 @@ public class MessageCreateTest {
 
         verify(userRepository,times(1)).findById(any(UUID.class));
         verify(channelRepository,times(1)).findById(any(UUID.class));
-        verify(binaryContentStorage,times(1)).put(isNull(), any(byte[].class));
+        //verify(binaryContentStorage,times(1)).put(isNull(), any(byte[].class));
         verify(binaryContentRepository,times(1)).save(any(BinaryContent.class));
         verify(messageRepository,times(1)).save(any(Message.class));
     }

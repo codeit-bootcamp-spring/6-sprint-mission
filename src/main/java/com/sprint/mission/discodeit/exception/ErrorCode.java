@@ -33,8 +33,12 @@ public enum ErrorCode {
     UNAUTHORIZED_USER(HttpStatus.FORBIDDEN,"해당 권한이 없음"),
     UNAUTHENTICATED_USER(HttpStatus.UNAUTHORIZED,"인증되지 않은 사용자"),
 
-    INVALID_AUTH(HttpStatus.UNAUTHORIZED,"잘못된 인증 정보 입니다");
+    INVALID_AUTH(HttpStatus.UNAUTHORIZED,"토큰이 유효하지 않습니다."),
+    INVALID_USER_DETAILS(HttpStatus.UNAUTHORIZED,"사용자 인증 정보가 유효하지 않습니다."),
 
+    LOCAL_STORAGE_SAVE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"Local 파일 업로드 실패"),
+    S3_STORAGE_SAVE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"S3 파일 업로드 실패")
+    ;
     private final HttpStatus status;
     private final String message;
 

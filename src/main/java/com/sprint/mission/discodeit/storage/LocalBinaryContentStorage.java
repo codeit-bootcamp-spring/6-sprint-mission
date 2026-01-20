@@ -1,10 +1,15 @@
 package com.sprint.mission.discodeit.storage;
 
+import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.enumtype.BinaryContentStatus;
 import com.sprint.mission.discodeit.exception.file.FileDownloadException;
 import com.sprint.mission.discodeit.exception.file.FileInPutException;
 import com.sprint.mission.discodeit.exception.file.FileOutPutException;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -12,7 +17,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -21,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -50,13 +61,21 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     }
 
     @Override
-    public UUID put(UUID id, byte[] data) {
+    @Retryable(
+            retryFor = {FileNotFoundException.class, IOException.class},
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    public UUID put(UUID id, byte[] content) throws IOException {
+        try{
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Thread interrupted while simulating delay", e);
+        }
         Path path = resolvePath(id);
         try (FileOutputStream fos = new FileOutputStream(path.toFile());) {
-            fos.write(data);
-        } catch (IOException e) {
-            log.error("파일 저장 오류 발생: 파일Id={}",id);
-            throw new FileOutPutException();
+            fos.write(content);
         }
         return id;
     }
@@ -95,5 +114,9 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             log.error("파일 다운로드 오류 발생: 파일 이름={}",binaryContentDto.fileName());
             throw new FileDownloadException();
         }
+    }
+    @Recover
+    public UUID recover(Exception e,UUID id, byte[] content){
+        throw new RuntimeException(e);
     }
 }
