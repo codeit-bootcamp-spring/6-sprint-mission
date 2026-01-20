@@ -139,8 +139,8 @@ class UserControllerTest {
 
     UserDTO.User updatedUser = UserDTO.User.builder()
         .id(testUserId)
-        .createdAt(Instant.now())
-        .updatedAt(Instant.now())
+        //.createdAt(Instant.now())
+        //.updatedAt(Instant.now())
         .username("updatedUsername")
         .email("updated@example.com")
         .password(testPassword)
