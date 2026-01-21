@@ -5,6 +5,8 @@ services:
     container_name: broker
     ports:
       - 9092:9092
+    networks:
+      - discodeit-network
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
@@ -29,6 +31,8 @@ services:
     volumes:
       - ./nginx/certs:/etc/nginx/certs:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    networks:
+      - discodeit-network
   redis:
     image: redis:7.2-alpine
     container_name: redis
@@ -36,6 +40,8 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    networks:
+      - discodeit-network
     command: redis-server --appendonly yes
   postgres-db:
     image: postgres:17-alpine
@@ -49,6 +55,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - discodeit-network
   app:
     image: discodeit:latest
     container_name: discodeit-app
@@ -60,7 +68,12 @@ services:
       - postgres-db
     volumes:
       - discodeit_uploads:/src/main/resources/data/files
+    networks:
+      - discodeit-network
 volumes:
     postgres_data:
     discodeit_uploads:
     redis-data:
+networks:
+  discodeit-network:
+    driver: bridge
