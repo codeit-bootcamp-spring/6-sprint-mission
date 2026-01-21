@@ -9,22 +9,42 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     open-in-view: false
   profiles:
     active:
       - ${SPRING_ACTIVE_PROFILE}
   config:
     import: optional:file:.env[.properties]
+  cache:
+    caffeine:
+      spec: recordStats
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVER:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,loggers
+        include: health,info,metrics,loggers,caches
   endpoint:
     health:
       show-details: always
+  observations:
+    annotations:
+      enabled: true
 
 info:
   name: Discodeit
@@ -60,9 +80,17 @@ discodeit:
   security:
     remember-me-secret: ${REMEMBER_ME_SECRET}
   admin:
-    username: admin
-    password: admin
-    email: admin@codeit.com
+    username: ${ADMIN_USERNAME}
+    password: ${ADMIN_PASSWORD}
+    email: ${ADMIN_EMAIL}
+  jwt:
+    #    issuer: ${JWT_ISSUER}
+    access-token:
+      secret: ${JWT_ACCESS_TOKEN_SECRET}
+      expiration-ms: ${ACCESS_TOKEN_EXPIRATION_MS}
+    refresh-token:
+      secret: ${JWT_REFRESH_TOKEN_SECRET}
+      expiration-ms: ${REFRESH_TOKEN_EXPIRATION_MS}
 
 logging:
   level:
@@ -76,14 +104,4 @@ server:
         max-age: 5m
       tracking-modes: cookie
 
-jwt:
-  secret: ${JWT_SECRET}
-  issuer: ${JWT_ISSUER}
-  access-token-validity-seconds: ${ACCESS_TOKEN_VALIDITY_SECONDS}
-  refresh-token-validity-seconds: ${REFRESH_TOKEN_VALIDITY_SECONDS}
-  refresh-token-cookie:
-    name: ${REFRESH_TOKEN_COOKIE_NAME}
-    max-age: ${REFRESH_TOKEN_COOKIE_MAX_AGE}
-    path: ${REFRESH_TOKEN_COOKIE_PATH}
-    http-only: ${REFRESH_TOKEN_COOKIE_HTTP_ONLY}
-    secure: ${REFRESH_TOKEN_COOKIE_SECURE}
+

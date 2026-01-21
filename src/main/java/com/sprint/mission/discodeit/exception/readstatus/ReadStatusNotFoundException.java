@@ -14,4 +14,11 @@ public class ReadStatusNotFoundException extends ReadStatusException {
         exception.addDetail("readStatusId", readStatusId);
         return exception;
     }
+
+    public static ReadStatusNotFoundException withChannelIdAndUserId(UUID channelId, UUID userId) {
+        ReadStatusNotFoundException exception = new ReadStatusNotFoundException();
+        exception.addDetail("userId", userId);
+        exception.addDetail("channelId", channelId);
+        return exception;
+    }
 } 

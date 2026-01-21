@@ -4,8 +4,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sprint.mission.discodeit.exception.jwt.JwtException;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -83,37 +81,15 @@ public class GlobalExceptionHandler {
         .body(response);
   }
 
-  @ExceptionHandler(JwtException.class)
-  public ResponseEntity<ErrorResponse> handleJwtException(JwtException ex) {
-      HttpStatus status =  determineHttpStatus(ex);
-      ErrorResponse response = new ErrorResponse(ex, status.value());
-
-      return ResponseEntity.status(status).body(response);
-  }
-
   private HttpStatus determineHttpStatus(DiscodeitException exception) {
     ErrorCode errorCode = exception.getErrorCode();
     return switch (errorCode) {
-      case USER_NOT_FOUND,
-           CHANNEL_NOT_FOUND,
-           MESSAGE_NOT_FOUND,
-           BINARY_CONTENT_NOT_FOUND,
-           READ_STATUS_NOT_FOUND
-              -> HttpStatus.NOT_FOUND;
-      case DUPLICATE_USER,
-           DUPLICATE_READ_STATUS
-              -> HttpStatus.CONFLICT;
-      case INVALID_USER_CREDENTIALS,
-           JWT_SIGNATURE_INVALID,
-           JWT_TOKEN_EXPIRED,
-           JWT_TOKEN_INVALID,
-           REFRESH_TOKEN_NOT_FOUND
-              -> HttpStatus.UNAUTHORIZED;
-      case PRIVATE_CHANNEL_UPDATE,
-           INVALID_REQUEST
-              -> HttpStatus.BAD_REQUEST;
-      case INTERNAL_SERVER_ERROR
-              -> HttpStatus.INTERNAL_SERVER_ERROR;
+      case USER_NOT_FOUND, CHANNEL_NOT_FOUND, MESSAGE_NOT_FOUND, BINARY_CONTENT_NOT_FOUND,
+           READ_STATUS_NOT_FOUND -> HttpStatus.NOT_FOUND;
+      case DUPLICATE_USER, DUPLICATE_READ_STATUS -> HttpStatus.CONFLICT;
+      case INVALID_USER_CREDENTIALS, INVALID_TOKEN, INVALID_USER_DETAILS -> HttpStatus.UNAUTHORIZED;
+      case PRIVATE_CHANNEL_UPDATE, INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
+      case INTERNAL_SERVER_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
     };
   }
 }
