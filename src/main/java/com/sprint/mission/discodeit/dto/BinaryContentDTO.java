@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.enums.ContentType;
 import java.time.Instant;
 import java.util.UUID;
@@ -20,9 +21,11 @@ public class BinaryContentDTO {
 
     private UUID id;
     private Instant createdAt;
+    private Instant updatedAt;
     private String fileName;
     private Long size;
     private ContentType contentType;
+    private BinaryContentStatus status = BinaryContentStatus.PROCESSING;
     private byte[] bytes;
 
   }

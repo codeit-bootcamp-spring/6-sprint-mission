@@ -27,4 +27,8 @@ public class TokenUtil {
 
   }
 
+  public void addCookieToResponse(Cookie cookie, HttpServletResponse response) {
+    response.addCookie(cookie);
+  }
+
 }

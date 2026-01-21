@@ -11,6 +11,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.sprint.mission.discodeit.config.JwtProperties;
 import jakarta.annotation.PostConstruct;
+import java.sql.Date;
 import java.text.ParseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,7 @@ public class JwtTokenProvider {
         .issuer(jwtProperties.getIssuer())
         .subject(username)
         .claim("role", role)
+        .expirationTime(Date.valueOf(String.valueOf(jwtProperties.getAccessExpiration())))
         .build();
 
     // Generate JWT token
@@ -70,6 +72,7 @@ public class JwtTokenProvider {
         .issuer(jwtProperties.getIssuer())
         .subject(username)
         .claim("role", role)
+        .expirationTime(Date.valueOf(String.valueOf(jwtProperties.getRefreshExpiration())))
         .build();
 
     // Generate JWT token
@@ -105,6 +108,12 @@ public class JwtTokenProvider {
   }
 
   public boolean validateAccessToken(String token) {
+
+    if (token == null) {
+      log.error("JWT token is null.");
+      return false;
+    }
+
     try {
       SignedJWT signedJWT = SignedJWT.parse(token);
       return signedJWT.verify(accessVerifier);
@@ -115,6 +124,12 @@ public class JwtTokenProvider {
   }
 
   public boolean validateRefreshToken(String token) {
+
+    if (token == null) {
+      log.error("JWT token is null.");
+      return false;
+    }
+
     try {
       SignedJWT signedJWT = SignedJWT.parse(token);
       return signedJWT.verify(refreshVerifier);

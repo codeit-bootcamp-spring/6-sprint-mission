@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -247,6 +248,7 @@ public class ChannelController {
           )
       }
   )
+  @Cacheable(value = "channelsByUserIdCache", key = "#userId", cacheManager = "defaultCacheManager")
   @GetMapping()
   public List<FindChannelResponse> findChannelsByUserId(
       @Parameter(description = "사용자 ID", required = true, example = "123e4567-e89b-12d3-a456-426614174000")

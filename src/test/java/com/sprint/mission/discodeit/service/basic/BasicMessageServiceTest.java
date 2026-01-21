@@ -86,7 +86,7 @@ class BasicMessageServiceTest {
     testUserDto = UserDTO.User.builder()
         .id(testUserId)
         .username("testuser")
-        .createdAt(Instant.now())
+        //.createdAt(Instant.now())
         .build();
 
     testMessageDto = MessageDTO.Message.builder()

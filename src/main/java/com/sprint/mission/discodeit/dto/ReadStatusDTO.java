@@ -28,11 +28,16 @@ public class ReadStatusDTO {
     private UUID userId;
     private UUID channelId;
     private Instant lastReadAt;
+    private Boolean notificationEnabled;
 
   }
 
   @Builder
-  public record UpdateReadStatusCommand(UUID id, Instant lastReadAt) {
+  public record UpdateReadStatusCommand(
+      UUID id,
+      Instant lastReadAt,
+      Boolean newNotificationEnabled
+  ) {
 
   }
 
