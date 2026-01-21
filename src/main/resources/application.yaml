@@ -16,6 +16,10 @@ spring:
       - dev
   config:
     import: optional:file:.env[.properties]
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=10m
 
 management:
   endpoints:
@@ -61,14 +65,14 @@ discodeit:
     username: ${DISCODEIT_ADMIN_USERNAME}
     email: ${DISCODEIT_ADMIN_EMAIL}
     password: ${DISCODEIT_ADMIN_PASSWORD}
+  jwt:
+    access-token:
+      secret: ${JWT_ACCESS_SECRET:your-access-token-secret-key-here-make-it-long-and-random}
+      expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:1800000} # 30 minutes
+    refresh-token:
+      secret: ${JWT_REFRESH_SECRET:your-refresh-token-secret-key-here-make-it-different-and-long}
+      expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 days
 
 logging:
   level:
     root: info
-
-
-jwt:
-  secret: ${JWT_SECRET:discodeit_default_jwt_secret_key}
-  issuer: ${issuer:discodeit}
-  access-token-validity-in-ms: ${JWT_ACCESS_TOKEN_VALIDITY_IN_MS:900000} # 15분
-  refresh-token-validity-in-ms: ${JWT_REFRESH_TOKEN_VALIDITY_IN_MS:120960000}

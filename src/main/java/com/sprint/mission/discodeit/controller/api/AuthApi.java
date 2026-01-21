@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.JwtDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -27,16 +26,6 @@ public interface AuthApi {
       @Parameter(hidden = true) CsrfToken csrfToken
   );
 
-  @Operation(summary = "리프레시 토큰을 활용한 액세스 토큰 재발급")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "재발급 성공",
-          content = @Content(schema = @Schema(implementation = JwtDto.class))),
-      @ApiResponse(responseCode = "401", description = "리프레시 토큰이 유효하지 않음")
-  })
-  ResponseEntity<?> refresh(
-      @Parameter(hidden = true) HttpServletRequest request,
-      @Parameter(hidden = true) HttpServletResponse response
-  );
 
   @Operation(summary = "사용자 권한 수정")
   @ApiResponses(value = {
@@ -47,4 +36,17 @@ public interface AuthApi {
   })
   ResponseEntity<UserDto> updateRole(
       @Parameter(description = "권한 수정 요청 정보") RoleUpdateRequest request);
+
+  @Operation(summary = "토큰 리프레시")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200", description = "토큰 리프레시 성공",
+          content = @Content(schema = @Schema(implementation = UserDto.class))
+      ),
+      @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰")
+  })
+  ResponseEntity<JwtDto> refresh(
+      @Parameter(description = "리프레시 토큰") String refreshToken,
+      @Parameter(hidden = true) HttpServletResponse response
+  );
 } 
