@@ -93,6 +93,7 @@ public class BasicMessageService implements MessageService {
 
         MessageCreatedEvent event = MessageCreatedEvent.builder()
                 .userId(user.getId())
+                .channelId(channel.getId())
                 .userName(user.getUsername())
                 .channelName(channel.getName())
                 .content(message.getContent())
