@@ -17,7 +17,7 @@ services:
     image: discodeit:local
     container_name: discodeit
     ports:
-      - "8081:80" # 호스트 8081 -> 컨테이너 80
+      - "8081:8080" # 호스트 8081 -> 컨테이너 8080
     build: # 애플리케이션 서비스를 로컬 Dockerfile에서 빌드
       context: . # 현재 디렉토리를 컨텍스트 경로로 지정
       dockerfile: Dockerfile # (선택값)

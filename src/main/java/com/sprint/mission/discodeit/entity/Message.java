@@ -6,9 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +15,10 @@ import java.util.UUID;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
 @Table(name = "messages")
+@EntityListeners(AuditingEntityListener.class)
 public class Message extends BaseUpdatableEntity {
 
     @Id
@@ -34,6 +33,7 @@ public class Message extends BaseUpdatableEntity {
     @JoinColumn(name = "channel_id")
     private Channel channel;
 
+    @Setter
     @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BinaryContent> attachments = new ArrayList<>();
 
@@ -43,15 +43,17 @@ public class Message extends BaseUpdatableEntity {
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    @Builder.Default
-    private Instant createdAt = Instant.now();
+    private Instant createdAt;
 
     @LastModifiedDate
     private Instant updatedAt;
 
-    // TODO 필요없는 메서드일수 있음. 연관관계 검토 필요
-    public void updateBinaryContents(List<BinaryContent> attachments) {
-        this.attachments = (attachments != null ? attachments : new ArrayList<>());
+    @Builder
+    public Message (User author, Channel channel, List<BinaryContent> attachments, String content) {
+        this.author = author;
+        this.channel = channel;
+        this.attachments = attachments;
+        this.content = content;
     }
 
     public void updateContent(String content) {

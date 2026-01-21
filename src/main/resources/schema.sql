@@ -37,20 +37,11 @@ CREATE TABLE read_statuses (
     user_id UUID,
     channel_id UUID,
     last_read_at TIMESTAMP,
+    notification_enabled boolean NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP,
     CONSTRAINT fk_read_user FOREIGN KEY (user_id) REFERENCES users(id),
     CONSTRAINT fk_read_channel FOREIGN KEY (channel_id) REFERENCES channels(id)
-);
-
--- user_statuses
-CREATE TABLE user_statuses (
-    id UUID PRIMARY KEY,
-    user_id UUID UNIQUE,
-    last_active_at TIMESTAMP,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP,
-    CONSTRAINT fk_status_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- binary_contents
@@ -61,8 +52,20 @@ CREATE TABLE binary_contents (
     content_type VARCHAR(50) NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     size BIGINT NOT NULL,
+    status varchar(20) NOT NULL,
     created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP,
     CONSTRAINT fk_binary_message FOREIGN KEY (message_id) REFERENCES messages(id),
+    CONSTRAINT fk_binary_user FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- notifications
+CREATE TABLE notifications (
+    id UUID PRIMARY KEY,
+    user_id UUID,
+    title VARCHAR(255) NOT NULL,
+    content VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
     CONSTRAINT fk_binary_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
 

@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +21,6 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class JwtLogoutHandler implements LogoutHandler {
 
-    private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
     private final UserRepository userRepository;
 
@@ -28,28 +28,12 @@ public class JwtLogoutHandler implements LogoutHandler {
     @Transactional
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
 
-        String refreshToken = null;
-        Cookie[] cookies = request.getCookies();
-
-        if (cookies != null) {
-            refreshToken = Arrays.stream(cookies)
-                    .filter(cookie -> "REFRESH_TOKEN".equals(cookie.getName()))
-                    .map(Cookie::getValue)
-                    .findFirst()
-                    .orElse(null);
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
+            userRepository.findByUsername(userDetails.getUsername())
+                    .ifPresent(user -> jwtRegistry.invalidateJwtInformationByUserId(user.getId()));
         }
 
-        if (refreshToken != null) {
-            try {
-                // 토큰 무효화 - 토큰에서 username 추출 -> User 조회 -> DB 삭제
-                String username = jwtTokenProvider.getClaims(refreshToken).getSubject();
-                userRepository.findByUsername(username)
-                        .ifPresent(user -> jwtRegistry.invalidateJwtInformationByUserId(user.getId()));
-            } catch (Exception e) {
-                // 무시
-            }
-        }
-
+        // 쿠키 삭제 명령
         response.addCookie(TokenUtil.emptyRefreshTokenCookie());
     }
 }

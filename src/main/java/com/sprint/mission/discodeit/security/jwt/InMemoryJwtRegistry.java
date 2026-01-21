@@ -14,73 +14,106 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InMemoryJwtRegistry implements JwtRegistry {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final Map<UUID, Queue<JwtInformation>> registry = new ConcurrentHashMap<>();
-    private final int maxActiveJwtCount = 1;
+    private static final int MAX_ACTIVE_JWT_COUNT = 1;
+
+    // 사용자별 JWT 관리 - MAX_ACTIVE_JWT_COUNT를 늘릴 경우를 고려해 Queue 사용.
+    private final Map<UUID, Queue<JwtInformation>> userRegistry = new ConcurrentHashMap<>();
+
+    // 조회 속도 향상 위한 Map들
+    private final Map<String, JwtInformation> accessTokenIndex = new ConcurrentHashMap<>();
+    private final Map<String, JwtInformation> refreshTokenIndex = new ConcurrentHashMap<>();
 
     @Override
     public void registerJwtInformation(JwtInformation jwtInformation) {
-        UUID userId = jwtInformation.getDto().id();
+        UUID userId = jwtInformation.getUserId();
 
         // compute: 원자적 연산으로 동시성을 보장하면서 데이터 갱신
-        registry.compute(userId, (key, existingQueue) -> {
+        userRegistry.compute(userId, (key, existingQueue) -> {
             Queue<JwtInformation> queue = (existingQueue != null) ? existingQueue : new LinkedList<>();
 
             // 동시 로그인 제한
-            while (queue.size() >= maxActiveJwtCount) {
+            while (queue.size() >= MAX_ACTIVE_JWT_COUNT) {
                 queue.poll();
             }
 
             queue.offer(jwtInformation);
             return queue;
         });
-        log.debug("Registered JWT for user: {}, Total active sessions: {}", userId, registry.get(userId).size());
+        accessTokenIndex.put(jwtInformation.accessToken(), jwtInformation);
+        refreshTokenIndex.put(jwtInformation.refreshToken(), jwtInformation);
+        log.debug("Registered JWT for user: {}, Total active sessions: {}", userId, userRegistry.get(userId).size());
     }
 
     @Override
     public void invalidateJwtInformationByUserId(UUID userId) {
-        registry.remove(userId);
+        Queue<JwtInformation> userTokens = userRegistry.remove(userId);
+
+        if (userTokens != null) {
+            for (JwtInformation jwtInformation : userTokens) {
+                accessTokenIndex.remove(jwtInformation.accessToken());
+                refreshTokenIndex.remove(jwtInformation.refreshToken());
+            }
+        }
     }
 
     @Override
     public boolean hasActiveJwtInformationByUserId(UUID userId) {
-        return registry.containsKey(userId) && !registry.get(userId).isEmpty();
+        return userRegistry.containsKey(userId) && !userRegistry.get(userId).isEmpty();
     }
 
     @Override
     public boolean hasActiveJwtInformationByAccessToken(String accessToken) {
-        return registry.values().stream()
-                .flatMap(Collection::stream)
-                .anyMatch(info -> info.getAccessToken().equals(accessToken));
+        return accessTokenIndex.containsKey(accessToken);
     }
 
     @Override
     public boolean hasActiveJwtInformationByRefreshToken(String refreshToken) {
-        return registry.values().stream()
-                .flatMap(Collection::stream)
-                .anyMatch(info -> info.getRefreshToken().equals(refreshToken));
+        return refreshTokenIndex.containsKey(refreshToken);
     }
 
     @Override
     public void rotateJwtInformation(String oldRefreshToken, JwtInformation newJwtInformation) {
-        UUID userId = newJwtInformation.getDto().id();
-        Queue<JwtInformation> queue = registry.get(userId);
+        UUID userId = newJwtInformation.getUserId();
+        JwtInformation oldJwtInformation = refreshTokenIndex.remove(oldRefreshToken);
 
-        if (queue != null) {
-            // 기존 토큰 제거 후 새 토큰 정보 삽입
-            queue.removeIf(info -> info.getRefreshToken().equals(oldRefreshToken));
-            queue.offer(newJwtInformation);
+        if (oldJwtInformation != null) {
+            // 기존 토큰 제거
+            accessTokenIndex.remove(oldJwtInformation.accessToken());
+            Queue<JwtInformation> queue = userRegistry.get(userId);
+            if (queue != null) {
+                queue.remove(oldJwtInformation);
+            }
         }
+        // 새 토큰 저장
+        registerJwtInformation(newJwtInformation);
     }
 
     @Override
     @Scheduled(fixedDelay = 1000 * 60 * 5)
     public void clearExpiredJwtInformation() {
-        registry.forEach((userId, queue) -> {
-            queue.removeIf(info -> !jwtTokenProvider.validateToken(info.getRefreshToken()));
-            if (queue.isEmpty()) {
-                registry.remove(userId);
+
+        log.debug("Cleanup task started: Clearing expired JWTs...");
+
+        accessTokenIndex.values().forEach(info -> {
+            if (!jwtTokenProvider.validateToken(info.accessToken()) ||
+                    !jwtTokenProvider.validateToken(info.refreshToken())) {
+                removeJwtInformation(info);
             }
         });
+
+        // 비어있는 큐(유저) 정리
+        userRegistry.entrySet().removeIf(entry -> entry.getValue().isEmpty());
         log.debug("Cleanup task: Expired JWTs cleared from memory.");
+    }
+
+    // 중복 로직을 방지하기 위한 공통 삭제 메서드
+    private void removeJwtInformation(JwtInformation info) {
+        accessTokenIndex.remove(info.accessToken());
+        refreshTokenIndex.remove(info.refreshToken());
+
+        Queue<JwtInformation> queue = userRegistry.get(info.getUserId());
+        if (queue != null) {
+            queue.remove(info);
+        }
     }
 }

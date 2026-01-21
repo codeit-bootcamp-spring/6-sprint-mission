@@ -34,13 +34,7 @@ public class AdminInitializer implements CommandLineRunner {
     public void run(String... args) {
 
         if (!userRepository.existsByRole(Role.ADMIN)) {
-            User admin = User.builder()
-                    .email(defaultAdminEmail)
-                    .username(defaultAdminUsername)
-                    .password(passwordEncoder.encode(defaultAdminPassword))
-                    .role(Role.ADMIN)
-                    .build();
-
+            User admin = User.createAdmin(defaultAdminEmail, defaultAdminUsername, passwordEncoder.encode(defaultAdminPassword));
             userRepository.save(admin);
             log.info("Admin account has been created");
         }

@@ -6,21 +6,26 @@ import com.sprint.mission.discodeit.dto.message.MessageCreateRequestDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.*;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 
@@ -33,8 +38,11 @@ public class MessageService {
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
-    private final MessageMapper messageMapper; // 유저 온라인 여부 확인시 리포지토리 필요, 스태틱으로 사용 불가해 별도로 선언.
+    private final MessageMapper messageMapper;
+    private final ApplicationEventPublisher eventPublisher;
+
+    private static final String TEMP_FILE_PREFIX = "binary_";
+    private static final String TEMP_FILE_EXTENSION = ".tmp";
 
     // 메시지 생성
     @Transactional
@@ -56,29 +64,9 @@ public class MessageService {
                 .content(request.content())
                 .build();
         messageRepository.save(message);
+        saveAttachments(attachmentRequests, message);
 
-        Map<BinaryContent, byte[]> attachments = new HashMap<>(attachmentRequests.size());
-        for (BinaryContentCreateRequestDto attachmentRequest : attachmentRequests) {
-            String fileName = attachmentRequest.fileName();
-            String contentType = attachmentRequest.contentType();
-            byte[] bytes = attachmentRequest.bytes();
-
-            BinaryContent binaryContent = BinaryContent.builder()
-                    .fileName(fileName)
-                    .size((long) bytes.length)
-                    .contentType(contentType)
-                    .message(message)
-                    .build();
-            binaryContentRepository.save(binaryContent);
-
-            attachments.put(binaryContent, bytes);
-        }
-
-        for (Map.Entry<BinaryContent, byte[]> entry : attachments.entrySet()) {
-            BinaryContent binaryContent = entry.getKey();
-            binaryContentStorage.put(binaryContent.getId(), entry.getValue());
-        }
-
+        eventPublisher.publishEvent(new MessageCreatedEvent(user, channel, message.getContent()));
         log.info("메시지 생성이 완료되었습니다. id=" + message.getId());
         return messageMapper.toDto(message);
     }
@@ -136,9 +124,34 @@ public class MessageService {
         log.info("메시지 삭제가 완료되었습니다. id=" + messageId);
     }
 
-    public boolean isAuthor(UUID messageId, UUID userId) {
-        return messageRepository.findById(messageId)
-                .map(m -> m.getAuthor().getId().equals(userId))
-                .orElse(false);
+    private void saveAttachments(List<BinaryContentCreateRequestDto> request, Message message) {
+
+        List<BinaryContent> binaryContents = request.stream()
+                .map(dto ->
+                        BinaryContent.createAttachmentImage(dto.fileName(), dto.contentType(), (long) dto.bytes().length, message)
+                ).toList();
+        binaryContentRepository.saveAll(binaryContents);
+
+        for (int i = 0; i < binaryContents.size(); i++) {
+            BinaryContent entity = binaryContents.get(i);
+            BinaryContentCreateRequestDto dto = request.get(i);
+            try {
+                // OS가 지정한 기본 임시 디렉토리에 임시 파일 생성
+                // 저장 예시) binary_123456789_id~~.tmp
+                Path tempFile = Files.createTempFile(TEMP_FILE_PREFIX, "_" + entity.getId() + TEMP_FILE_EXTENSION);
+
+                Files.write(tempFile, dto.bytes());
+
+                eventPublisher.publishEvent(new BinaryContentCreatedEvent(entity.getId(), tempFile));
+            } catch (IOException e) {
+                log.error("임시 파일 생성 실패", e);
+                throw new RuntimeException("임시 파일 저장 중 오류가 발생했습니다.");
+            }
+        }
+        message.setAttachments(binaryContents);
+    }
+
+    public boolean isAuthor(UUID messageId, UUID userId){
+        return messageRepository.existsByIdAndAuthor_Id(messageId, userId);
     }
 }

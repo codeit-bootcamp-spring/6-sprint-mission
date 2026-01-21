@@ -27,7 +27,7 @@ public class AuthService {
                 || !jwtTokenProvider.validateToken(refreshToken)
                 || !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)
         ) {
-            throw new InvalidRefreshTokenException(); // TODO 전역 예외처리?
+            throw new InvalidRefreshTokenException();
         }
 
         // 정보 조회

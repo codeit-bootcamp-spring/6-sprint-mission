@@ -12,7 +12,7 @@ public record UserResponseDto(
         String email,
         String username,
         BinaryContentResponseDto profile,
-        Boolean online,
+        boolean online,
         Role role
 ) {
 }

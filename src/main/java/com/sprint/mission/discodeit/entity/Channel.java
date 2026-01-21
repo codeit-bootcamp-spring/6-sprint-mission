@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.List;
@@ -13,11 +14,11 @@ import java.util.UUID;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id", callSuper = false)
-@Builder
 @Table(name = "channels")
+@EntityListeners(AuditingEntityListener.class)
 public class Channel extends BaseUpdatableEntity {
 
     @Id
@@ -41,11 +42,31 @@ public class Channel extends BaseUpdatableEntity {
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    @Builder.Default
-    private Instant createdAt = Instant.now();;
+    private Instant createdAt;
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @Builder(access = AccessLevel.PRIVATE)
+    public Channel (ChannelType type, String name, String description) {
+        this.type = type;
+        this.name = name;
+        this.description = description;
+    }
+
+    public static Channel createPublicChannel(String name, String description) {
+        return Channel.builder()
+                .type(ChannelType.PUBLIC)
+                .name(name)
+                .description(description)
+                .build();
+    }
+
+    public static Channel createPrivateChannel(){
+        return Channel.builder()
+                .type(ChannelType.PRIVATE)
+                .build();
+    }
 
     public void updatePublicChannel(String newName, String newDescription) {
         if (newName != null){

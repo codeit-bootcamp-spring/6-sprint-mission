@@ -15,9 +15,10 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,19 +40,17 @@ public class ChannelService {
 
     // 채널 생성 및 저장
     @Transactional
+    @CacheEvict(value = "channels", allEntries = true)
     public ChannelResponseDto create(PrivateChannelCreateRequestDto request) {
 
-        Channel channel = Channel.builder()
-                .type(ChannelType.PRIVATE)
-                .build();
+        Channel channel = Channel.createPrivateChannel();
         channelRepository.save(channel);
 
         List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
                 .map(user -> ReadStatus.builder()
                         .user(user)
                         .channel(channel)
-                        .createdAt(channel.getCreatedAt())
-                        .build()
+                        .build() // TODO Channel, ReadStatus의 createdAt 맞춰줘야 하는지 확인 필요
                 )
                 .toList();
         readStatusRepository.saveAll(readStatuses);
@@ -62,12 +61,9 @@ public class ChannelService {
 
     @Transactional
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(value = "channels", allEntries = true)
     public ChannelResponseDto create(PublicChannelCreateRequestDto request) {
-        Channel channel = Channel.builder()
-                .type(ChannelType.PUBLIC)
-                .name(request.name())
-                .description(request.description())
-                .build();
+        Channel channel = Channel.createPublicChannel(request.name(), request.description());
 
         channelRepository.save(channel);
         log.info("공개 채널 생성이 완료되었습니다. id=" + channel.getId());
@@ -104,6 +100,7 @@ public class ChannelService {
 
     // 전체 PUBLIC, 참여중인 PRIVATE 채널
     @Transactional(readOnly = true)
+    @Cacheable("channels")
     public List<ChannelResponseDto> findAllByUserId(UUID id) {
 
         List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(id);
@@ -137,6 +134,7 @@ public class ChannelService {
 
     @Transactional
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(value = "channels", allEntries = true)
     public ChannelResponseDto update(UUID id, PublicChannelUpdateRequestDto request) {
 
         Channel channel = channelRepository.findById(id)
@@ -159,27 +157,18 @@ public class ChannelService {
 
     // 채널 삭제
     @Transactional
+    @CacheEvict(value = "channels", allEntries = true)
     public void deleteById(UUID id, User user) {
 
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new ChannelNotFoundException(id));
 
         if (channel.getType() == ChannelType.PUBLIC && user.getRole() == Role.USER) {
-            throw new AccessDeniedException("권한이 없습니다."); // TODO 커스텀예외?
+            throw new AccessDeniedException("권한이 없습니다.");
         }
 
-        List<Message> messages = messageRepository.findByChannelId(id);
-        if (messages != null) {
-            messageRepository.deleteAll(messages);
-        }
-
-        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(id);
-        if (readStatuses != null) {
-            readStatuses.stream().
-                    map(ReadStatus::getId).
-                    forEach(readStatusRepository::deleteById);
-        }
-
+        messageRepository.deleteAllByChannel_Id(id);
+        readStatusRepository.deleteAllByChannel_Id(id);
         channelRepository.delete(channel);
         log.info("채널 삭제가 완료되었습니다. id=" + id);
     }

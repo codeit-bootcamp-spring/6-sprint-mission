@@ -1,18 +1,23 @@
-package com.sprint.mission.discodeit.storage.local;
+package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
+import com.sprint.mission.discodeit.event.BinaryContentPutFailEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -21,6 +26,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
@@ -28,10 +34,13 @@ import java.util.UUID;
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     private final Path root;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") Path root){
+    public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") Path root,
+                                     ApplicationEventPublisher eventPublisher) {
         this.root = root;
         log.info("root=" + root.toString());
+        this.eventPublisher = eventPublisher;
     }
 
     // 루트 디렉토리 초기화
@@ -48,7 +57,13 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     // 로컬에 저장
     @Override
+    @Retryable(
+            retryFor = {IOException.class, RuntimeException.class},
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
     public UUID put(UUID id, byte[] bytes) {
+
         Path filePath = resolvePath(id);
         if (Files.exists(filePath)) {
             throw new BinaryContentAlreadyExistsException(id);
@@ -59,6 +74,14 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             throw new RuntimeException("업로드에 실패했습니다.", e);
         }
         return id;
+    }
+
+    @Recover
+    public void recoverFromPut(RuntimeException e, UUID id) {
+        String requestId = MDC.get("requestId");
+        log.error("파일 저장 최종 재시도 실패. requestId: {}, contentId: {}", requestId, id);
+        eventPublisher.publishEvent(new BinaryContentPutFailEvent(requestId, id, e.getMessage()));
+        throw e;
     }
 
     // 저장된 파일 읽기

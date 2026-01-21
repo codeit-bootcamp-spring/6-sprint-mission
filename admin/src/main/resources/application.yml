@@ -1,9 +1,8 @@
 spring:
   boot:
     admin:
-      # 1. Admin Server의 주소 (Server의 실제 주소로 변경 필요)
       client:
-        url: http://localhost:9090 # 예시
+        url: http://localhost:9090
         instance:
           name: discodeit
   application:
@@ -12,13 +11,14 @@ spring:
 management:
   endpoints:
     web:
-      exposure:
-        # 3. 모든 Actuator 엔드포인트 노출 (*) 또는 필요한 엔드포인트만 지정 (health, info 등)
-        include: "*"
+      base-path: /actuator  # 기본값이지만 명시적으로 선언
+      exposure: # 노출할 Actuator 엔드포인트 설정 - 모두(*) | 필요한 엔드포인트만 (health, info 등)
+        include:
+          - health
+          - info
   endpoint:
     health:
-      # 4. health 엔드포인트의 세부 정보 표시 설정 (권장)
-      show-details: always
+      show-details: always # health 엔드포인트의 세부 정보 표시 설정
 
 server:
   port: 9090

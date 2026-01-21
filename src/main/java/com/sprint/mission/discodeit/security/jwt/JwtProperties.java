@@ -11,6 +11,6 @@ import org.springframework.stereotype.Component;
 public class JwtProperties {
     private String secret;
     private String issuer;
-    private long accessTokenValidityInMilliseconds;
-    private long refreshTokenValidityInMilliseconds;
+    private long accessTokenValidityInMs;
+    private long refreshTokenValidityInMs;
 }
