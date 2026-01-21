@@ -8,9 +8,11 @@ import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoun
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.sse.dto.SseBroadcastMessageEvent;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ import java.util.UUID;
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public BinaryContentDto findById(UUID id) {
@@ -52,6 +55,9 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContent.updateStatus(status);
 
         binaryContentRepository.save(binaryContent);
-        return binaryContentMapper.toDto(binaryContent);
+
+        BinaryContentDto binaryContentDto = binaryContentMapper.toDto(binaryContent);
+        eventPublisher.publishEvent(new SseBroadcastMessageEvent("binaryContents.updated",binaryContentDto));
+        return binaryContentDto;
     }
 }

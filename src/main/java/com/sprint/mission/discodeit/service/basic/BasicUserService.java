@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.Role;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.sse.dto.SseBroadcastMessageEvent;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,8 +74,12 @@ public class BasicUserService implements UserService {
             binaryContentRepository.save(profile);
         }
         userRepository.save(user);
+
+        UserDto userDto = userMapper.toDto(user);
+        eventPublisher.publishEvent(new SseBroadcastMessageEvent("users.created",userDto));
+
         log.info("유저 생성 완료: userId={}", user.getId());
-        return userMapper.toDto(user);
+        return userDto;
     }
 
     @Override
@@ -116,9 +121,13 @@ public class BasicUserService implements UserService {
             binaryContentRepository.save(profile);
         }
         userRepository.save(user);
+
+        UserDto userDto = userMapper.toDto(user);
+        eventPublisher.publishEvent(new SseBroadcastMessageEvent("users.updated",userDto));
+
         log.info("사용자 수정 완료: userId={}", userId);
 
-        return userMapper.toDto(user);
+        return userDto;
 }
 
     @Override
@@ -130,6 +139,9 @@ public class BasicUserService implements UserService {
 
         binaryContentRepository.deleteById(user.getProfile().getId());
         userRepository.deleteById(id);
+
+        UserDto userDto = userMapper.toDto(user);
+        eventPublisher.publishEvent(new SseBroadcastMessageEvent("users.deleted",userDto));
     }
 
     @Override

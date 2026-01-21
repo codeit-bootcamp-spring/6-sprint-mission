@@ -4,13 +4,16 @@ import com.sprint.mission.discodeit.dto.notification.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.Role;
 import com.sprint.mission.discodeit.service.NotificationService;
+import com.sprint.mission.discodeit.sse.dto.SseMulticastMessageEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -26,6 +29,8 @@ public class BasicNotificationService implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final NotificationMapper mapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -37,6 +42,10 @@ public class BasicNotificationService implements NotificationService {
                 .content(content)
                 .build();
         notificationRepository.save(notification);
+
+        NotificationDto notificationDto = mapper.toDto(notification);
+        eventPublisher.publishEvent(new SseMulticastMessageEvent(List.of(userId),"notifications.created",notificationDto));
+
     }
     // 요구사항중 S3 비동기 실패 시 관리자한테 알람 전송을 해야함
     // 문제 1: 여기서 문제 관리자 한명 한테 보내야하나 아니면 관리자 전부한테 보내야하나?
