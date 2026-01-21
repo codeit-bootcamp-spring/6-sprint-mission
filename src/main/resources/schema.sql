@@ -2,9 +2,11 @@ CREATE TABLE IF NOT EXISTS binary_contents
 (
     id           UUID PRIMARY KEY,
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at   TIMESTAMP WITH TIME ZONE,
     file_name    VARCHAR(255)             NOT NULL,
     size         BIGINT                   NOT NULL,
-    content_type VARCHAR(100)             NOT NULL
+    content_type VARCHAR(100)             NOT NULL,
+    status       varchar(20)              NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS users
@@ -81,12 +83,13 @@ CREATE TABLE IF NOT EXISTS message_attachments
 
 CREATE TABLE IF NOT EXISTS read_statuses
 (
-    id           UUID PRIMARY KEY,
-    created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at   TIMESTAMP WITH TIME ZONE,
-    user_id      UUID                     NOT NULL,
-    channel_id   UUID                     NOT NULL,
-    last_read_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    id                   UUID PRIMARY KEY,
+    created_at           TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at           TIMESTAMP WITH TIME ZONE,
+    user_id              UUID                     NOT NULL,
+    channel_id           UUID                     NOT NULL,
+    last_read_at         TIMESTAMP WITH TIME ZONE NOT NULL,
+    notification_enabled boolean                  NOT NULL,
     CONSTRAINT uc_read_statuses_user_id_channel_id UNIQUE (user_id, channel_id),
     CONSTRAINT fk_read_statuses_users
         FOREIGN KEY (user_id)
@@ -98,10 +101,22 @@ CREATE TABLE IF NOT EXISTS read_statuses
             ON DELETE CASCADE
 );
 
-create table if not exists persistent_logins
+CREATE TABLE IF NOT EXISTS notifications
 (
-    username  varchar(64) not null,
-    series    varchar(64) primary key,
-    token     varchar(64) not null,
-    last_used timestamp   not null
+    id          UUID PRIMARY KEY,
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+
+    source_type VARCHAR(50)              NOT NULL,
+    receiver_id UUID                     NOT NULL,
+    source_id   UUID                     NOT NULL,
+    title       VARCHAR(255)             NOT NULL,
+    content     VARCHAR(255)             NOT NULL
 );
+
+-- create table if not exists persistent_logins
+-- (
+--     username  varchar(64) not null,
+--     series    varchar(64) primary key,
+--     token     varchar(64) not null,
+--     last_used timestamp   not null
+-- );

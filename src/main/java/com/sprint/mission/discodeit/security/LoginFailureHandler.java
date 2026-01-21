@@ -27,7 +27,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
     response.setStatus(HttpStatus.UNAUTHORIZED.value());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
     objectMapper.writeValue(response.getWriter(), Map.of("message", "인증 실패"));
-    log.info("Login failed. ipAddress: {} | Reason: {}", getClientIpAddr(request), exception.getMessage());
+    log.debug("Login failed. ipAddress: {} | Reason: {}", getClientIpAddr(request), exception.getMessage());
   }
 
   public static String getClientIpAddr(HttpServletRequest request) {

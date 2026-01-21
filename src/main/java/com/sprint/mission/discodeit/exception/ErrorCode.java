@@ -17,6 +17,8 @@ public enum ErrorCode {
   READ_STATUS_NOT_FOUND(404, "RS001", "읽기상태를 찾을 수 없습니다."),
   BINARY_CONTENT_NOT_FOUND(404, "BC001", "바이너리 데이터를 찾을 수 없습니다."),
 
+  NOTIFICATION_NOT_FOUND(404, "NT001", "알림을 찾을 수 없습니다."),
+
   // Common
   UNAUTHORIZED_ACCESS(403, "CM001", "권한이 없습니다."),
   INVALID_REQUEST(400, "CM002", "잘못된 요청입니다."),

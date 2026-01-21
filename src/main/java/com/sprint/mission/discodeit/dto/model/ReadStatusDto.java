@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.data;
+package com.sprint.mission.discodeit.dto.model;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -8,6 +8,7 @@ public record ReadStatusDto(
     UUID userId,
     UUID channelId,
     Instant lastReadAt
+    // boolean notificationEnabled
 ) {
 
 }

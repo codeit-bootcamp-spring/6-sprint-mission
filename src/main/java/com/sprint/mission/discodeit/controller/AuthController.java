@@ -1,19 +1,27 @@
 package com.sprint.mission.discodeit.controller;
 
 
-import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.common.TokenUtil;
+import com.sprint.mission.discodeit.dto.model.JwtDto;
+import com.sprint.mission.discodeit.dto.model.JwtInformation;
+import com.sprint.mission.discodeit.dto.model.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.basic.BasicAuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,11 +36,6 @@ public class AuthController {
   private final UserMapper userMapper;
   private final BasicAuthService authService;
 
-  @GetMapping("/me")
-  public ResponseEntity<UserDto> getUserDto(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-    return ResponseEntity.ok(userDetails.getUserDto());
-  }
-
   @PutMapping("/role")
   public ResponseEntity<UserDto> updateUserRole(
       @RequestBody RoleUpdateRequest updateRequest
@@ -43,9 +46,35 @@ public class AuthController {
 
   @GetMapping("/csrf-token")
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
-    // 명시적 호출
-    String tokenValue = csrfToken.getToken();
-    log.info("CSRF 토큰 요청: {}", tokenValue);
-    return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
+    log.debug("CSRF 토큰 요청");
+    log.trace("CSRF 토큰: {}", csrfToken.getToken());
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
+  }
+
+  @PostMapping("/refresh")
+  public ResponseEntity<?> refresh(@CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken,
+      HttpServletResponse response) {
+
+    if (refreshToken == null || refreshToken.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Refresh token is missing"));
+    }
+
+    JwtInformation newInfo = authService.refreshToken(refreshToken);
+
+    if (newInfo == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid or expired refresh token"));
+    }
+
+    Cookie refreshCookie = TokenUtil.createRefreshTokenCookie(newInfo.getRefreshToken());
+    response.addCookie(refreshCookie);
+
+    JwtDto jwtdto = JwtDto.builder()
+        .accessToken(newInfo.getAccessToken())
+        .userDto(newInfo.getUserDto())
+        .build();
+
+    return ResponseEntity.ok(jwtdto);
   }
 }

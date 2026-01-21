@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(
@@ -32,11 +33,25 @@ public class ReadStatus extends BaseUpdatableEntity {
   private Channel channel;
   @Column(name = "last_read_at", nullable = false)
   private Instant lastReadAt;
+  @Setter
+  @Column(name = "notification_enabled", nullable = false)
+  private boolean notificationEnabled;
 
-  public void update(Instant newLastReadAt) {
+  public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+    this.user = user;
+    this.channel = channel;
+    this.lastReadAt = lastReadAt;
+    this.notificationEnabled = false;
+  }
+
+  public void update(Instant newLastReadAt, boolean newNotificationEnabled) {
     boolean anyValueUpdated = false;
     if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
       this.lastReadAt = newLastReadAt;
+      anyValueUpdated = true;
+    }
+    if (newNotificationEnabled != this.notificationEnabled) {
+      this.notificationEnabled = newNotificationEnabled;
       anyValueUpdated = true;
     }
 

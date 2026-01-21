@@ -1,16 +1,15 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.common.SecurityUtil;
+import com.sprint.mission.discodeit.common.Role;
 import com.sprint.mission.discodeit.dto.request.CreateUserRequest;
 import com.sprint.mission.discodeit.dto.request.UpdateUserRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.common.Role;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +17,10 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,10 +33,8 @@ public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage storage;
   private final PasswordEncoder passwordEncoder;
-  private final PersistentTokenRepository persistentTokenRepository;
-  private final SecurityUtil securityUtil;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public User create(CreateUserRequest request, Optional<MultipartFile> profile) {
@@ -48,20 +47,23 @@ public class BasicUserService implements UserService {
 
     Optional<BinaryContent> binaryContentOptional = profile.map(
         file -> {
+          BinaryContent bc = new BinaryContent(
+              file.getOriginalFilename(),
+              file.getSize(),
+              file.getContentType()
+          );
+          // em.persist(bc) 이후에 id 값이 생성됨
+          BinaryContent saved = binaryContentRepository.save(bc);
           try {
-            BinaryContent bc = new BinaryContent(
-                file.getOriginalFilename(),
-                file.getSize(),
-                file.getContentType()
-            );
-            System.out.println(bc.getId() + " bc의 id");       // 여기 id는 null
-            BinaryContent saved = binaryContentRepository.save(bc);
-            storage.put(saved.getId(), file.getBytes());      // id는 영속화 이후 발생
-            return saved;
+            eventPublisher.publishEvent(BinaryContentCreatedEvent.builder()
+                .binaryContentId(saved.getId())
+                .file(file.getBytes())
+                .build());
           } catch (IOException e) {
             log.error("유저 프로필 사진 처리 실패", e);
             throw new RuntimeException("유저 프로필 사진 처리 실패");
           }
+          return saved;
         }
     );
     user = User.builder()
@@ -83,6 +85,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @Cacheable(value = "userCache", key = "#userId", sync = true)
   @Transactional(readOnly = true)
   public User find(UUID userId) {
     return userRepository.findById(userId)
@@ -94,6 +97,7 @@ public class BasicUserService implements UserService {
 
   // 유저 목록 새로고침할때마다 상태 업데이트
   @Override
+  @Cacheable(value = "userCache", key = "'all'", sync = true)
   @Transactional(readOnly = true)
   public List<User> findAll() {
     List<User> userList = userRepository.findAll();
@@ -103,6 +107,7 @@ public class BasicUserService implements UserService {
 
   // 유저 이름, 이메일, 비밀번호, 사진, 온라인 상태 업데이트
   @Override
+  @CacheEvict(value = "userCache", key = "#userId")
   public User update(UUID userId, UpdateUserRequest updateUserRequest,
       Optional<MultipartFile> profile) {
     User user = userRepository.findById(userId)
@@ -118,7 +123,7 @@ public class BasicUserService implements UserService {
       encodedNewPassword = passwordEncoder.encode(rawNewPassword);
     }
 
-    boolean isUpdated = user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(),
+    user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(),
         encodedNewPassword);
 
     Optional<BinaryContent> binaryContent = profile.map(
@@ -129,12 +134,18 @@ public class BasicUserService implements UserService {
                   file.getContentType()
               );
               BinaryContent updated = binaryContentRepository.save(bc);
-              storage.put(updated.getId(), file.getBytes());
+              eventPublisher.publishEvent(BinaryContentCreatedEvent.builder()
+                  .binaryContentId(updated.getId())
+                  .file(file.getBytes())
+                  .build());
               return updated;
             } else {
               user.getProfile()
                   .update(file.getOriginalFilename(), file.getSize(), file.getContentType());
-              storage.put(user.getProfile().getId(), file.getBytes());     // 기존 프로필 사진 덮어쓰기
+              eventPublisher.publishEvent(BinaryContentCreatedEvent.builder()
+                  .binaryContentId(user.getProfile().getId())
+                  .file(file.getBytes())
+                  .build());
               return binaryContentRepository.save(user.getProfile());
             }
           } catch (IOException e) {
@@ -146,23 +157,17 @@ public class BasicUserService implements UserService {
 
     User updated = userRepository.save(user);
 
-    securityUtil.refreshAuthentication(user);
-
     log.info("유저 정보 업데이트: id={}", updated.getId());
     if (updated.getProfile() != null) {
       log.info("프로필 사진 업로드: {}", updated.getProfile().getId());
     }
     log.debug("이름: {}, 이메일: {}", updated.getUsername(), updated.getEmail());
 
-    if (isUpdated) {
-      persistentTokenRepository.removeUserTokens(updated.getUsername());
-      log.debug("유저 정보 변경으로 인해 rememberMe 토큰 삭제: username={}", updated.getUsername());
-    }
-
     return updated;
   }
 
   @Override
+  @CacheEvict(value = "userCache", key = "#userId")
   public void delete(UUID userId) {
     if (!userRepository.existsById(userId)) {
       log.warn("User not found. userId: {}", userId);

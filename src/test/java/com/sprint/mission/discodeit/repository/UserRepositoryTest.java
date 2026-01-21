@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.sprint.mission.discodeit.config.JpaAuditingConfig;
+import com.sprint.mission.discodeit.config.AppConfig;
 import com.sprint.mission.discodeit.entity.User;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
-@Import(JpaAuditingConfig.class)
+@Import(AppConfig.class)
 @ActiveProfiles("test")
 class UserRepositoryTest {
 

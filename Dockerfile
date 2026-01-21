@@ -12,7 +12,7 @@ FROM amazoncorretto:17-alpine
 
 # 환경 변수 설정
 ENV PROJECT_NAME=discodeit
-ENV PROJECT_VERSION=2.0-M9
+ENV PROJECT_VERSION=2.2-M11
 ENV JVM_OPTS=""
 
 # 빌드 스테이지에서 생성된 JAR 복사

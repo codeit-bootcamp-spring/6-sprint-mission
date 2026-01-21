@@ -33,7 +33,7 @@ public class Channel extends BaseUpdatableEntity {
   }
 
   public static Channel createPrivate() {
-    return new Channel(ChannelType.PRIVATE, null, null);
+    return new Channel(ChannelType.PRIVATE, "비공개 채널", "비공개 채널");
   }
 
 

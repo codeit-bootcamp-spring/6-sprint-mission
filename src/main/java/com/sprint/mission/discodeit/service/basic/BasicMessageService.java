@@ -15,7 +15,8 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
@@ -24,6 +25,9 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -41,7 +45,7 @@ public class BasicMessageService implements MessageService {
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage storage;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public Message create(CreateMessageRequest createMessageRequest,
@@ -69,7 +73,10 @@ public class BasicMessageService implements MessageService {
                 file.getContentType()
             );
             BinaryContent saved = binaryContentRepository.save(binaryContent);
-            storage.put(saved.getId(), file.getBytes());
+            eventPublisher.publishEvent(BinaryContentCreatedEvent.builder()
+                .binaryContentId(saved.getId())
+                .file(file.getBytes())
+                .build());
             return saved;
           } catch (IOException e) {
             log.error("첨부파일 처리 실패", e);
@@ -81,6 +88,13 @@ public class BasicMessageService implements MessageService {
     Message message = new Message(createMessageRequest.content(), channel, author, binaryContents);
     Message saved = messageRepository.save(message);
 
+    eventPublisher.publishEvent(MessageCreatedEvent.builder()
+        .channelId(channel.getId())
+        .messageId(saved.getId())
+        .authorId(author.getId())
+        .content(saved.getContent())
+        .build());
+
     log.info("메시지 생성: {}", message.getId());
     if (!binaryContents.isEmpty()) {
       log.info("첨부파일 업로드: {}", binaryContents.stream().map(BaseEntity::getId).toList());
@@ -90,6 +104,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Cacheable(value = "messageCache", key = "#messageId", sync = true)
   @Transactional(readOnly = true)
   public Message find(UUID messageId) {
     return messageRepository.findById(messageId)
@@ -110,6 +125,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @CacheEvict(value = "messageCache", key = "#messageId")
   public Message update(UUID messageId, UpdateMessageRequest updateMessageRequest) {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> {
@@ -125,6 +141,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @CacheEvict(value = "messageCache", key = "#messageId")
   public void delete(UUID messageId) {
     if (!messageRepository.existsById(messageId)) {
       log.warn("Message not found. messageId: {}", messageId);
