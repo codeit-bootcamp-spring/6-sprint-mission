@@ -14,7 +14,7 @@ public record NotificationDto(
     String content
 ) {
 
-  public static NotificationDto fromEntity(Notification notification) {
+  public static NotificationDto from(Notification notification) {
     return NotificationDto.builder()
         .id(notification.getId())
         .createdAt(notification.getCreatedAt())

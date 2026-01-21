@@ -7,8 +7,10 @@ import lombok.Builder;
 @Builder
 public record MessageCreatedEvent(
     UUID channelId,
+    String channelName,
     Message message,
-    UUID authorId
+    UUID authorId,
+    String authorName
 ) {
 
 }

@@ -10,7 +10,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 public interface NotificationService {
 
-  void createMessageNotification(CreateMessageNotificationRequest request);
+  void createSseMessageNotification(CreateMessageNotificationRequest request);
+
+  void createPersistentMessageNotification(CreateMessageNotificationRequest request);
 
   void createRoleUpdateNotification(CreateRoleNotificationRequest request);
 

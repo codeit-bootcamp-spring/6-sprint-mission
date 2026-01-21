@@ -15,7 +15,7 @@ public class NotificationTaskHandler {
 
   public void createMessageNotificationTask(CreateMessageNotificationRequest request) {
 
-    notificationService.createMessageNotification(request);
+    notificationService.createSseMessageNotification(request);
   }
 
   public void createRoleUpdateNotificationTask(CreateRoleNotificationRequest request) {

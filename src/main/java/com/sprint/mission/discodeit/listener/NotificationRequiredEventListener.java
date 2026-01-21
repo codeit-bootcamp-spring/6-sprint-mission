@@ -45,8 +45,10 @@ public class NotificationRequiredEventListener {
 
     CreateMessageNotificationRequest request = CreateMessageNotificationRequest.builder()
         .channelId(event.channelId())
+        .channelName(event.channelName())
         .messageId(event.message().getId())
         .authorId(event.authorId())
+        .authorName(event.authorName())
         .content(event.message().getContent())
         .build();
 
