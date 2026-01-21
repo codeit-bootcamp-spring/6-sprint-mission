@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.enums.Role;
 import com.sprint.mission.discodeit.interceptor.HttpHandshakeInterceptor;
 import com.sprint.mission.discodeit.interceptor.WebSocketChannelInterceptor;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,9 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.security.messaging.access.intercept.AuthorizationChannelInterceptor;
+import org.springframework.security.messaging.access.intercept.MessageMatcherDelegatingAuthorizationManager;
+import org.springframework.security.messaging.context.SecurityContextChannelInterceptor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -22,8 +26,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+    private final WebSocketChannelInterceptor webSocketChannelInterceptor; // 인증 수행
     private final HttpHandshakeInterceptor handshakeInterceptor;
-    private final WebSocketChannelInterceptor channelInterceptor;
 
     // 메세지 이동 경로 설정
     @Override
@@ -48,7 +52,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     // InboundChannel: 클라이언트가 보낸 메시지가 서버 내부(컨트롤러 등)로 들어오는 통로
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(channelInterceptor) // 인증 수행
+        // 인증 처리
+        registration.interceptors(webSocketChannelInterceptor,
+                        new SecurityContextChannelInterceptor(),
+                        authorizationChannelInterceptor()
+                )
                 .taskExecutor(inboundChannelExecutor());
     }
 
@@ -57,6 +65,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientOutboundChannel(ChannelRegistration registration) {
         registration.taskExecutor(outboundChannelExecutor());
+    }
+
+    // 인가 수행
+    private AuthorizationChannelInterceptor authorizationChannelInterceptor() {
+        return new AuthorizationChannelInterceptor(
+                MessageMatcherDelegatingAuthorizationManager.builder()
+                        .anyMessage().hasRole(Role.USER.name())
+                        .build()
+        );
     }
 
     @Bean("websocketTaskScheduler")
