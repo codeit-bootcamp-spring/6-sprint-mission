@@ -25,10 +25,9 @@ public class KafkaProduceRequiredEventListener {
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleMessageCreatedEvent(MessageCreatedEvent event) {
 
-    String payload = null;
     try {
 
-      payload = objectMapper.writeValueAsString(event);
+      String payload = objectMapper.writeValueAsString(event);
       kafkaTemplate.send("discodeit.MessageCreatedEvent", payload);
       log.info("Produced MessageCreatedEvent to Kafka: {}", payload);
 
