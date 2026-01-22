@@ -1,9 +1,9 @@
 services:
+  # --- Reverse Proxy (Nginx) ---
   nginx:
     image: nginx:stable-alpine
     container_name: nginx
     ports:
-      - "443:443"
       - "3000:80"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf # 설정 파일 마운트
@@ -13,45 +13,60 @@ services:
     networks:
       - app-network
 
-  postgres-db:
-    image: postgres:17-alpine
-    container_name: discodeit-db
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: discodeit_user
-      POSTGRES_PASSWORD: discodeit1234
-      POSTGRES_DB: discodeit
-
-    volumes:
-      - postgres_data:/var/lib/postgresql/data  # 데이터를 영구적으로 저장
-      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql  # schema.sql 자동실행
-
-  app:
+  # --- Backend (Spring Boot) ---
+  backend:
     image: discodeit:local
     container_name: discodeit
-    ports:
-      - "8081:8080" # 호스트 8081 -> 컨테이너 8080
+    deploy:
+      replicas: 3 # JVM 세개를 돌림
+    networks:
+        - app-network
+#    ports:
+#      - "8081:8080" # 호스트 8081 -> 컨테이너 8080
     build: # 애플리케이션 서비스를 로컬 Dockerfile에서 빌드
       context: . # 현재 디렉토리를 컨텍스트 경로로 지정
       dockerfile: Dockerfile # (선택값)
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/discodeit
-      SPRING_DATASOURCE_USERNAME: discodeit_user
-      SPRING_DATASOURCE_PASSWORD: discodeit1234
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: broker:29092
-
     env_file:
       - .env
     depends_on:
       - postgres-db
-    working_dir: /app
+    working_dir: /backend
     volumes:
-      - app_uploads_data:/app/uploads # 업로드 파일 영속성 확보
+      - backend_uploads:/backend/uploads # 업로드 파일 영속성 확보
 
-# Docker Compose가 관리할 볼륨 정의
+  # --- Infrastructure ---
+  postgres-db:
+    image: postgres:17-alpine
+    container_name: discodeit-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # 데이터를 영구적으로 저장
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql  # schema.sql 자동실행
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes: # 데이터 영구 저장 설정
+      - redis-data:/data
+    command: redis-server --appendonly yes # 실행 명령 - 데이터 변경시 디스크에 로그 낭김
+
+# 관리할 볼륨 정의
 volumes:
+  backend_uploads:
   postgres_data:
-  app_uploads_data:
+  redis-data:
