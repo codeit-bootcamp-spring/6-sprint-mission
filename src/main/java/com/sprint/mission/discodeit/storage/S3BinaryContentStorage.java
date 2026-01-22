@@ -61,7 +61,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   }
 
   @Recover
-  private UUID putRecover(SdkClientException e, UUID id, byte[] bytes) {
+  public UUID putRecover(SdkClientException e, UUID id, byte[] bytes) {
 
     log.error("Failed to put object to S3 with id: {} after retries", id, e);
 
