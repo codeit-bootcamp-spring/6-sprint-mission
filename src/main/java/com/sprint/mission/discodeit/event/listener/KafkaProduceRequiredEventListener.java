@@ -34,7 +34,6 @@ public class KafkaProduceRequiredEventListener {
 
     } catch (Exception e) {
       log.error("Failed to serialize MessageCreatedEvent: {}", e.getMessage());
-      return;
     }
 
   }
