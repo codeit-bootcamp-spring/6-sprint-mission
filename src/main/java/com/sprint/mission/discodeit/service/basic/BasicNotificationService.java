@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import com.sprint.mission.discodeit.service.SseService;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -44,9 +45,10 @@ public class BasicNotificationService implements NotificationService {
         .filter(id -> !id.equals(request.authorId()))
         .toList();
 
-    Map<String, String> sseData = Map.of(
+    Map<String, Object> sseData = Map.of(
         "title", request.authorName() + " (#" + request.channelName() + ")",
-        "content", request.content()
+        "content", request.content(),
+        "createdAt", Instant.now()
     );
 
     sseService.send(receiverIds, "notifications.created", sseData);
