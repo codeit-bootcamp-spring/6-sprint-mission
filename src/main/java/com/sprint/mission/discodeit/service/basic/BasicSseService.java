@@ -25,7 +25,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class BasicSseService implements SseService {
 
   public static final long TIMEOUT = 60L * 1000L * 60L;   // 1 hour
-  public static final int MAX_CONNECTIONS_PER_RECEIVER = 3;
+  public static final int MAX_CONNECTIONS_PER_RECEIVER = 5;
   public static final int MESSAGE_TTL_MINUTES = 60;
   private static final int MAX_TOTAL_CONNECTIONS = 10000;
   private final SseEmitterRepository sseEmitterRepository;
@@ -35,7 +35,7 @@ public class BasicSseService implements SseService {
   @Override
   public SseEmitter connect(UUID receiverId, UUID lastEventId) {
 
-    if (connectionCount.get() > MAX_TOTAL_CONNECTIONS) {
+    if (connectionCount.get() >= MAX_TOTAL_CONNECTIONS) {
       throw new SseServerFullException();
     }
 

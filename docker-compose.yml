@@ -19,9 +19,10 @@ services:
   app:
     build: .
     image: discodeit:local
-    ports:
-      - "8080:8080"
-    container_name: discodeit
+    deploy:
+      replicas: 3
+    #    ports:
+    #      - "8080:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/discodeit_db
       - REDIS_HOST=my-redis
