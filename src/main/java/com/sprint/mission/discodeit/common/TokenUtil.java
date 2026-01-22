@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 public class TokenUtil {
 
-  public static final int MAX_ACTIVE_JWT_COUNT = 1;
+  public static final int MAX_ACTIVE_JWT_COUNT = 3;
 
   public static Cookie createRefreshTokenCookie(String refreshToken) {
     Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);

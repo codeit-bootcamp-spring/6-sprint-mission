@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 
 @RequiredArgsConstructor
-@Component
+@Deprecated(since = "레디스 기반 JwtRegistry 로 대체", forRemoval = true)
 public class InMemoryJwtRegistry implements JwtRegistry {
 
   // <userId, Queue<JwtInformation>>
