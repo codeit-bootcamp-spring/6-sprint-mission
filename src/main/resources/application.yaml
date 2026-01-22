@@ -36,6 +36,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
       group-id: discodeit-group
+      # 메시지 처음부터 읽어서 복원
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
