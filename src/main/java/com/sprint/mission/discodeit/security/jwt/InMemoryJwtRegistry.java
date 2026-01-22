@@ -95,8 +95,8 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         log.debug("Cleanup task started: Clearing expired JWTs...");
 
         accessTokenIndex.values().forEach(info -> {
-            if (!jwtTokenProvider.validateToken(info.accessToken()) ||
-                    !jwtTokenProvider.validateToken(info.refreshToken())) {
+            if (!jwtTokenProvider.validateAccessToken(info.accessToken()) ||
+                    !jwtTokenProvider.validateRefreshToken(info.refreshToken())) {
                 removeJwtInformation(info);
             }
         });

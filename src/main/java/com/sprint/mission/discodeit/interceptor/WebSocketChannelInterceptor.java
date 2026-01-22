@@ -78,7 +78,7 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
     private void authenticate(StompHeaderAccessor accessor) {
         if (accessor != null && CONNECT.equals(accessor.getCommand())) {
             String token = resolveToken(accessor);
-            if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token) && isTokenValidInRegistry(token)){
+            if (StringUtils.hasText(token) && jwtTokenProvider.validateAccessToken(token) && isTokenValidInRegistry(token)){
                 JWTClaimsSet claims = jwtTokenProvider.getClaims(token);
                 if (claims != null) {
                     String username = claims.getSubject();

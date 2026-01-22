@@ -24,7 +24,7 @@ public class AuthService {
 
         // 서명 유효성, DB 존재 여부 확인
         if (refreshToken == null
-                || !jwtTokenProvider.validateToken(refreshToken)
+                || !jwtTokenProvider.validateRefreshToken(refreshToken)
                 || !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)
         ) {
             throw new InvalidRefreshTokenException();

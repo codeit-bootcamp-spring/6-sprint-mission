@@ -37,7 +37,7 @@ public class HttpHandshakeInterceptor implements HandshakeInterceptor {
         }
 
         try {
-            if (!jwtTokenProvider.validateToken(token)) {
+            if (!jwtTokenProvider.validateAccessToken(token)) {
                 response.setStatusCode(HttpStatus.UNAUTHORIZED);
                 response.getHeaders().add("X-Auth-Error", "TOKEN_INVALID");
                 return false;

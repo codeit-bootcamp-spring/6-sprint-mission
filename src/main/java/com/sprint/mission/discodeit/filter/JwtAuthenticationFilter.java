@@ -40,8 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = resolveToken(request);
 
-        // 토큰 검증
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) { // 토큰 서명 유효성, 만료 여부 검증
+        // 엑세스 토큰 검증
+        if (StringUtils.hasText(token) && jwtTokenProvider.validateAccessToken(token)) { // 토큰 서명 유효성, 만료 여부 검증
             JWTClaimsSet claims = jwtTokenProvider.getClaims(token);
             if (claims == null) {
                 log.error("Unable to read Claims from token");

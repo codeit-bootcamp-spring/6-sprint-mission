@@ -95,10 +95,21 @@ public class JwtTokenProvider {
     }
 
     // 토큰 유효성 검사
-    public boolean validateToken(String token) {
+    public boolean validateAccessToken(String token) {
         try {
-            getClaims(token);
-            return true;
+            JWTClaimsSet claims = getClaims(token);
+            // 필요 시 토큰 타입 체크 추가
+            return claims.getStringClaim("type").equals("ACCESS");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // Refresh Token 전용 검증
+    public boolean validateRefreshToken(String token) {
+        try {
+            JWTClaimsSet claims = getClaims(token);
+            return claims.getStringClaim("type").equals("REFRESH");
         } catch (Exception e) {
             return false;
         }
