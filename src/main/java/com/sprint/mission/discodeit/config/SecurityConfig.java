@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.common.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
@@ -29,8 +30,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -49,6 +48,7 @@ public class SecurityConfig {
   private final LoginFailureHandler loginFailureHandler;
   private final JwtLogoutHandler jwtLogoutHandler;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final DiscodeitUserDetailsService userDetailsService;
   private final ObjectMapper objectMapper;
 
   @Bean
@@ -119,10 +119,6 @@ public class SecurityConfig {
     };
   }
 
-  @Bean
-  public GrantedAuthoritiesMapper grantedAuthoritiesMapper() {
-    return new SimpleAuthorityMapper();
-  }
 
   // 역할 계층 정의
   @Bean
