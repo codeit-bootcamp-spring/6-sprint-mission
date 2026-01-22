@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageDeliveryException;
+import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
@@ -44,19 +45,11 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
       MDC.put("userId", accessor.getUser().getName());
     }
 
-    switch (accessor.getCommand()) {
-      case CONNECT:
-        return handleConnect(accessor, message);
-//      case SUBSCRIBE:
-//        return handleSubscribe(accessor, message);
-//      case SEND:
-//        return handleSend(accessor, message);
-//      case DISCONNECT:
-//        handleDisconnect(accessor);
-//        break;
-      default:
-        return message;
+    if (accessor.getCommand() == StompCommand.CONNECT) {
+      return handleConnect(accessor, message);
     }
+
+    return message;
   }
 
   private @Nullable Message<?> handleConnect(StompHeaderAccessor accessor, Message<?> message) {
@@ -78,6 +71,8 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
 
         log.debug("STOMP 연결 인증 성공: 사용자 = {}, 세션id = {}",
             username, accessor.getSessionId());
+
+        log.debug("사용자 권한: {}", authentication.getAuthorities());
 
         return message;
       }

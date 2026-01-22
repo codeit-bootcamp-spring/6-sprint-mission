@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.common.Role;
 import com.sprint.mission.discodeit.interceptor.WebSocketChannelInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +10,9 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.security.messaging.access.intercept.AuthorizationChannelInterceptor;
+import org.springframework.security.messaging.access.intercept.MessageMatcherDelegatingAuthorizationManager;
+import org.springframework.security.messaging.context.SecurityContextChannelInterceptor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -41,7 +45,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void configureClientInboundChannel(ChannelRegistration registration) {
-    registration.interceptors(channelInterceptor)
+    registration
+        .interceptors(
+            channelInterceptor,
+            new SecurityContextChannelInterceptor(),
+            authorizationChannelInterceptor()
+        )
         .taskExecutor(inboundChannelExecutor());
   }
 
@@ -87,5 +96,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     executor.setThreadNamePrefix("outbound-");
     executor.initialize();
     return executor;
+  }
+
+  private AuthorizationChannelInterceptor authorizationChannelInterceptor() {
+    return new AuthorizationChannelInterceptor(
+        MessageMatcherDelegatingAuthorizationManager.builder()
+            .anyMessage().hasRole(Role.USER.name())
+            .build()
+    );
   }
 }
