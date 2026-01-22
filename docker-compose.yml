@@ -1,5 +1,43 @@
-version: '3'
+version: '3.8'
+
 services:
+  # --- Reverse Proxy (입구) ---
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro # 프론트엔드 파일 경로 확인
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+  # --- Backend Application ---
+  app:
+    build: .
+    image: discodeit:local
+    ports:
+      - "8080:8080"
+    container_name: discodeit
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/discodeit_db
+      - REDIS_HOST=my-redis
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=broker:29092
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - my-redis
+      - broker
+    networks:
+      - app-network
+
+  # --- Database ---
   db:
     image: postgres:17
     container_name: discodeit-db
@@ -14,21 +52,73 @@ services:
     volumes:
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
       - binary_content_data:/var/lib/postgresql/data
-    env_file:
-      - .env
-  app:
-    # 미리 이미지 빌드 필요:
-    # 1. docker build -t discodeit:local .
-    # 2. docker build -t discodeit:s3 .
-    image: discodeit:s3
-    container_name: discodeit
+    networks:
+      - app-network
+
+  # --- Redis ---
+  my-redis:
+    image: redis:7.2-alpine
+    container_name: redis
     ports:
-      - "8081:80"
-    env_file:
-      - .env
+      - "6379:6379"
+    networks:
+      - app-network
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    ports:
+      - "5540:5540"
     depends_on:
-      - db
+      - my-redis
+    networks:
+      - app-network
+
+  # --- Kafka (KRaft mode) ---
+  broker:
+    image: apache/kafka:latest
+    # hostname안쓰니 오류
+    hostname: broker
+    container_name: broker
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - app-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker:29092
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   binary_content_data:
-
+  redis-data:
