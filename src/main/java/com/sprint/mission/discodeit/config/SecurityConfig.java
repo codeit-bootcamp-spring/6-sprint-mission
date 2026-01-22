@@ -88,10 +88,7 @@ public class SecurityConfig {
         )
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .csrf(csrf -> csrf
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-        )
+        .csrf(csrf -> csrf.disable())
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
             .successHandler(jwtLoginSuccessHandler)
