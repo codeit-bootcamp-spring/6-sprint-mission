@@ -1,32 +1,43 @@
 version: '3.8'
 
 services:
-  app:
+  proxy:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    container_name: discodeit-proxy
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - discodeit-internal
+
+  backend:
     image: discodeit:local
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: discodeit
-    ports:
-      - "8081:80"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/discodeit
-      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - STORAGE_TYPE=s3
-      - STORAGE_LOCAL_ROOT_PATH=.discodeit/storage
-      - AWS_S3_ACCESS_KEY=${AWS_S3_ACCESS_KEY}
-      - AWS_S3_SECRET_KEY=${AWS_S3_SECRET_KEY}
-      - AWS_S3_REGION=${AWS_S3_REGION}
-      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
-      - AWS_S3_PRESIGNED_URL_EXPIRATION=600
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BOOTSTRAP_SERVERS=broker:29092
+      - STORAGE_TYPE=local
+      - STORAGE_LOCAL_ROOT_PATH=/app/.discodeit/storage
     depends_on:
       - db
+      - redis
+      - broker
     volumes:
       - binary-content-storage:/app/.discodeit/storage
     networks:
-      - discodeit-network
+      - discodeit-internal
+    deploy:
+      replicas: 3
 
   db:
     image: postgres:16-alpine
@@ -35,18 +46,50 @@ services:
       - POSTGRES_DB=discodeit
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     networks:
-      - discodeit-network
+      - discodeit-internal
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: discodeit-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - discodeit-internal
+
+  broker:
+    image: apache/kafka:latest
+    hostname: broker
+    container_name: discodeit-kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - discodeit-internal
 
 volumes:
   postgres-data:
   binary-content-storage:
+  redis-data:
 
 networks:
-  discodeit-network:
-    driver: bridge 
+  discodeit-internal:
+    driver: bridge
+    internal: true
