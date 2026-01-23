@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -39,7 +40,7 @@ public class BinaryContentService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW) // 반드시 새 트랜잭션으로 실행
-    public void updateStatus(UUID id, BinaryContent.BinaryContentStatus status) {
+    public void updateStatus(UUID id, BinaryContentStatus status) {
         BinaryContent binaryContent = binaryContentRepository.findById(id)
                 .orElseThrow(() -> new BinaryContentNotFoundException(id));
         binaryContent.updateStatus(status);

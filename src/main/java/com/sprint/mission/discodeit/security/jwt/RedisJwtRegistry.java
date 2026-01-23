@@ -29,8 +29,7 @@ public class RedisJwtRegistry implements JwtRegistry {
     private static final String ACCESS_TOKEN_INDEX_KEY = "jwt:access_tokens";
     private static final String REFRESH_TOKEN_INDEX_KEY = "jwt:refresh_tokens";
     private static final Duration DEFAULT_TTL = Duration.ofMinutes(30);
-
-    private final int maxActiveJwtCount;
+    private static final int MAX_ACTIVE_JWT_COUNT = 3;
 
     private final JwtTokenProvider jwtTokenProvider;
     private final ApplicationEventPublisher eventPublisher;
@@ -42,14 +41,14 @@ public class RedisJwtRegistry implements JwtRegistry {
     @Retryable(retryFor = RedisLockAcquisitionException.class, maxAttempts = 10,
             backoff = @Backoff(delay = 100, multiplier = 2))
     public void registerJwtInformation(JwtInformation jwtInformation) {
-        String userKey = getUserKey(jwtInformation.dto().id());
-        String lockKey = jwtInformation.dto().id().toString();
+        String userKey = getUserKey(jwtInformation.getUserId());
+        String lockKey = jwtInformation.getUserId().toString();
 
         redisLockProvider.acquireLock(lockKey);
         try {
             Long currentSize = redisTemplate.opsForList().size(userKey);
 
-            while (currentSize != null && currentSize >= maxActiveJwtCount) {
+            while (currentSize != null && currentSize >= MAX_ACTIVE_JWT_COUNT) {
                 Object oldestTokenObj = redisTemplate.opsForList().leftPop(userKey);
                 if (oldestTokenObj instanceof JwtInformation oldestToken) {
                     removeTokenIndex(oldestToken.accessToken(), oldestToken.refreshToken());
@@ -65,9 +64,7 @@ public class RedisJwtRegistry implements JwtRegistry {
             redisLockProvider.releaseLock(lockKey);
         }
 
-        eventPublisher.publishEvent(
-                new UserLogInOutEvent(jwtInformation.dto().id(), true)
-        );
+        eventPublisher.publishEvent(new UserLogInOutEvent(jwtInformation.getUserId(), true));
     }
 
 
@@ -184,6 +181,9 @@ public class RedisJwtRegistry implements JwtRegistry {
         }
     }
 
+    /**
+     * 헬퍼 메서드들
+     */
     private String getUserKey(UUID userId) {
         return USER_JWT_KEY_PREFIX + userId.toString();
     }
