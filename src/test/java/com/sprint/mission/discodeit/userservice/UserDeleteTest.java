@@ -2,17 +2,14 @@ package com.sprint.mission.discodeit.userservice;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.support.BinaryContentFixture;
 import com.sprint.mission.discodeit.support.UserFixture;
-import com.sprint.mission.discodeit.support.UserStatusFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,10 +47,7 @@ public class UserDeleteTest {
         BinaryContent binaryContent = new BinaryContent("테스트.txt",300L,"txt");
         BinaryContentFixture.setBinaryContentId(binaryContent,UUID.randomUUID());
         User user = UserFixture.createUser(binaryContent);
-        UserStatus userStatus = new UserStatus(user);
         UserFixture.setUserId(user, userId);
-        UserFixture.setStatus(user, userStatus);
-        UserStatusFixture.setUserStatusId(userStatus, userStatusId);
 
         //유저레포 반환값 설정
         when(userRepository.findById(any(UUID.class))).thenReturn(Optional.of(user));

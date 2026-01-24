@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.User.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 
 import java.lang.reflect.Field;
 import java.util.UUID;
@@ -34,20 +33,7 @@ public class UserFixture {
                 .email("test@test.com")
                 .password("000000")
                 .profile(binaryContent)
-                .status(null)
                 .build();
-    }
-
-
-    public static void setStatus(User user, UserStatus status) {
-        try {
-            Class<?> userClass = User.class;
-            Field field = userClass.getDeclaredField("status");
-            field.setAccessible(true);
-            field.set(user, status);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public static void setUserId(User user, UUID userId) {

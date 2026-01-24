@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.userservice;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.support.UserFixture;
@@ -38,13 +37,6 @@ public class UserRepositoryTest {
                 .build();
 
         User user = UserFixture.createUser(binaryContent);
-
-        UserStatus userStatus = UserStatus.builder()
-                .user(user)
-                .build();
-        UserFixture.setStatus(user,userStatus);
-
-
         binaryContentRepository.save(binaryContent);
         userRepository.save(user);
 

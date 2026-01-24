@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -37,26 +38,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String token = resolveToken(request);
+        try {
+            String token = resolveToken(request);
+            if (StringUtils.hasText(token)) {
+                if(jwtTokenProvider.validateToken(token)){
+                    JWTClaimsSet claims = jwtTokenProvider.getClaims(token);
+                    String username = claims.getSubject();
+                    Object roleClaim = claims.getClaim("role");
 
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+                    String role = roleClaim != null ? roleClaim.toString() : "ROLE_USER";
 
-            JWTClaimsSet claims = jwtTokenProvider.getClaims(token);
-            String username = claims.getSubject();
+                    List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
 
-            String role = claims.getClaim("role").toString();
+                    UserDetails principal = new User(username, "", authorities);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principal, token, authorities);
 
-            List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
-
-            UserDetails principal = new User(username, "", authorities);
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principal, token, authorities);
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        }else {
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }else {
+                    log.error(ErrorCode.INVALID_AUTH.getMessage());
+                    sendErrorResponse(response, ErrorCode.INVALID_AUTH.getMessage(),ErrorCode.INVALID_AUTH.getStatus().value());
+                }
+            }
+        }catch (Exception e) {
+            log.error("Cannot set user authentication: {}", e.getMessage());
             SecurityContextHolder.clearContext();
-            sendErrorResponse(response,"JWT authentication failed",HttpServletResponse.SC_UNAUTHORIZED);
-            return;
         }
+
 
         filterChain.doFilter(request, response);
     }

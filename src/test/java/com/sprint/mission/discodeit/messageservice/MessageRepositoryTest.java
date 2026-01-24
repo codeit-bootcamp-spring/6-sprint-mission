@@ -53,10 +53,6 @@ public class MessageRepositoryTest {
         User user = UserFixture.createUser(binaryContent);
 
 
-        UserStatus userStatus = UserStatus.builder()
-                .user(user)
-                .build();
-        UserFixture.setStatus(user, userStatus);
 
         Channel channel = ChannelFixture.publicCreateChannel("asd", "das");
 
