@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.event.listener;
 
 import com.sprint.mission.discodeit.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadAlreadySucceededException;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +23,15 @@ public class BinaryContentEventListener {
 
     private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentService binaryContentService;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onBinaryContentCreated(BinaryContentCreatedEvent event) {
+
+        binaryContentRepository.findById(event.id())
+                .orElseThrow(() -> new BinaryContentUploadAlreadySucceededException(event.id()));
+
         log.info("파일 저장 시작 - ID: {}, TempPath: {}", event.id(), event.tempFilePath());
 
         if (Files.notExists(event.tempFilePath())) {

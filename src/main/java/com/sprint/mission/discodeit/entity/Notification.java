@@ -52,4 +52,22 @@ public class Notification extends BaseEntity {
                 .content(content)
                 .build();
     }
+
+    public static Notification createBinaryContentPutFailureNotification(
+            User user,
+            String title,
+            UUID requestId,
+            UUID binaryContentId,
+            String errorMessage
+    ) {
+        return Notification.builder()
+                .user(user)
+                .title(title)
+                .content(
+                        "requestId: " + requestId + '\n' +
+                                "binaryContentId: " + binaryContentId + '\n' +
+                                "error: " + errorMessage
+                )
+                .build();
+    }
 }

@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ public class NotificationRequiredEventListener {
     private final ReadStatusRepository readStatusRepository;
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Value("${discodeit.storage.type}")
     String storageType;
@@ -71,12 +74,12 @@ public class NotificationRequiredEventListener {
         final String title = storageType.equals("s3") ? "S3 파일 업로드 실패" : "파일 저장 실패";
         List<User> adminUsers = userRepository.findAllByRole(Role.ADMIN);
         adminUsers.forEach(user -> {
-            Notification notification = Notification.create(
+            Notification notification = Notification.createBinaryContentPutFailureNotification(
                     user,
                     title,
-                    "requestId: " + event.requestId() + '\n' +
-                            "binaryContentId: " + event.binaryContentId().toString() + '\n' +
-                            "error: " + event.errorMessage()
+                    UUID.fromString(event.requestId()),
+                    UUID.fromString(event.binaryContentId().toString()),
+                    event.errorMessage()
             );
             notificationRepository.save(notification);
         });

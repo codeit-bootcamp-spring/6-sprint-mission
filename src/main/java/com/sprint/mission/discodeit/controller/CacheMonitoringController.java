@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.CacheMetrics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -28,12 +29,13 @@ public class CacheMonitoringController {
             if (cache instanceof CaffeineCache caffeineCache) {
                 var nativeCache = caffeineCache.getNativeCache();
 
-                stats.put(cacheName, Map.of(
-                        "size", nativeCache.estimatedSize(),
-                        "hitCount", nativeCache.stats().hitCount(),
-                        "missCount", nativeCache.stats().missCount(),
-                        "hitRate", String.format("%.2f%%", nativeCache.stats().hitRate() * 100)
-                ));
+                CacheMetrics cacheMetrics = CacheMetrics.builder()
+                        .size(nativeCache.estimatedSize())
+                        .hitCount(nativeCache.stats().hitCount())
+                        .missCount(nativeCache.stats().missCount())
+                        .hitRate(String.format("%.2f%%", nativeCache.stats().hitRate() * 100))
+                        .build();
+                stats.put(cacheName, cacheMetrics);
             }
         });
 
