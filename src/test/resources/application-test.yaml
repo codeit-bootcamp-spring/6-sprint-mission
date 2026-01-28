@@ -16,10 +16,6 @@ spring:
       mode: never
 
 discodeit:
-  admin:
-    username: admin
-    password: admin-password
-    email: admin@example.com
   jwt:
     access-token:
       secret: test-access-token-secret-key-for-jwt-token-generation-and-validation-must-be-long-enough-for-testing

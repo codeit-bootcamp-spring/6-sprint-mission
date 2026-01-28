@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.Optional;
@@ -34,8 +33,7 @@ class UserRepositoryTest {
    * TestFixture: 테스트에서 일관된 상태를 제공하기 위한 고정된 객체 세트 여러 테스트에서 재사용할 수 있는 테스트 데이터를 생성하는 메서드
    */
   private User createTestUser(String username, String email) {
-    BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg",
-        BinaryContentStatus.PROCESSING);
+    BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg");
     User user = new User(username, email, "password123!@#", profile);
     return user;
   }

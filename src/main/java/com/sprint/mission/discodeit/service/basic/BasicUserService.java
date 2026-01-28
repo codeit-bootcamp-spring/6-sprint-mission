@@ -5,22 +5,21 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.message.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.sse.SseDispatchEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.CacheUpdater;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.config.CacheNames;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,10 +35,10 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
   private final BinaryContentRepository binaryContentRepository;
-  private final ApplicationEventPublisher eventPublisher;
   private final PasswordEncoder passwordEncoder;
-  private final CacheUpdater cacheUpdater;
+  private final ApplicationEventPublisher eventPublisher;
 
+  @CacheEvict(value = "users", key = "'all'")
   @Transactional
   @Override
   public UserDto create(UserCreateRequest userCreateRequest,
@@ -62,10 +61,13 @@ public class BasicUserService implements UserService {
           String contentType = profileRequest.contentType();
           byte[] bytes = profileRequest.bytes();
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType, BinaryContentStatus.PROCESSING);
+              contentType);
           binaryContentRepository.save(binaryContent);
           eventPublisher.publishEvent(
-              new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+              new BinaryContentCreatedEvent(
+                  binaryContent, binaryContent.getCreatedAt(), bytes
+              )
+          );
           return binaryContent;
         })
         .orElse(null);
@@ -76,8 +78,9 @@ public class BasicUserService implements UserService {
 
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
-    refreshUsersCache();
-    return userMapper.toDto(user);
+    UserDto dto = userMapper.toDto(user);
+    eventPublisher.publishEvent(new SseDispatchEvent(null, "users.created", dto));
+    return dto;
   }
 
   @Transactional(readOnly = true)
@@ -91,13 +94,20 @@ public class BasicUserService implements UserService {
     return userDto;
   }
 
+  @Cacheable(value = "users", key = "'all'", unless = "#result.isEmpty()")
   @Transactional(readOnly = true)
   @Override
-  @Cacheable(cacheNames = CacheNames.USERS)
   public List<UserDto> findAll() {
-    return loadUsers();
+    log.debug("모든 사용자 조회 시작");
+    List<UserDto> userDtos = userRepository.findAllWithProfile()
+        .stream()
+        .map(userMapper::toDto)
+        .toList();
+    log.info("모든 사용자 조회 완료: 총 {}명", userDtos.size());
+    return userDtos;
   }
 
+  @CacheEvict(value = "users", key = "'all'")
   @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
   @Override
@@ -129,10 +139,13 @@ public class BasicUserService implements UserService {
           String contentType = profileRequest.contentType();
           byte[] bytes = profileRequest.bytes();
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType, BinaryContentStatus.PROCESSING);
+              contentType);
           binaryContentRepository.save(binaryContent);
           eventPublisher.publishEvent(
-              new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+              new BinaryContentCreatedEvent(
+                  binaryContent, binaryContent.getCreatedAt(), bytes
+              )
+          );
           return binaryContent;
         })
         .orElse(null);
@@ -143,36 +156,24 @@ public class BasicUserService implements UserService {
     user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
     log.info("사용자 수정 완료: id={}", userId);
-    refreshUsersCache();
-    return userMapper.toDto(user);
+    UserDto dto = userMapper.toDto(user);
+    eventPublisher.publishEvent(new SseDispatchEvent(null, "users.updated", dto));
+    return dto;
   }
 
+  @CacheEvict(value = "users", key = "'all'")
   @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
   @Override
   public void delete(UUID userId) {
     log.debug("사용자 삭제 시작: id={}", userId);
 
-    if (!userRepository.existsById(userId)) {
-      throw UserNotFoundException.withId(userId);
-    }
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> UserNotFoundException.withId(userId));
+    UserDto dto = userMapper.toDto(user);
 
     userRepository.deleteById(userId);
+    eventPublisher.publishEvent(new SseDispatchEvent(null, "users.deleted", dto));
     log.info("사용자 삭제 완료: id={}", userId);
-    refreshUsersCache();
-  }
-
-  private List<UserDto> loadUsers() {
-    log.debug("모든 사용자 조회 시작");
-    List<UserDto> userDtos = userRepository.findAllWithProfile()
-        .stream()
-        .map(userMapper::toDto)
-        .toList();
-    log.info("모든 사용자 조회 완료: 총 {}명", userDtos.size());
-    return userDtos;
-  }
-
-  private void refreshUsersCache() {
-    cacheUpdater.putUsers(loadUsers());
   }
 }
