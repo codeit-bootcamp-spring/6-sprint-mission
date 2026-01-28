@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.exception.user.NoSuchUserException;
