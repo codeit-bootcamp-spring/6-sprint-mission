@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
@@ -41,6 +42,8 @@ import org.springframework.security.web.authentication.rememberme.JdbcTokenRepos
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 import javax.sql.DataSource;
 import java.util.Map;
@@ -86,25 +89,14 @@ public class SecurityConfig {
                         .addLogoutHandler(jwtLogoutHandler)
 
                 )
-                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/actuator/**",
-                                "/assets/**",
-                                "/css/**",
-                                "/images/**",
-                                "/js/**",
-                                "/favicon.ico"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/api/auth/csrf-token",
-                                "/api/auth/login",
-                                "/api/auth/logout",
-                                "/api/auth/refresh",
-                                "/api/users"
+                                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
+                                new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

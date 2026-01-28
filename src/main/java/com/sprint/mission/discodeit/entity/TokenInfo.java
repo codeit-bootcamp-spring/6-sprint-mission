@@ -19,10 +19,10 @@ public class TokenInfo extends BaseEntity {
     @Column(nullable = false, unique = true)
     private UUID userId;
 
-    @Column(nullable = false)
+    @Column(nullable = false,length = 500)
     private String accessToken;
 
-    @Column(nullable = false)
+    @Column(nullable = false,length = 500)
     private String refreshToken;
 
     public void rotate(String newAccess, String newRefresh) {

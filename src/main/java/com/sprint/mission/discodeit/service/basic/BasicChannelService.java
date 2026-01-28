@@ -11,12 +11,14 @@ import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.sse.dto.SseBroadcastMessageEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.C;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,7 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     @Override
@@ -45,8 +48,12 @@ public class BasicChannelService implements ChannelService {
         log.info("공개 채널 생성 요청 수신: channelName={} channelDescription={}",request.name(), request.description());
         Channel channel = new Channel(request.name(), request.description());
         channelRepository.save(channel);
+
+        ChannelDto channelDto = channelMapper.toDto(channel, new ArrayList<>(), null);
+        eventPublisher.publishEvent(new SseBroadcastMessageEvent("channels.created",channelDto));
+
         log.info("공개 채널 생성 완료: channelId={} ", channel.getId());
-        return channelMapper.toDto(channel, new ArrayList<>(), null);
+        return channelDto;
     }
 
     @Override
@@ -69,9 +76,12 @@ public class BasicChannelService implements ChannelService {
         readStatusRepository.saveAll(readStatuses);
 
         channelRepository.save(channel);
-        log.info("비공개 채널 생성 완료:  channelId={} ", channel.getId());
 
-        return channelMapper.toDto(channel,userDtoList, null);
+        ChannelDto channelDto = channelMapper.toDto(channel,userDtoList, null);
+        eventPublisher.publishEvent(new SseBroadcastMessageEvent("channels.created",channelDto));
+
+        log.info("비공개 채널 생성 완료:  channelId={} ", channel.getId());
+        return channelDto;
     }
 
     @Override
@@ -135,8 +145,13 @@ public class BasicChannelService implements ChannelService {
 
         channel.update(request.newName(), request.newDescription());
         channelRepository.save(channel);
+
+
+        ChannelDto channelDto = channelMapper.toDto(channel, new ArrayList<>(), lastMessageAt);
+        eventPublisher.publishEvent(new SseBroadcastMessageEvent("channels.updated", channelDto));
+
         log.info("채널 업데이트 완료: channelId={} ", channel.getId());
-        return channelMapper.toDto(channel, new ArrayList<>(), lastMessageAt);
+        return channelDto;
     }
 
     @Override
@@ -156,6 +171,10 @@ public class BasicChannelService implements ChannelService {
                 .forEach(mDelete -> messageRepository.deleteById(mDelete.getId()));
 
         channelRepository.deleteById(channelId);
+
+        ChannelDto channelDto = channelMapper.toDto(channel, new ArrayList<>(), null);
+        eventPublisher.publishEvent(new SseBroadcastMessageEvent("channels.deleted", channelDto));
+
         log.info("채널 삭재 완료");
     }
 }

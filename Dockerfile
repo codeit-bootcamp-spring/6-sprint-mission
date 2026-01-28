@@ -14,7 +14,7 @@ RUN ./gradlew bootjar
 FROM amazoncorretto:17
 
 ENV PROJECT_NAME="discodeit"
-ENV PROJECT_VERSION="1.2-M8"
+ENV PROJECT_VERSION="3.0-M12"
 ENV JVM_OPTS=""
 
 CMD ["echo","$PROJECT_NAME-$PROJECT_VERSION"]
@@ -23,7 +23,7 @@ WORKDIR /app
 
 
 EXPOSE 80
-EXPOSE 8081
+EXPOSE 8080
 COPY --from=builder /app/build/libs/$PROJECT_NAME-$PROJECT_VERSION.jar app.jar
 
 ENTRYPOINT ["java", "-jar" , "app.jar"]
