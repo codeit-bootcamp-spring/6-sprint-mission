@@ -1,12 +1,11 @@
 package com.sprint.mission.discodeit.event;
 
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.enums.Role;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+
+import java.util.UUID;
 
 public record UserRoleUpdatedEvent (
-        User user,
+        UUID userId,
         Role oldRole,
         Role newRole
 ){

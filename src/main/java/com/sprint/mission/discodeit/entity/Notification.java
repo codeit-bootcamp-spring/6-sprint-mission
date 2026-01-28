@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -16,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "notifications")
 @EntityListeners(AuditingEntityListener.class)
-public class Notification {
+public class Notification extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -48,6 +50,24 @@ public class Notification {
                 .user(user)
                 .title(title)
                 .content(content)
+                .build();
+    }
+
+    public static Notification createBinaryContentPutFailureNotification(
+            User user,
+            String title,
+            UUID requestId,
+            UUID binaryContentId,
+            String errorMessage
+    ) {
+        return Notification.builder()
+                .user(user)
+                .title(title)
+                .content(
+                        "requestId: " + requestId + '\n' +
+                                "binaryContentId: " + binaryContentId + '\n' +
+                                "error: " + errorMessage
+                )
                 .build();
     }
 }

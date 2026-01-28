@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.enums.BinaryContentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -53,12 +54,6 @@ public class BinaryContent extends BaseEntity {
     @LastModifiedDate
     private Instant updatedAt;
 
-    // 파일 로컬/S3 저장 상태
-    public enum BinaryContentStatus {
-        PROCESSING,
-        SUCCESS,
-        FAIL
-    }
 
     @Builder(access = AccessLevel.PRIVATE)
     public BinaryContent(Message message, User user, String fileName, String contentType, Long size, BinaryContentStatus status) {

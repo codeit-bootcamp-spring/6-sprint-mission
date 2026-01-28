@@ -33,6 +33,7 @@ public class JwtTokenProvider {
             throw new RuntimeException("JWT Key Init Failed", e);
         }
     }
+
     public String createAccessToken(String username, String role) {
         return generateToken(username, role, jwtProperties.getAccessTokenValidityInMs());
     }
@@ -94,12 +95,33 @@ public class JwtTokenProvider {
     }
 
     // 토큰 유효성 검사
-    public boolean validateToken(String token) {
+    public boolean validateAccessToken(String token) {
         try {
-            getClaims(token);
-            return true;
+            JWTClaimsSet claims = getClaims(token);
+            // 필요 시 토큰 타입 체크 추가
+            return claims.getStringClaim("type").equals("ACCESS");
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    // Refresh Token 전용 검증
+    public boolean validateRefreshToken(String token) {
+        try {
+            JWTClaimsSet claims = getClaims(token);
+            return claims.getStringClaim("type").equals("REFRESH");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String getUsernameFromToken(String token) {
+        try {
+            JWTClaimsSet claims = getClaims(token);
+            return claims.getSubject();
+        } catch (Exception e) {
+            log.error("Failed to extract username from token: {}", e.getMessage());
+            throw new RuntimeException("Invalid Token while extracting username", e);
         }
     }
 

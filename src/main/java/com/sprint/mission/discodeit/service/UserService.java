@@ -158,7 +158,7 @@ public class UserService {
         userRepository.save(user);
         jwtRegistry.invalidateJwtInformationByUserId(userId);
 
-        eventPublisher.publishEvent(new UserRoleUpdatedEvent(user, oldRole, request.newRole()));
+        eventPublisher.publishEvent(new UserRoleUpdatedEvent(userId, oldRole, request.newRole()));
         return userMapper.toDto(user);
     }
 

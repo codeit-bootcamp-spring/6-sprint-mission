@@ -76,4 +76,8 @@ public class Channel extends BaseUpdatableEntity {
             this.description = newDescription;
         }
     }
+
+    public boolean isPrivate(){
+        return (type == ChannelType.PRIVATE);
+    }
 }

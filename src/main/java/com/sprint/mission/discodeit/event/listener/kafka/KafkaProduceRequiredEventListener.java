@@ -27,11 +27,11 @@ public class KafkaProduceRequiredEventListener {
     @TransactionalEventListener
     public void on(MessageCreatedEvent event) throws JsonProcessingException {
         MessageCreatedPayload messageCreatedPayload = new MessageCreatedPayload(
-                event.channel().getId(),
-                event.channel().getName(),
-                event.author().getId(),
-                event.author().getUsername(),
-                event.content()
+                event.channelDto().id(),
+                event.channelDto().name(),
+                event.userDto().id(),
+                event.userDto().username(),
+                event.messageDto().content()
         );
         String payload = objectMapper.writeValueAsString(messageCreatedPayload);
         kafkaTemplate.send("discodeit.MessageCreatedEvent", payload);
@@ -41,7 +41,7 @@ public class KafkaProduceRequiredEventListener {
     @TransactionalEventListener
     public void on(UserRoleUpdatedEvent event) throws JsonProcessingException{
         UserRoleUpdatedPayload userRoleUpdatedPayload = new UserRoleUpdatedPayload(
-                event.user().getId(),
+                event.userId(),
                 event.oldRole(),
                 event.newRole()
         );
