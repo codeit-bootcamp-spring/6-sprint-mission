@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - discodeit-network
+
+volumes:
+  redis-data:
+
+networks:
+  discodeit-network:
+    external: true
