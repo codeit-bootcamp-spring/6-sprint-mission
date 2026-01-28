@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.common.Role;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,7 +27,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class User extends BaseUpdatableEntity {
 
-  @OneToOne(optional = true, orphanRemoval = true)
+  @OneToOne(optional = true, cascade = CascadeType.REMOVE, orphanRemoval = true)
   @JoinColumn(name = "profile_id")
   private BinaryContent profile;
   @Column(unique = true, nullable = false)
@@ -46,9 +47,7 @@ public class User extends BaseUpdatableEntity {
     this.role = role;
   }
 
-  // 프론트엔드에서 유저이름과 이메일을 같은값으로 수정하면 null로 들어옴. null 체크
-  // 비밀번호 같은 값은 그대로 값 들어옴
-  public boolean update(String newUsername, String newEmail, String newPassword) {
+  public boolean update(String newUsername, String newEmail, String newPassword, BinaryContent profile) {
     boolean anyValueUpdated = false;
     if (newUsername != null && !newUsername.equals(this.username)) {
       this.username = newUsername;
@@ -62,18 +61,16 @@ public class User extends BaseUpdatableEntity {
       this.password = newPassword;
       anyValueUpdated = true;
     }
+    if (profile != null && profile != this.profile) {
+      this.profile = profile;
+      anyValueUpdated = true;
+    }
 
     if (anyValueUpdated) {
       this.updatedAt = Instant.now();
     }
 
     return anyValueUpdated;
-  }
-
-  public void update(BinaryContent profile) {
-    if (profile != null && profile != this.profile) {
-      this.profile = profile;
-    }
   }
 
   public boolean updateRole(Role role) {

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity.base;
 
+import com.sprint.mission.discodeit.listener.EntitySaveLogListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
@@ -13,7 +14,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)    // createdAt 자동 설정
+@EntityListeners(value = {AuditingEntityListener.class, EntitySaveLogListener.class})
 @Getter
 public abstract class BaseEntity {
 

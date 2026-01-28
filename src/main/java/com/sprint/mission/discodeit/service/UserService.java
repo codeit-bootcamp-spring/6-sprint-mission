@@ -12,14 +12,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
 
-  User create(CreateUserRequest createUserRequest, Optional<MultipartFile> profile);
+  User create(CreateUserRequest createUserRequest, MultipartFile profile);
 
   User find(UUID userId);
 
   List<User> findAll();
 
   @PreAuthorize("@basicAuthService.isOwner(#userId, principal)")
-  User update(UUID userId, UpdateUserRequest updateUserRequest, Optional<MultipartFile> profile);
+  User update(UUID userId, UpdateUserRequest updateUserRequest, MultipartFile profile);
 
   @PreAuthorize("@basicAuthService.isOwner(#userId, principal) or hasRole('ADMIN')")
   void delete(UUID userId);

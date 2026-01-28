@@ -5,20 +5,20 @@ import com.sprint.mission.discodeit.dto.model.NotificationDto;
 import com.sprint.mission.discodeit.dto.request.CreateMessageNotificationRequest;
 import com.sprint.mission.discodeit.dto.request.CreateRoleNotificationRequest;
 import com.sprint.mission.discodeit.dto.request.CreateStorageNotificationRequest;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.NotificationType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
+import com.sprint.mission.discodeit.service.SseService;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,47 +31,45 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BasicNotificationService implements NotificationService {
 
-  private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
+  private final SseService sseService;
 
   @Override
-  public void createMessageNotification(CreateMessageNotificationRequest request) {
+  public void createSseMessageNotification(CreateMessageNotificationRequest request) {
 
-    log.debug("메시지 알림 생성 요청 받음: {}", request.toString());
+    List<UUID> receiverIds = readStatusRepository.findAllByChannel_Id(request.channelId()).stream()
+        .filter(ReadStatus::isNotificationEnabled)
+        .map(rs -> rs.getUser().getId())
+        .filter(id -> !id.equals(request.authorId()))
+        .toList();
 
-    Channel channel = channelRepository.findById(request.channelId())
-        .orElseThrow(() -> {
-          log.warn("Channel Not Found. channelId: {}", request.channelId());
-          return new ChannelNotFoundException();
-        });
+    Map<String, Object> sseData = Map.of(
+        "title", request.authorName() + " (#" + request.channelName() + ")",
+        "content", request.content(),
+        "createdAt", Instant.now()
+    );
+
+    sseService.send(receiverIds, "notifications.created", sseData);
+  }
+
+  @Override
+  public void createPersistentMessageNotification(CreateMessageNotificationRequest request) {
 
     List<ReadStatus> readStatuses = readStatusRepository.findAllByChannel_Id(request.channelId());
-
-    User author = readStatuses.stream()
-        .map(ReadStatus::getUser)
-        .filter(user -> user.getId().equals(request.authorId()))
-        .findFirst()
-        .orElseThrow(() -> {
-          log.warn("작성자를 참여자 목록에서 찾을 수 없음. authorId: {}", request.authorId());
-          return new UserNotFoundException();
-        });
 
     List<Notification> notifications = readStatuses.stream()
         .filter(ReadStatus::isNotificationEnabled)
         .map(ReadStatus::getUser)
-        .filter(user -> !user.getId().equals(author.getId()))
-        .map(participant -> Notification.builder()
+        .filter(user -> !user.getId().equals(request.authorId()))
+        .map(user -> Notification.builder()
             .sourceType(NotificationType.MESSAGE_CREATED)
-            .receiverId(participant.getId())
-            .sourceId(request.messageId())
-            .title(author.getUsername() + " (#" + channel.getName() + ")")
+            .receiverId(user.getId())
+            .title(request.authorName() + " (#" + request.channelName() + ")")
             .content(request.content())
             .build())
         .toList();
-
-    log.debug("생성된 메시지 알림 개수: {}", notifications.size());
 
     notificationRepository.saveAll(notifications);
   }
@@ -94,7 +92,7 @@ public class BasicNotificationService implements NotificationService {
   public List<NotificationDto> getMessageNotifications(UUID receiverId) {
 
     return notificationRepository.findAllByReceiverId(receiverId).stream()
-        .map(NotificationDto::fromEntity)
+        .map(NotificationDto::from)
         .toList();
   }
 

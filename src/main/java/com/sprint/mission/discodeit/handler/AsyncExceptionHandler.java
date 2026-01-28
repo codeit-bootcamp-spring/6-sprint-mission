@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.config;
+package com.sprint.mission.discodeit.handler;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;

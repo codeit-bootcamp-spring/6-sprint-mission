@@ -41,13 +41,15 @@ public class NotificationRequiredEventListener {
   @TransactionalEventListener
   public void on(MessageCreatedEvent event) {
 
-    log.debug("메시지 알림 생성 시작: messageId={}", event.messageId());
+    log.debug("메시지 알림 생성 시작: messageId={}", event.message().getId());
 
     CreateMessageNotificationRequest request = CreateMessageNotificationRequest.builder()
         .channelId(event.channelId())
-        .messageId(event.messageId())
+        .channelName(event.channelName())
+        .messageId(event.message().getId())
         .authorId(event.authorId())
-        .content(event.content())
+        .authorName(event.authorName())
+        .content(event.message().getContent())
         .build();
 
     notificationTaskHandler.createMessageNotificationTask(request);
@@ -90,7 +92,7 @@ public class NotificationRequiredEventListener {
   @Recover
   public void recoverMessage(Exception e, MessageCreatedEvent event) {
 
-    log.error("메시지 알림 생성 실패: messageId={}", event.messageId(), e);
+    log.error("메시지 알림 생성 실패: messageId={}", event.message().getId(), e);
 
     throw new RuntimeException("비동기 메시지 알림 최종 실패", e);
   }

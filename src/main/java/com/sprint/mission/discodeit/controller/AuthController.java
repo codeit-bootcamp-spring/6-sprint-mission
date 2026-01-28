@@ -46,8 +46,6 @@ public class AuthController {
 
   @GetMapping("/csrf-token")
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
-    log.debug("CSRF 토큰 요청");
-    log.trace("CSRF 토큰: {}", csrfToken.getToken());
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .build();

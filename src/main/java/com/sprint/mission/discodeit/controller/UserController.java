@@ -46,7 +46,7 @@ public class UserController {
       @Valid @RequestPart("userCreateRequest") CreateUserRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    User user = userService.create(request, Optional.ofNullable(profile));
+    User user = userService.create(request, profile);
     return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toDto(user));
   }
 
@@ -57,8 +57,7 @@ public class UserController {
       @Valid @RequestPart("userUpdateRequest") UpdateUserRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    User user = userService.update(userId, request,
-        Optional.ofNullable(profile));
+    User user = userService.update(userId, request, profile);
     return ResponseEntity.ok(userMapper.toDto(user));
   }
 

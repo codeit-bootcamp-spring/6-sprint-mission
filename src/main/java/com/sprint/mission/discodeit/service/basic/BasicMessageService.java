@@ -7,21 +7,20 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.BinaryContentUploader;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
-import com.sprint.mission.discodeit.event.MessageCreatedEvent;
-import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +43,7 @@ public class BasicMessageService implements MessageService {
   //
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
-  private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentUploader uploader;
   private final ApplicationEventPublisher eventPublisher;
 
   @Override
@@ -61,38 +60,21 @@ public class BasicMessageService implements MessageService {
           return new UserNotFoundException(Map.of("유저 고유 아이디", createMessageRequest.authorId()));
         });
 
-    List<MultipartFile> attachmentsNotNull =
-        attachments != null ? attachments : Collections.emptyList();
-
-    List<BinaryContent> binaryContents = attachmentsNotNull.stream().map(
-        file -> {
-          try {
-            BinaryContent binaryContent = new BinaryContent(
-                file.getOriginalFilename(),
-                file.getSize(),
-                file.getContentType()
-            );
-            BinaryContent saved = binaryContentRepository.save(binaryContent);
-            eventPublisher.publishEvent(BinaryContentCreatedEvent.builder()
-                .binaryContentId(saved.getId())
-                .file(file.getBytes())
-                .build());
-            return saved;
-          } catch (IOException e) {
-            log.error("첨부파일 처리 실패", e);
-            throw new RuntimeException("첨부파일 처리 실패");
-          }
-        }
-    ).toList();
+    List<BinaryContent> binaryContents = Optional.ofNullable(attachments)
+        .orElseGet(Collections::emptyList)
+        .stream()
+        .map(uploader::uploadBinaryContent)
+        .toList();
 
     Message message = new Message(createMessageRequest.content(), channel, author, binaryContents);
     Message saved = messageRepository.save(message);
 
     eventPublisher.publishEvent(MessageCreatedEvent.builder()
         .channelId(channel.getId())
-        .messageId(saved.getId())
+        .channelName(channel.getName())
+        .message(saved)
         .authorId(author.getId())
-        .content(saved.getContent())
+        .authorName(author.getUsername())
         .build());
 
     log.info("메시지 생성: {}", message.getId());
@@ -143,20 +125,7 @@ public class BasicMessageService implements MessageService {
   @Override
   @CacheEvict(value = "messageCache", key = "#messageId")
   public void delete(UUID messageId) {
-    if (!messageRepository.existsById(messageId)) {
-      log.warn("Message not found. messageId: {}", messageId);
-      throw new MessageNotFoundException();
-    }
-    // 메시지의 첨부파일들 객체 삭제
-    Message message = messageRepository.findById(messageId).orElse(null);
-    List<UUID> binaryContentIds = message.getAttachments()
-        .stream()
-        .map(BaseEntity::getId)
-        .toList();
-    binaryContentRepository.deleteAllById(binaryContentIds);
-    // 메시지 id로 삭제
     messageRepository.deleteById(messageId);
-
     log.info("메시지 삭제: {}", messageId);
   }
 }

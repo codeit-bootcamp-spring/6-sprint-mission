@@ -30,12 +30,13 @@ spring:
       port: ${REDIS_PORT:6379}
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
       group-id: discodeit-group
+      # 메시지 처음부터 읽어서 복원
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -48,6 +49,9 @@ spring:
         secret-key: ${AWS_S3_SECRET_KEY}
       region:
         static: ${AWS_S3_REGION:ap-northeast-2}
+
+server:
+  port: 8080
 
 info:
   app:

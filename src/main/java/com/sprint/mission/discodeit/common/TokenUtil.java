@@ -5,14 +5,14 @@ import org.springframework.stereotype.Component;
 
 public class TokenUtil {
 
-  public static final int MAX_ACTIVE_JWT_COUNT = 1;
+  public static final int MAX_ACTIVE_JWT_COUNT = 3;
 
   public static Cookie createRefreshTokenCookie(String refreshToken) {
     Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);
     refreshCookie.setHttpOnly(true); // JS에서 접근 불가
     refreshCookie.setPath("/");      // 모든 경로에서 전송
     refreshCookie.setMaxAge(60 * 60 * 24 * 14); // 2주
-    // refreshCookie.setSecure(true); // HTTPS 적용 시 필수 해제
+    // refreshCookie.setSecure(true);
     return refreshCookie;
   }
 

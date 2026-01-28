@@ -19,6 +19,10 @@ public enum ErrorCode {
 
   NOTIFICATION_NOT_FOUND(404, "NT001", "알림을 찾을 수 없습니다."),
 
+  SSE_CAPACITY_EXCEEDED(503, "SE001", "SSE 최대 용량을 초과했습니다."),
+  SSE_TOO_MANY_CONNECTIONS(400, "SE002", "SSE 최대 연결 수를 초과했습니다."),
+  SSE_CONNECTION_FAILED(500, "SE003", "SSE 연결에 실패했습니다."),
+
   // Common
   UNAUTHORIZED_ACCESS(403, "CM001", "권한이 없습니다."),
   INVALID_REQUEST(400, "CM002", "잘못된 요청입니다."),
