@@ -23,6 +23,7 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.time.Instant;
@@ -53,6 +54,7 @@ public class BasicUserService implements UserService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final CachedUserService cachedUserService;
     private final ObjectMapper objectMapper;
+    private final SseService sseService;
 
     @Transactional
     @Override
@@ -82,7 +84,6 @@ public class BasicUserService implements UserService {
                     BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
                             contentType);
                     binaryContentRepository.save(binaryContent);
-                    applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
                     return binaryContent;
                 })
                 .orElse(null);
@@ -94,7 +95,16 @@ public class BasicUserService implements UserService {
         user.updateRole(Role.ROLE_USER);
         userRepository.save(user);
         log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
-        return userMapper.toDto(user);
+
+        if (nullableProfile != null)
+            applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(user.getId(),
+                    nullableProfile.getId(),
+                    optionalProfileCreateRequest.get().bytes()));
+
+        UserDto userDto = userMapper.toDto(user);
+        sendSSe("users.created", userDto);
+
+        return userDto;
     }
 
     @Transactional(readOnly = true)
@@ -156,7 +166,7 @@ public class BasicUserService implements UserService {
                     BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
                             contentType);
                     binaryContentRepository.save(binaryContent);
-                    applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+                    applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(userId, binaryContent.getId(), bytes));
                     return binaryContent;
                 })
                 .orElse(null);
@@ -165,7 +175,10 @@ public class BasicUserService implements UserService {
         user.update(newUsername, newEmail, newPassword, nullableProfile);
 
         log.info("사용자 수정 완료: id={}", userId);
-        return userMapper.toDto(user);
+        UserDto userDto = userMapper.toDto(user);
+        sendSSe("users.updated", userDto);
+
+        return userDto;
     }
 
     @Transactional
@@ -209,7 +222,10 @@ public class BasicUserService implements UserService {
                 "권한이 변경되었습니다.",
                 String.format("%s -> %s", oldRole, request.newRole())));
 
-        return userMapper.toDto(user);
+        UserDto userDto = userMapper.toDto(user);
+        sendSSe("users.deleted", userDto);
+
+        return userDto;
     }
 
     @Override
@@ -218,5 +234,9 @@ public class BasicUserService implements UserService {
                 .stream()
                 .map(userMapper::toDto)
                 .toList();
+    }
+
+    private void sendSSe(String name, UserDto userDto) {
+        sseService.send(List.of(userDto.id()), name, userDto);
     }
 }

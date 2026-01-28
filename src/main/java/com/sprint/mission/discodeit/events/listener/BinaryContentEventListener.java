@@ -30,9 +30,9 @@ public class BinaryContentEventListener {
 
         try {
             binaryContentStorage.put(event.getBinaryContentId(), event.getBytes());
-            binaryContentService.updateStatus(event.getBinaryContentId(), BinaryContentStatus.SUCCESS);
+            binaryContentService.updateStatus(event.getUserId(), event.getBinaryContentId(), BinaryContentStatus.SUCCESS);
         } catch (RuntimeException e) {
-            binaryContentService.updateStatus(event.getBinaryContentId(), BinaryContentStatus.FAIL);
+            binaryContentService.updateStatus(event.getUserId(), event.getBinaryContentId(), BinaryContentStatus.FAIL);
         }
     }
 }

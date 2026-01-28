@@ -103,3 +103,4 @@ build/tmp/compileJava/previous-compilation-data.bin
 .idea/modules/discodeit.iml
 .idea/modules/discodeit.test.iml
 *.log
+.env.docker

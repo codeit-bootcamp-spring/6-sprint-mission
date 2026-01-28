@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoun
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 
 import java.util.List;
@@ -28,10 +29,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final SseService sseService;
 
     @Transactional
     @Override
-    public BinaryContentDto create(BinaryContentCreateRequest request) {
+    public BinaryContentDto create(UUID userId, BinaryContentCreateRequest request) {
         log.debug("바이너리 컨텐츠 생성 시작: fileName={}, size={}, contentType={}",
                 request.fileName(), request.bytes().length, request.contentType());
 
@@ -44,7 +46,7 @@ public class BasicBinaryContentService implements BinaryContentService {
                 contentType
         );
         binaryContentRepository.save(binaryContent);
-        applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+        applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(userId, binaryContent.getId(), bytes));
 
         log.info("바이너리 컨텐츠 생성 완료: id={}, fileName={}, size={}",
                 binaryContent.getId(), fileName, bytes.length);
@@ -76,7 +78,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     @Transactional
-    public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+    public BinaryContentDto updateStatus(UUID userID, UUID binaryContentId, BinaryContentStatus status) {
         log.debug("바이너리 컨텐츠 업데이트 시작: id={}, new Status={}", binaryContentId, status);
 
         BinaryContent content = binaryContentRepository.findById(binaryContentId).orElseThrow(
@@ -85,7 +87,12 @@ public class BasicBinaryContentService implements BinaryContentService {
         content.updateStatus(status);
         binaryContentRepository.save(content);
         log.info("바이너리 컨텐츠 업데이트 완료");
-        return binaryContentMapper.toDto(content);
+
+        BinaryContentDto dto = binaryContentMapper.toDto(content);
+
+        sseService.send(List.of(userID), "binaryContents.updated", dto);
+
+        return dto;
     }
 
     @Transactional

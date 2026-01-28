@@ -8,6 +8,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 public class BinaryContentCreatedEvent {
+    private final UUID userId;
     private final UUID binaryContentId;
     private final byte[] bytes;
 }

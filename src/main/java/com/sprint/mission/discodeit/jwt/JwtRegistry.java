@@ -7,7 +7,7 @@ public interface JwtRegistry {
 
     void invalidateJwtInformationByUserId(String userId);
 
-    void invalidateJwtInformationByRefreshToken(String accessToken);
+    void invalidateJwtInformationByRefreshToken(String refreshToken);
 
     boolean hasActiveJwtInformationByUserId(String userId);
 

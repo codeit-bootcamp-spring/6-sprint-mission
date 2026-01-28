@@ -1,50 +1,124 @@
-version: '3'
+version: "3.8"
+
 services:
+  # ======================
+  # NGINX (Front)
+  # ======================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: discodeit_nginx
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/html:/usr/share/nginx/html:ro
+    depends_on:
+      - app
+    networks:
+      - discodeit_network
+
+
+  # ======================
+  # Spring Boot App
+  # ======================
   app:
-    #만일 dockerfile 을 빌드 할 거면, build: . 을 이용함.
-    #그러나 보통은 이미 빌드한 이미지를 실행함.
-    #image: docker이미지명:태그명
     build: .
     image: discodeit_springboot:latest
-    container_name: discodeit
-    ports:
-      - "80:8081"
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+    expose:
+      - "8080"   # nginx 내부 연동용
     env_file:
-      - .env
-
-    #db가 먼저 세팅된 후에 실행되도록
+      - .env.docker
     depends_on:
       - postgres-db
+      - kafka
+      - redis
     volumes:
       - springboot_data:/app/.discodeit
     networks:
       - discodeit_network
 
 
+  # ======================
+  # PostgreSQL
+  # ======================
   postgres-db:
     image: postgres:17
     container_name: discodeit_postgres_db
-    #환경설정 값을 주입
+    env_file:
+      - .env.docker
     environment:
       POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
       POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB_NAME}
       TZ: Asia/Seoul
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432:5432"   # 로컬 개발용
     volumes:
-      #init 폴더 안에 있는 sql문을 실행하는 설정. 테이블 ddl 실행이 필요할경우 이용하거나
-      #데모 데이터 입력시 이용
       - ./initdb:/docker-entrypoint-initdb.d
-      - db_data:/var/lib/postgresql/data
+      - db_data_sprint12:/var/lib/postgresql/data
     networks:
       - discodeit_network
 
-#볼륨 매핑.
-volumes:
-  db_data:
-  springboot_data:
 
+  # ======================
+  # Kafka (KRaft mode)
+  # ======================
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka
+    expose:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+
+      KAFKA_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://kafka:29093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - discodeit_network
+
+
+
+  # ======================
+  # Redis
+  # ======================
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    expose:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - discodeit_network
+
+
+# ======================
+# Volumes
+# ======================
+volumes:
+  db_data_sprint12:
+  springboot_data:
+  redis-data:
+
+
+# ======================
+# Network
+# ======================
 networks:
   discodeit_network:

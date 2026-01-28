@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.utils;
 
 import com.sprint.mission.discodeit.jwt.JwtProperties;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,5 +28,21 @@ public class TokenUtils {
         cookie.setMaxAge(0);
         cookie.setHttpOnly(true);
         return cookie;
+    }
+
+    public String getTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
+    public String getTokenFromRequest(ServerHttpRequest request) {
+        String bearerToken = request.getHeaders().getFirst("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.events.MessageCreatedEvent;
 import com.sprint.mission.discodeit.events.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.events.UploadFailedEvent;
+import com.sprint.mission.discodeit.events.UserLogInOutEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -46,6 +47,18 @@ public class KafkaProduceRequiredEventListener {
         try {
             payload = objectMapper.writeValueAsString(event);
             kafkaTemplate.send("discodeit.RoleUpdatedEvent", payload);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Async
+    @EventListener
+    public void on(UserLogInOutEvent event) {
+        String payload = null;
+        try {
+            payload = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send("discodeit.UserLogInOutEvent", payload);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

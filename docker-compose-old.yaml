@@ -1,0 +1,50 @@
+version: '3'
+services:
+  app:
+    #만일 dockerfile 을 빌드 할 거면, build: . 을 이용함.
+    #그러나 보통은 이미 빌드한 이미지를 실행함.
+    #image: docker이미지명:태그명
+    build: .
+    image: discodeit_springboot:latest
+    container_name: discodeit
+    ports:
+      - "80:8081"
+    env_file:
+      - .env
+
+    #db가 먼저 세팅된 후에 실행되도록
+    depends_on:
+      - postgres-db
+    volumes:
+      - springboot_data:/app/.discodeit
+    networks:
+      - discodeit_network
+
+
+  postgres-db:
+    image: postgres:17
+    container_name: discodeit_postgres_db
+    #환경설정 값을 주입
+    environment:
+      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+      TZ: Asia/Seoul
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      #init 폴더 안에 있는 sql문을 실행하는 설정. 테이블 ddl 실행이 필요할경우 이용하거나
+      #데모 데이터 입력시 이용
+      - ./initdb:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - discodeit_network
+
+#볼륨 매핑.
+volumes:
+  db_data:
+  springboot_data:
+
+networks:
+  discodeit_network:

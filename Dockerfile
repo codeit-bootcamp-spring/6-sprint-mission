@@ -4,13 +4,13 @@ WORKDIR /app
 COPY . .
 
 RUN chmod +x ./gradlew
-RUN ./gradlew bootJar
+RUN ./gradlew bootJar -x test
 
 FROM amazoncorretto:17
-COPY --from=builder /app/build/libs/discodeit-1.2-M8.jar /app.jar
+COPY --from=builder /app/build/libs/discodeit-3.0-M12.jar /app.jar
 
 ENV PROJECT_NAME=discodeit
-ENV PROJECT_VERSION=1.2-M8
+ENV PROJECT_VERSION=3.0-M12
 ENV JVM_OPT=""
 
 EXPOSE 80

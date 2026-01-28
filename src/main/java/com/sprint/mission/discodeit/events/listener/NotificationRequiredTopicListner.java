@@ -3,14 +3,19 @@ package com.sprint.mission.discodeit.events.listener;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.events.MessageCreatedEvent;
 import com.sprint.mission.discodeit.events.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.events.UploadFailedEvent;
+import com.sprint.mission.discodeit.events.UserLogInOutEvent;
+import com.sprint.mission.discodeit.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.service.NotificationService;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,9 +35,11 @@ public class NotificationRequiredTopicListner {
     private final NotificationService notificationService;
     private final ReadStatusService readStatusService;
     private final UserService userService;
+    private final SseService sseService;
+    private final NotificationMapper notificationMapper;
 
     @Async
-    @KafkaListener(topics = "discodeit.MessageCreatedEvent")
+    @KafkaListener(topics = "discodeit.MessageCreatedEvent", groupId = "discodeit-group")
     public void onMessageCreatedEvent(String kafkaEvent) {
         try {
             MessageCreatedEvent event = objectMapper.readValue(kafkaEvent, MessageCreatedEvent.class);
@@ -56,6 +63,11 @@ public class NotificationRequiredTopicListner {
                             .build()).toList();
 
             notificationService.saveAllNotifications(notificationList);
+
+            notificationList.forEach(notification -> {
+                sendSSe(notification);
+            });
+
         } catch (JsonMappingException e) {
             throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
@@ -65,7 +77,23 @@ public class NotificationRequiredTopicListner {
     }
 
     @Async
-    @KafkaListener(topics = "discodeit.RoleUpdatedEvent")
+    @KafkaListener(topics = "discodeit.UserLogInOutEvent", groupId = "discodeit-group")
+    public void onUserLogInOutEvent(String kafkaEvent) {
+        try {
+            UserLogInOutEvent event = objectMapper.readValue(kafkaEvent, UserLogInOutEvent.class);
+            if (event == null)
+                return;
+
+            sseService.broadcast("users.updated", event);
+        } catch (JsonMappingException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Async
+    @KafkaListener(topics = "discodeit.RoleUpdatedEvent", groupId = "discodeit-group")
     public void onRoleUpdated(String kafkaEvent) {
 
         try {
@@ -80,6 +108,7 @@ public class NotificationRequiredTopicListner {
                     .receiverId(event.getReceiverId()).build();
 
             notificationService.saveNotification(notification);
+            sendSSe(notification);
         } catch (JsonMappingException e) {
             throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
@@ -88,7 +117,7 @@ public class NotificationRequiredTopicListner {
     }
 
     @Async
-    @KafkaListener(topics = "discodeit.UploadFailedEvent")
+    @KafkaListener(topics = "discodeit.UploadFailedEvent", groupId = "discodeit-group")
     public void onUploadFailedEvent(String kafkaEvent) {
 
         try {
@@ -108,10 +137,18 @@ public class NotificationRequiredTopicListner {
                     .receiverId(x.id()).build()).toList();
 
             notificationService.saveAllNotifications(notifications);
+            notifications.forEach(notification -> {
+                sendSSe(notification);
+            });
         } catch (JsonMappingException e) {
             throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void sendSSe(Notification notification) {
+        NotificationDto notificationDto = notificationMapper.toDto(notification);
+        sseService.send(List.of(notificationDto.receiverId()), "notifications.created", notificationDto);
     }
 }

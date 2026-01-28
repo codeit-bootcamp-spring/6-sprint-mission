@@ -60,9 +60,17 @@ public class SecurityConfig {
                                         "/api/auth/logout",
                                         "/actuator/health",
                                         "/actuator/info",
-                                        "/api/auth/refresh").permitAll()
+                                        "/api/auth/refresh",
+                                        "/ws/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                                 .requestMatchers("/actuator/**").hasRole("ADMIN")
+                                .requestMatchers(
+                                        "/index.html",
+                                        "/assets/**",
+                                        "/favicon.ico",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html").permitAll()
                                 .anyRequest().authenticated()
                 ).formLogin(x -> x
                         .loginProcessingUrl("/api/auth/login")
@@ -83,18 +91,6 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring()
-                .requestMatchers(
-                        "/index.html",
-                        "/assets/**",
-                        "favicon.ico",
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html");
     }
 
     @Bean

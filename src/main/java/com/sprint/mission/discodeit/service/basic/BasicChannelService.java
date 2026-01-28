@@ -22,6 +22,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
 
+import com.sprint.mission.discodeit.service.SseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -44,6 +45,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelMapper channelMapper;
     private final CachedChannelService cachedChannelService;
     private final ObjectMapper objectMapper;
+    private final SseService sseService;
 
     @Transactional
     @Override
@@ -73,14 +75,16 @@ public class BasicChannelService implements ChannelService {
         log.debug("채널 생성 시작: {}", request);
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         channelRepository.save(channel);
-
         List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
                 .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
                 .toList();
         readStatusRepository.saveAll(readStatuses);
 
         log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
-        return channelMapper.toDto(channel);
+
+        ChannelDto channelDto = channelMapper.toDto(channel);
+        sendSse("channels.created", channelDto);
+        return channelDto;
     }
 
     @Transactional(readOnly = true)
@@ -123,7 +127,12 @@ public class BasicChannelService implements ChannelService {
         }
         channel.update(newName, newDescription);
         log.info("채널 수정 완료: id={}, name={}", channelId, channel.getName());
-        return channelMapper.toDto(channel);
+
+        ChannelDto channelDto = channelMapper.toDto(channel);
+
+        sendSse("channels.updated", channelDto);
+
+        return channelDto;
     }
 
     @Transactional
@@ -141,7 +150,15 @@ public class BasicChannelService implements ChannelService {
         messageRepository.deleteAllByChannelId(channelId);
         readStatusRepository.deleteAllByChannelId(channelId);
 
+        sendSse("channels.deleted", find(channelId));
+
         channelRepository.deleteById(channelId);
         log.info("채널 삭제 완료: id={}", channelId);
+    }
+
+    private void sendSse(String name, ChannelDto channelDto) {
+        sseService.send(channelDto.participants().stream().map(x -> x.id()).toList()
+                , name
+                , channelDto);
     }
 }

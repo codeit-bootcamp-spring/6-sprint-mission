@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.jwt;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
+import com.sprint.mission.discodeit.utils.TokenUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,11 +23,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final DiscodeitUserDetailsService userDetailsService;
     private final JwtRegistry jwtRegistry;
+    private final TokenUtils tokenUtils;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String token = getTokenFromRequest(request);
+        String token = tokenUtils.getTokenFromRequest(request);
         JWTClaimsSet claimsSet = jwtTokenProvider.parseToken(token);
 
         if (token == null || claimsSet == null
@@ -40,13 +42,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
-    }
-
-    private String getTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
     }
 }
